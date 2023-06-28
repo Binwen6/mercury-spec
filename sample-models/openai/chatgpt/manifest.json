@@ -1,0 +1,34 @@
+{
+    "model-specs": {
+        "metadata": {
+            "name": "ChatGPT-cloud",
+            "class": "chat-completion",
+            "description": "A chat-completion model."
+        },
+        "capabilities": [
+            "question-answering",
+            "world-knowledge",
+            "question-asking",
+            "task-breakdown"
+        ],
+        "call-specs": {
+            "input": {
+                "type": "list<tuple<string, bool>>",
+                "description": "An list of chat messages. The first element of the tuple is the content, the second being true if the message is user-sent, false if bot-sent."
+            },
+            "output": {
+                "type": "string",
+                "description": "The next bot-sent message."
+            }
+        },
+        "properties": {
+            "deployment-type": "cloud",
+            "support-encryption": false,
+            "latency": "100ms",
+            "cost-per-token": "$0.001"
+        }
+    },
+    "implementations": {
+        "python": "model.py"
+    }
+}

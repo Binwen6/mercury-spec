@@ -1,0 +1,7 @@
+{
+    "classes": {
+        "chat-completion": "This type of models can complete chat messages.",
+        "text-continuation": "This type of models can continue incomplete text.",
+        "image-classification": "This type of models classifies images."
+    }
+}

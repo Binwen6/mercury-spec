@@ -1,14 +1,13 @@
-# OpenNN: A Cross-platform Specification for Deep Neural Networks
+# Mercury: A Cross-platform Specification for Deep Neural Networks
 
-## What is OpenNN?
+## What is Mercury?
 
-OpenNN is short for "Open Neural Networks".
-At its core, OpenNN is a specification for deep neural networks like ChatGPT and Stable Diffusion.
-OpenNN enforces a uniform interface for accessing deep learning models and
+At its core, Mercury is a specification for deep neural networks like ChatGPT and Stable Diffusion.
+Mercury enforces a uniform interface for accessing deep learning models and
 allows developers to utilize models developed by different organizations and deployed on different hardware backends
 in a platform-, vendor- and backend-agnostic manner.
 
-OpenNN is a specification designed for **developers**, not **researchers**.
+Mercury is a specification designed for **developers**, not **researchers**.
 It focuses on **using** deep neural networks (e.g., feed inputs and get outputs), not **designing** them (i.e., dataset collection, neural architecture design and training).
 
 ## Why do we need a specification for deep neural networks?
@@ -35,7 +34,7 @@ Usually it is even possible to use the model without downloading it, via a cloud
 In such a context where a model is used in a plug-and-play manner with little or no debugging or modifications,
 there is no need for developers to know the details of the model and be able to manipulate its weights and structure.
 Developers (especially those who are not familiar with deep learning) would want a simple and easy-to-use interface that abstracts away the weights and network architectures whenever it is possible.
-OpenNN satisfies that need.
+Mercury satisfies that need.
 
 ### **The principle of separating interface v.s. implementation applies to AI applications as well**
 
@@ -59,21 +58,21 @@ In general, separating the interface and implementation allows applications to t
 they work with any compatible model and dynamically selects which one to use based on user preferences,
 and when a new model comes out, it benefits from improved model performance with no change in code.
 
-OpenNN effectively separates the interface from implementation:
+Mercury effectively separates the interface from implementation:
 it defines the interface that all models should implement so that developers can use a uniform interface to access all models,
 and asks that the researchers or vendors who develop the models make their creations compatible with the interface.
 
 ## Join us in building the future of AI applications!
 
-OpenNN is the first developer-oriented AI specification in human history;
+Mercury is the first developer-oriented AI specification in human history;
 developing such a specification is not an easy thing,
 as it requires developers and researchers to work together
 to explain the expected behavior of deep neural networks in a way that is easy both for developers to understand and for researchers to implement.
 
 Thus, we highly value help, feedback, suggestions and collaboration from developers, researchers and AI companies.
-OpenNN is designed to be an open standard driven by both the research and development community;
-we accept any pull requests and suggestions that make OpenNN better,
+Mercury is designed to be an open standard driven by both the research and development community;
+we accept any pull requests and suggestions that make Mercury better,
 no matter it's a bug fix, a new feature addition or a change in the architecture.
-As OpenNN is still young, it is even possible to rewrite the whole specification using a different set of design principles.
+As Mercury is still young, it is even possible to rewrite the whole specification using a different set of design principles.
 
-Contact us at **trentfellbootman@gmail.com** if you are interested in contributing to OpenNN!
+Contact us at **trentfellbootman@gmail.com** if you are interested in contributing to Mercury!

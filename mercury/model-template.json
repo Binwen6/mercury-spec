@@ -1,0 +1,19 @@
+{
+    "metadata": {
+        "name": "string",
+        "class": "string",
+        "description": "string"
+    },
+    "capabilities": "array<string>",
+    "call-specs": {
+        "input": {
+            "type": "string",
+            "description": "string"
+        },
+        "output": {
+            "type": "string",
+            "description": "string"
+        }
+    },
+    "properties": "dict<string, any>"
+}
