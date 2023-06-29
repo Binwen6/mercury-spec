@@ -12,6 +12,7 @@
             "task-breakdown"
         ],
         "call-specs": {
+            "call-signature": "chat-completion",
             "input": {
                 "type": "list<tuple<string, bool>>",
                 "description": "An list of chat messages. The first element of the tuple is the content, the second being true if the message is user-sent, false if bot-sent."

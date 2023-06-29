@@ -7,6 +7,7 @@
         },
         "capabilities": [],
         "call-specs": {
+            "signature-type": "image-classification",
             "input": {
                 "type": "image<224, 224, 3>",
                 "description": "The image to classify, with width, height, and channels being 224, 224, and 3."

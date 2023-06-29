@@ -1,0 +1,8 @@
+{
+    "structs": {
+        "commented-field": {
+            "type": "string",
+            "comment": "string"
+        }
+    }
+}

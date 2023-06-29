@@ -6,14 +6,9 @@
     },
     "capabilities": "array<string>",
     "call-specs": {
-        "input": {
-            "type": "string",
-            "description": "string"
-        },
-        "output": {
-            "type": "string",
-            "description": "string"
-        }
+        "call-signature": "string",
+        "input": "commented-field",
+        "output": "commented-field"
     },
     "properties": "dict<string, any>"
 }

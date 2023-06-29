@@ -1,0 +1,7 @@
+{
+    "primitives": [
+        "string",
+        "float",
+        "int"
+    ]
+}
