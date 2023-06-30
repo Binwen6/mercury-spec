@@ -23,6 +23,9 @@
         }
     },
     "implementations": {
-        "python": "model.py"
+        "python": {
+            "entry-file": "model.py",
+            "entry-class": "Model"
+        }
     }
 }
