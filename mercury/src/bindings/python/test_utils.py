@@ -1,6 +1,6 @@
 import unittest
 
-from utils import validate_pytree
+from utils import validate_pytree, tree_map, StructureInvalidException
 
 class TestValidatePytree(unittest.TestCase):
 
@@ -173,6 +173,60 @@ class TestValidatePytree(unittest.TestCase):
 
         result = validate_pytree(pytree, template, isinstance)
         self.assertTrue(result)
+
+def square(x, y, z):
+    return x ** 2 + y ** 2 + z ** 2
+
+class TestTreeMap(unittest.TestCase):
+    def test_single_pytrees(self):
+        pytrees = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        result = tree_map(pytrees, square)
+        self.assertEqual(result, [66, 93, 126])
+    
+    def test_nested_pytrees(self):
+        pytrees = [
+            [[1, 2], [3, 4]],
+            [[5, 6], [7, 8]],
+            [[9, 10], [11, 12]]
+        ]
+        result = tree_map(pytrees, square)
+        self.assertEqual(result, [[107, 140], [179, 224]])
+    
+    def test_mixed_pytrees(self):
+        pytrees = [[
+            [1, 2, 3],
+            {'a': [4, 5, 6], 'b': [7, 8, 9]},
+            ((10, 11, 12),)
+        ]]
+        result = tree_map(pytrees, lambda x: x ** 2)
+        self.assertEqual(result, [[1, 4, 9], {'a': [16, 25, 36], 'b': [49, 64, 81]}, ((100, 121, 144),)])
+    
+    def test_different_structures_tuple(self):
+        pytrees = [
+            [1, 2, 3],
+            [4, 5, 6, 7],
+            [8, 9, 10]
+        ]
+        with self.assertRaises(StructureInvalidException):
+            tree_map(pytrees, square)
+
+    def test_different_structures_dict(self):
+        pytrees = [
+            {'a': 1, 'b': 2, 'c': 3},
+            {'a': 4, 'b': 5, 'd': 6},
+            {'a': 8, 'b': 9, 'c': 10}
+        ]
+        with self.assertRaises(StructureInvalidException):
+            tree_map(pytrees, square)
+    
+    def test_first_pytree_not_terminal(self):
+        pytrees = [
+            [[1, 2, 3], [4, 5, 6]],
+            [7, 8, 9],
+            [10, 11, 12]
+        ]
+        with self.assertRaises(StructureInvalidException):
+            tree_map(pytrees, square)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,11 @@ from typing import Tuple, Dict, List, Callable, Union, Any
 
 
 class StructureInvalidException(Exception):
-    pass
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)
+    
+    def __str__(self) -> str:
+        return super().__str__()
 
 
 def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict, List, Tuple] | Any, predicate: Callable[[Any, Any], bool]) -> bool:
@@ -37,7 +41,6 @@ def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict
     ...     },
     ...     'scores': [90, 85, 95]
     ... }
-    >>>
     >>> template = {
     ...     'name': str,
     ...     'age': int,
@@ -47,7 +50,6 @@ def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict
     ...     },
     ...     'scores': [int, int, int]
     ... }
-    >>>
     >>> result = validate_pytree(pytree, template, isinstance)
     >>> print(result)
     True
@@ -80,3 +82,65 @@ def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict
             return False
         else:
             return predicate(pytree, template)
+
+def tree_map(pytrees: List[Union[Dict, List, Tuple] | Any], mapper: Callable[..., Any]) -> Union[Dict, List, Tuple] | Any:
+    """
+    Map a function over multiple pytrees with identical structures.
+
+    :param pytrees: A List of pytrees. Pytree can be a nested structure of Lists, Tuples, or Dictionaries.
+    :type pytrees: List[Union[Dict, List, Tuple] | Any]
+    :param mapper: The function to be mapped over the pytrees.
+    :type mapper: Callable[..., Any]
+    :return: A new pytree with the same structure as the input pytrees,
+    where each element is the result of applying the function to the corresponding elements in the input pytrees.
+    :rtype: Union[Dict, List, Tuple] | Any
+
+    :raises ValueError: If the structures of the pytrees are not identical.
+
+    Usage example:
+    
+    >>> def square(x, y, z):
+    ...     return x ** 2 + y ** 2 + z ** 2
+    >>> pytree_1 = [1, 2, 3]
+    >>> pytree_2 = [4, 5, 6]
+    >>> pytree_3 = [7, 8, 9]
+
+    >>> result = tree_map([pytree_1, pytree_2, pytree_3], square)
+    >>> print(result)
+    [66, 93, 126]
+
+    This function takes a List of pytrees and a function as input.
+    It maps the function over the pytrees,
+    applying the function to the corresponding leaf elements in the input pytrees.
+    The resulting pytree has the same structure as the input pytrees,
+    where each element is the result of applying the function to the corresponding leaf elements in the input pytrees.
+
+    For example, if the input pytrees are ``pytree_1 = [1, 2, 3]``, ``pytree_2 = [4, 5, 6]``, and ``pytree_3 = [7, 8, 9]``,
+    and the function is ``square(x) = x ** 2 + y ** 2 + z ** 2``, the result will be ``result = [66, 93, 126]`.
+    """
+    
+    def is_internal_node(value: Any):
+        return isinstance(value, (List, Tuple, Dict))
+
+    if is_internal_node(pytrees[0]):
+        if len(set(type(tree) for tree in pytrees)) > 1:
+            raise StructureInvalidException('Structures of the pytrees are not identical!')
+        
+        if isinstance(pytrees[0], (List, Tuple)):
+            if len(set(len(tree) for tree in pytrees)) > 1:
+                raise StructureInvalidException('Pytrees have different lengths!')
+
+            return type(pytrees[0])(tree_map(items, mapper) for items in zip(*pytrees))
+        elif isinstance(pytrees[0], Dict):
+            keys = [set(tree.keys()) for tree in pytrees]
+            if not all(ks == keys[0] for ks in keys):
+                raise StructureInvalidException('Pytrees have different keys!')
+            
+            return {key: tree_map([pytree[key] for pytree in pytrees], mapper) for key in pytrees[0].keys()}
+        else:
+            raise StructureInvalidException(f'Incorrect internal node type: {type(pytrees[0])}')
+    else:
+        if not all(not is_internal_node(tree) for tree in pytrees):
+            raise StructureInvalidException('First pytree but not all pytrees are terminal!')
+        
+        return mapper(*pytrees)
