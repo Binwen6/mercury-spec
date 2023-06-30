@@ -1,0 +1,10 @@
+metadata:
+  name: 'type(x) == str and len(x) > 0'
+  class: string
+  description: string
+capabilities: 'isinstance(x, List)'
+callSpecs:
+  callScheme: 'type(x) == str and len(x) > 0'
+  input: string
+  output: string
+properties: dict<string, any>

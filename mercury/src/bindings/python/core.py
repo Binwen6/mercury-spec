@@ -65,4 +65,3 @@ def instantiate(model_dir: str):
     instance = entry_class()
 
     return Model(instance=instance, info=info)
-    

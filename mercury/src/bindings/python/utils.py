@@ -55,7 +55,7 @@ def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict
     True
     """
 
-    if isinstance(template, Tuple) or isinstance(template, List) or isinstance(template, Dict):
+    if isinstance(template, (Tuple, List, Dict)):
         # composed type
         if (isinstance(template, Tuple) and isinstance(pytree, Tuple)) or \
             (isinstance(template, List) and isinstance(pytree, List)):
@@ -78,10 +78,7 @@ def validate_pytree(pytree: Union[Dict, List, Tuple] | Any, template: Union[Dict
             return False
     else:
         # terminal node
-        if isinstance(pytree, Tuple) or isinstance(pytree, List) or isinstance(pytree, Dict):
-            return False
-        else:
-            return predicate(pytree, template)
+        return predicate(pytree, template)
 
 def tree_map(pytrees: List[Union[Dict, List, Tuple] | Any], mapper: Callable[..., Any]) -> Union[Dict, List, Tuple] | Any:
     """
