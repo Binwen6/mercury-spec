@@ -8,11 +8,9 @@ modelSpecs:
     signatureType: image-classification
     input:
       type: image<224, 224, 3>
-      description: The image to classify, with width, height, and channels being 224,
-        224, and 3.
+      description: The image to classify, with width, height, and channels being 224, 224, and 3.
     output:
-      type: category-scores<bird, dog, truck, cat, koala, car, airplane, duck, goose,
-        traffic-sign>
+      type: category-scores<bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign>
       description: The scores of the categories that the image may belong to.
   properties:
     deploymentType: local

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict>
+    <named-field name="modelSpecs">
+        <dict>
+            <named-field name="metadata">
+                <dict>
+                    <named-field name="name">
+                        <string>AlexNet</string>
+                    </named-field>
+                    <named-field name="class">
+                        <string>image-classification</string>
+                    </named-field>
+                    <named-field name="description">
+                        <string>An image classification model.</string>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="capabilities">
+                <list></list>
+            </named-field>
+            <named-field name="callSpecs">
+                <dict>
+                    <named-field name="signatureType">
+                        <string>image-classification</string>
+                    </named-field>
+                    <named-field name="input">
+                        <dict>
+                            <named-field name="type">
+                                <type-identifier>image[224, 224, 3]</type-identifier>
+                            </named-field>
+                            <named-field name="description">
+                                <string>The image to classify, with width, height, and channels being 224, 224, and 3.</string>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                    <named-field name="output">
+                        <dict>
+                            <named-field name="type">
+                                <type-identifier>category-scores[bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign]</type-identifier>
+                            </named-field>
+                            <named-field name="description">
+                                <string>The scores of the categories that the image may belong to.</string>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="properties">
+                <dict>
+                    <named-field name="deploymentType">
+                        <string>local</string>
+                    </named-field>
+                    <named-field name="latency">
+                        <time>1ms</time>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+    </named-field>
+    <named-field name="implementations">
+        <dict>
+            <named-field name="python">
+                <dict>
+                    <named-field name="entryFile">
+                        <string>model.py</string>
+                    </named-field>
+                    <named-field name="entryClass">
+                        <string>Model</string>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+    </named-field>
+</dict>
