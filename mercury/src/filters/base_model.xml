@@ -21,7 +21,7 @@
                 </dict>
             </named-field>
             <named-field name="capabilities">
-                <list filter="none"></list>
+                <list filter="none"/>
             </named-field>
             <named-field name="callSpecs">
                 <dict filter="all">

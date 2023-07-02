@@ -1,5 +1,3 @@
-import mercury_nn as mc
-
 # init is done when the module is imported
 # mc.initialize()
 

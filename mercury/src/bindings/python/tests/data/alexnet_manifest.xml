@@ -16,7 +16,7 @@
                 </dict>
             </named-field>
             <named-field name="capabilities">
-                <list></list>
+                <list/>
             </named-field>
             <named-field name="callSpecs">
                 <dict>
@@ -59,7 +59,7 @@
     </named-field>
     <named-field name="implementations">
         <dict>
-            <named-field name="python">
+            <named-field name="Python">
                 <dict>
                     <named-field name="entryFile">
                         <string>model.py</string>
