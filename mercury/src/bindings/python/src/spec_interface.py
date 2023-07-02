@@ -21,6 +21,8 @@ class KeyNames(Enum):
     implementations = 'implementations'
     implementationEntryFile = 'entryFile'
     implementationEntryClass = 'entryClass'
+    metadataKeyName = 'metadata'
+    modelNameKeyName = 'name'
 
 
 class TagNames(Enum):
@@ -40,6 +42,7 @@ class AttributeNames(Enum):
 class FilterOperationTypes(Enum):
     none = 'none'
     all = 'all'
+    equals = 'equals'
 
 
 @dataclass
@@ -52,7 +55,7 @@ class ImplementationInfo:
 class ManifestUtils:
     
     @staticmethod
-    def getMetadata(manifestData: ET.Element) -> ET.Element:
+    def getModelSpecs(manifestData: ET.Element) -> ET.Element:
         """Returns the metadata element of the model's manifest data.
 
         Args:
@@ -90,3 +93,9 @@ class ManifestUtils:
             sourceFile=Path(implementationDict[KeyNames.implementationEntryFile.value][0].text),
             modelClassName=implementationDict[KeyNames.implementationEntryClass.value][0].text
         )
+    
+    @staticmethod
+    def getModelName(manifestData: ET.Element):
+        return dictElementToDict(
+            dictElementToDict(ManifestUtils.getModelSpecs(manifestData))
+            [KeyNames.metadataKeyName.value])[KeyNames.modelNameKeyName.value].text

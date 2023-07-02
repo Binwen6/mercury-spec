@@ -11,7 +11,7 @@ from .spec_interface import ManifestUtils
 
 # TODO: write tests
 def instantiateModel(modelEntry: ModelCollection.ModelEntry) -> Model:
-    metadata = ManifestUtils.getMetadata(modelEntry.manifestData)
+    metadata = ManifestUtils.getModelSpecs(modelEntry.manifestData)
     implementation_info = ManifestUtils.getImplementationInfo(modelEntry.manifestData)
 
     # import module

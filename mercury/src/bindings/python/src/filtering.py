@@ -67,6 +67,10 @@ def matchFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMat
                 # TODO: add more filter types for strings, e.g., regular expressions
                 case FilterOperationTypes.none.value:
                     return FilterMatchResult.SUCCESS
+                case FilterOperationTypes.equals.value:
+                    return FilterMatchResult.SUCCESS \
+                        if dataElement.text == filterElement.text \
+                        else FilterMatchResult.FAILURE
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.typeIdentifier.value:

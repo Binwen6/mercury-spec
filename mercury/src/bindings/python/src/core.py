@@ -7,6 +7,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 
+# TODO: write tests
 class Model(ABC, Generic[T, U]):
     
     def __init__(self, metadata: ET.Element):

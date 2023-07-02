@@ -3,12 +3,11 @@ from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from .filtering import matchFilter
+from .filtering import matchFilter, FilterMatchResult
 from .spec_interface import FileNames, ManifestUtils
 from .config import Config
 
 
-# TODO: write tests
 class ModelCollection:
     @dataclass
     class ModelEntry:
@@ -18,6 +17,9 @@ class ModelCollection:
     def __init__(self, entries: List[ModelEntry]):
         self._entries = entries
 
+    def __iter__(self) -> List[ModelEntry]:
+        return iter(self._entries)
+
     @property
     def modelEntries(self) -> List[ModelEntry]:
         return self._entries
@@ -25,10 +27,11 @@ class ModelCollection:
     def select(self, filterElement: ET.Element) -> Self:
         return ModelCollection(list(
             entry for entry in self._entries
-            if matchFilter(filterElement=filterElement, dataElement=ManifestUtils.getMetadata(entry.manifestData))))
+            if matchFilter(filterElement=filterElement,
+                           dataElement=ManifestUtils.getModelSpecs(entry.manifestData))
+            == FilterMatchResult.SUCCESS))
 
 
-# TODO: write tests
 def enumerateAvailableModels() -> ModelCollection:
     """
     Look up the model collection directory and return entries for all available models.
@@ -51,7 +54,7 @@ def enumerateAvailableModels() -> ModelCollection:
         return ret
 
     def enumerateModels(directory: Path) -> List[ModelCollection.ModelEntry]:
-        if FileNames.manifestFile in set(directory.iterdir()):
+        if FileNames.manifestFile.value in set(Path(path.name) for path in directory.iterdir()):
             # we are at a leaf
             return [ModelCollection.ModelEntry(path=directory,
                                                manifestData=ET.parse(

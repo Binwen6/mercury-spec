@@ -1,5 +1,4 @@
-# init is done when the module is imported
-# mc.initialize()
+import mercury.src.bindings.python.src as mc
 
 custom_filter = mc.Filter(
     classes=["chat-completion", "text-continuation"],

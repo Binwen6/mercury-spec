@@ -3,4 +3,5 @@ from pathlib import Path
 
 
 class Config(Enum):
-    modelCollectionRootPath = Path('fill in model collection root directory here')
+    # TODO: this configuration is for TESTING ONLY
+    modelCollectionRootPath = Path('../tests/data/sample-model-collection')

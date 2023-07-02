@@ -6,7 +6,7 @@ import sys
 sys.path.append('..')
 
 # from ..src.filter import match_filter, FilterMatchResult
-from src.filter import matchFilter, FilterMatchResult
+from src.filtering import matchFilter, FilterMatchResult
 
 
 class TestFilterMatch(unittest.TestCase):
@@ -71,8 +71,8 @@ class TestFilterMatch(unittest.TestCase):
 
     def test_base_model_match(self):
         self.assertEqual(matchFilter(
-            filter=ET.parse('data/base_model.xml').getroot(),
-            element=ET.parse('data/alexnet_manifest.xml').getroot()[0][0]
+            filterElement=ET.parse('data/base_model.xml').getroot(),
+            dataElement=ET.parse('data/alexnet_manifest.xml').getroot()[0][0]
         ), FilterMatchResult.SUCCESS)
 
     def test_missing_key(self):
@@ -216,6 +216,73 @@ class TestFilterMatch(unittest.TestCase):
 """
 
         self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+    
+    def test_match_string_equal(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>koala</string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
+
+    def test_match_string_not_equal(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>koalaa</string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>koal</string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>koale</string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>koala   </string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string filter="equals">koala</string>
+        """
+
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <string>
+            koala
+        </string>
+        """
+
+        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+
+    def test_empty_string_equal(self):
+        pass
 
 
 if __name__ == '__main__':
