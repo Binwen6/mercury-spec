@@ -1,1 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="koala">
+        <string filter="none"/>
+    </named-field>
+    
+    <named-field name="cute">
+        <list filter="all">
+            <string filter="none"/>
+            <time filter="none"/>
+        </list>
+    </named-field>
+    
+    <named-field name="l">
+        <list filter="none"/>
+    </named-field>
+</dict>
