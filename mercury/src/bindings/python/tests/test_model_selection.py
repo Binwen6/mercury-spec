@@ -44,12 +44,6 @@ class TestModelCollectionMethods(unittest.TestCase):
             <named-field name="name">
                 <string filter="equals">koala</string>
             </named-field>
-            <named-field name="class">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
         </dict>
     </named-field>
 </dict>

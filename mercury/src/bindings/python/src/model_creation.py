@@ -15,7 +15,7 @@ def instantiateModel(modelEntry: ModelCollection.ModelEntry) -> Model:
     implementation_info = ManifestUtils.getImplementationInfo(modelEntry.manifestData)
 
     # import module
-    spec = importlib.util.spec_from_file_location(str(modelEntry.path.joinpath(implementation_info.sourceFile)))
+    spec = importlib.util.spec_from_file_location("module", str(modelEntry.path.joinpath(implementation_info.sourceFile)))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 

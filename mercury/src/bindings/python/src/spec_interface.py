@@ -90,8 +90,8 @@ class ManifestUtils:
             [KeyNames.pythonImplementationIdentifier.value])
         
         return ImplementationInfo(
-            sourceFile=Path(implementationDict[KeyNames.implementationEntryFile.value][0].text),
-            modelClassName=implementationDict[KeyNames.implementationEntryClass.value][0].text
+            sourceFile=Path(implementationDict[KeyNames.implementationEntryFile.value].text),
+            modelClassName=implementationDict[KeyNames.implementationEntryClass.value].text
         )
     
     @staticmethod
