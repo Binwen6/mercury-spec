@@ -29,7 +29,7 @@ class TestModelCreation(unittest.TestCase):
 """
         )
 
-        chat_model = all_available_models.select(filterElement=filterElement).modelEntries[0]
+        chat_model = all_available_models.select(filterElement=filterElement)[0]
         self.assertEqual(mc.ManifestUtils.getModelName(chat_model.manifestData), 'ChatGPT-cloud')
 
         chat_api = mc.instantiateModel(chat_model)

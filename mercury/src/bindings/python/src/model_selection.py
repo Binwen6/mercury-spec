@@ -19,6 +19,9 @@ class ModelCollection:
 
     def __iter__(self) -> List[ModelEntry]:
         return iter(self._entries)
+    
+    def __getitem__(self, index):
+        return self._entries[index]
 
     @property
     def modelEntries(self) -> List[ModelEntry]:

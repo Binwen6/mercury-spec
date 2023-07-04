@@ -84,6 +84,57 @@ no knowledge about GPU architecture is required for application development,
 one application works with any compatible graphics cards,
 and performance of the application gets better on a better GPU by itself.
 
+What does |project_name| look like?
+-----------------------------------
+
+An example usage of |project_name| with Python might look like the following:
+
+**# TODO: code sample doesn't work for now since convenient filter construction methods are not implemented.**
+
+.. code-block:: python
+
+   import mercury as mc
+
+   import logging
+
+   model_collection = mc.enumerateAvailableModels()
+
+   try:
+      # get all models that fits the application
+      chat_completion_models = model_collection.select(
+         mc.buildFilter(usageScheme="chat-completion",
+                        capabilities="imagination"))
+      
+      # find the cheapest model available
+      selected_model = sorted(chat_completion_models,
+                              key=lambda model: model.price)[0]
+
+   except mc.exceptions.ModelNotFoundException:
+      logging.critical("Failed to find compatible model!")
+
+   model = mc.instantiateModel(selected_model)
+
+   request = input('Please tell me what kind of story you want to create: ')
+
+   # "True" indicates that the message is user-sent
+   response = model.call([
+      f"""A user has made a request to create a story. Here is the user's request:
+
+   {request}
+
+   Please generate a story for the user. Output the story ONLY and NOTHING ELSE.""", True
+   ])
+
+   print(f'Here is your story:\n{response}')
+
+
+
+In 31 lines of code, we have implemented an application that tells stories with the power of AI.
+In the above code, we "enumerate" all available models available on user's platform,
+filter out the chat-completion models with the capability (the "**feature**"") of imagination,
+select the cheapest model for use, and call the model using the unified interface provided by |project_name|.
+In |project_name|, same type of models ("chat-completion" in this case) all use the same interface.
+
 
 .. toctree::
     :maxdepth: 2
