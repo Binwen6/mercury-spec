@@ -1,5 +1,9 @@
 # Mercury: A DNN Specification for Developers
 
+## Quick Links
+
+[Documentation](https://mercurynn.readthedocs.io/en/latest/)
+
 ## What is Mercury?
 
 Mercury is a specification for deep neural networks (DNNs) that is specifically designed for application developers.
