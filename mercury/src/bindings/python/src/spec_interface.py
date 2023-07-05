@@ -1,6 +1,7 @@
 from enum import Enum
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import Sequence
 from dataclasses import dataclass
 
 
@@ -17,11 +18,11 @@ class FileNames(Enum):
 
 class KeyNames(Enum):
     pythonImplementationIdentifier = 'Python'
-    modelSpecs = 'modelSpecs'
+    specs = 'specs'
     implementations = 'implementations'
     implementationEntryFile = 'entryFile'
     implementationEntryClass = 'entryClass'
-    metadataKeyName = 'metadata'
+    headerKeyName = 'header'
     modelNameKeyName = 'name'
 
 
@@ -55,38 +56,38 @@ class ImplementationInfo:
 class ManifestUtils:
     
     @staticmethod
-    def getModelSpecs(manifestData: ET.Element) -> ET.Element:
+    def getModelSpecs(metadata: ET.Element) -> ET.Element:
         """Returns the metadata element of the model's manifest data.
 
         Args:
-            manifestData (ET.Element): The model's manifest data.
+            metadata (ET.Element): The model's manifest data.
 
         Returns:
             ET.Element: The metadata element.
         """
         
-        return dictElementToDict(manifestData)[KeyNames.modelSpecs.value]
+        return dictElementToDict(metadata)[KeyNames.specs.value]
     
     @staticmethod
-    def supportPythonImplementation(manifestData: ET.Element) -> bool:
+    def supportPythonImplementation(metadata: ET.Element) -> bool:
         """Returns True if manifest data indicates that model has a Python implementation, False otherwise.
 
         Args:
-            manifestData (ET.Element): The model's manifest data.
+            metadata (ET.Element): The model's manifest data.
 
         Returns:
             bool: Whether the model has a Python implementation.
         """
         
         supported_implementations = set(
-            dictElementToDict(dictElementToDict(manifestData)[KeyNames.implementations.value]).keys())
+            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations.value]).keys())
 
         return KeyNames.pythonImplementationIdentifier.value in supported_implementations
     
     @staticmethod
-    def getImplementationInfo(manifestData: ET.Element):
+    def getImplementationInfo(metadata: ET.Element):
         implementationDict = dictElementToDict(
-            dictElementToDict(dictElementToDict(manifestData)[KeyNames.implementations.value])
+            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations.value])
             [KeyNames.pythonImplementationIdentifier.value])
         
         return ImplementationInfo(
@@ -95,7 +96,72 @@ class ManifestUtils:
         )
     
     @staticmethod
-    def getModelName(manifestData: ET.Element):
+    def getModelName(metadata: ET.Element):
         return dictElementToDict(
-            dictElementToDict(ManifestUtils.getModelSpecs(manifestData))
-            [KeyNames.metadataKeyName.value])[KeyNames.modelNameKeyName.value].text
+            dictElementToDict(ManifestUtils.getModelSpecs(metadata))
+            [KeyNames.headerKeyName.value])[KeyNames.modelNameKeyName.value].text
+
+
+def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:
+    """Generates XML-format filter description from simple arguments.
+
+    Args:
+        modelType (str | None): The type of the model. E.g., chat-completion, image-classification, etc.
+        callScheme (str | None): The call scheme. E.g., chat-completion, image-classification, etc.
+        capabilities (Sequence[str] | None): The required capabilities. E.g., question-answering, math, etc.
+
+    Returns:
+        str: The XML representation of the filter requirements.
+    """
+
+    return \
+f"""<?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="header">
+        <dict filter="all">
+            <named-field name="name">
+                <string filter="none"/>
+            </named-field>
+            <named-field name="class">
+                {'<string filter="none"/>' if modelType is None else f'<string filter="equals">{modelType}</string>'}
+            </named-field>
+            <named-field name="description">
+                <string filter="none"/>
+            </named-field>
+        </dict>
+    </named-field>
+    <named-field name="capabilities">
+        {'<list filter="none"/>' if capabilities == None or len(capabilities) == 0 else f'<list filter="all">' + ''.join(f'<string filter="equals">{capability}</string>' for capability in capabilities) + '</list>'}
+    </named-field>
+    <named-field name="callSpecs">
+        <dict filter="all">
+            <named-field name="signatureType">
+                {'<string filter="none"/>' if callScheme is None else f'<string filter="equals">{callScheme}</string>'}
+            </named-field>
+            <named-field name="input">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-identifier filter="none"/>
+                    </named-field>
+                    <named-field name="description">
+                        <string filter="none"/>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="output">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-identifier filter="none"/>
+                    </named-field>
+                    <named-field name="description">
+                        <string filter="none"/>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+    </named-field>
+    <named-field name="properties">
+        <dict filter="none"/>
+    </named-field>
+</dict>
+"""

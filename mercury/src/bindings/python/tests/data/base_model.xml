@@ -4,7 +4,7 @@
 <!-- "all" means that all subfilters needs to match. -->
 <!-- Things like "none", "all", etc. have different semantic meanings for different tags. -->
 <dict filter="all">
-    <named-field name="metadata">
+    <named-field name="header">
         <dict filter="all">
             <named-field name="name">
                 <!-- "none" means that the content can be anything (the type still needs to match the tag, though). -->

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from .filtering import matchFilter, FilterMatchResult
+from .filtering import matchFilter, FilterMatchResult, Filter
 from .spec_interface import FileNames, ManifestUtils
 from .config import Config
 
@@ -12,7 +12,7 @@ class ModelCollection:
     @dataclass
     class ModelEntry:
         path: Path
-        manifestData: ET.Element
+        metadata: ET.Element
 
     def __init__(self, entries: List[ModelEntry]):
         self._entries = entries
@@ -27,11 +27,11 @@ class ModelCollection:
     def modelEntries(self) -> List[ModelEntry]:
         return self._entries
 
-    def select(self, filterElement: ET.Element) -> Self:
+    def select(self, filterObject: Filter) -> Self:
         return ModelCollection(list(
             entry for entry in self._entries
-            if matchFilter(filterElement=filterElement,
-                           dataElement=ManifestUtils.getModelSpecs(entry.manifestData))
+            if matchFilter(filterObject=filterObject,
+                           dataElement=ManifestUtils.getModelSpecs(entry.metadata))
             == FilterMatchResult.SUCCESS))
 
 
@@ -60,11 +60,11 @@ def enumerateAvailableModels() -> ModelCollection:
         if FileNames.manifestFile.value in set(Path(path.name) for path in directory.iterdir()):
             # we are at a leaf
             return [ModelCollection.ModelEntry(path=directory,
-                                               manifestData=ET.parse(
+                                               metadata=ET.parse(
                                                    directory.joinpath(FileNames.manifestFile.value)).getroot())]
         else:
             return join_lists(enumerateModels(sub_dir) for sub_dir in directory.iterdir() if sub_dir.is_dir())
 
     return ModelCollection(
         [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath.value))
-         if ManifestUtils.supportPythonImplementation(model_entry.manifestData)])
+         if ManifestUtils.supportPythonImplementation(model_entry.metadata)])

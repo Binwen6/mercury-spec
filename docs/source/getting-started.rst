@@ -1,7 +1,7 @@
 Getting Started with |project_name|
 ===================================
 
-**# TODO: Code samples won't work for now since we're missing convenient method implementations.**
+**# TODO: Code sample won't work for now since no there is currently no image-generation model extension.**
 
 This tutorial introduces some basic concepts in |project_name| and
 walks you through the basic steps of creating an AI-powered application with |project_name|.
@@ -88,16 +88,14 @@ in addition, we need the model to be able to understand simple instructions,
 such as when the user wants to end the conversation.
 Hence, we define the filter in the following way:
 
-**# TODO: This code sample won't work since `mc.Filter` convenient method is not implemented yet.**
-
 .. code-block:: python
 
     # import libraries
     import mercury as mc
 
 
-    chat_filter = mc.Filter(call_scheme="chat-completion",
-                            required_capabilities=["instruction-comprehension"])
+    chat_filter = mc.Filter.fromArgs(callScheme="chat-completion",
+                                     capabilities=["instruction-comprehension"])
 
 Typically, you will use `mc.Filter` to construct filters.
 
@@ -105,7 +103,7 @@ For the image generation model, we don't need any special capabilities, so we ca
 
 .. code-block:: python
 
-    image_generation_filter = mc.Filter(call_scheme="image-generation")
+    image_generation_filter = mc.Filter.fromArgs(callScheme="image-generation")
 
 Now that we have defined the filters, let's move on to model selection.
 

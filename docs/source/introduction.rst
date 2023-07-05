@@ -89,7 +89,7 @@ What does |project_name| look like?
 
 An example usage of |project_name| with Python might look like the following:
 
-**# TODO: code sample doesn't work for now since convenient filter construction methods are not implemented.**
+**# TODO: Test whether the code sample works as expected**
 
 .. code-block:: python
 
@@ -102,8 +102,8 @@ An example usage of |project_name| with Python might look like the following:
    try:
       # get all models that fits the application
       chat_completion_models = model_collection.select(
-         mc.buildFilter(usageScheme="chat-completion",
-                        capabilities="imagination"))
+         mc.Filter.fromArgs(callScheme="chat-completion",
+                        capabilities=["imagination"]))
       
       # find the cheapest model available
       selected_model = sorted(chat_completion_models,

@@ -1,12 +1,12 @@
 import unittest
 import xml.etree.ElementTree as ET
 
+import os
 import sys
-
-sys.path.append('..')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # from ..src.filter import match_filter, FilterMatchResult
-from src.filtering import matchFilter, FilterMatchResult
+from src.filtering import matchFilter, FilterMatchResult, Filter
 
 
 class TestFilterMatch(unittest.TestCase):
@@ -67,11 +67,11 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.SUCCESS)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.SUCCESS)
 
     def test_base_model_match(self):
         self.assertEqual(matchFilter(
-            filterElement=ET.parse('data/base_model.xml').getroot(),
+            filterObject=Filter.fromXML(ET.parse('data/base_model.xml').getroot()),
             dataElement=ET.parse('data/alexnet_manifest.xml').getroot()[0][0]
         ), FilterMatchResult.SUCCESS)
 
@@ -118,7 +118,7 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.FAILURE)
 
     def test_missing_item(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -154,7 +154,7 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.FAILURE)
 
     def test_incorrect_type(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -172,7 +172,7 @@ class TestFilterMatch(unittest.TestCase):
     </named-field>
 </dict>
 """
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.FAILURE)
 
     def test_not_all_match_dict(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -198,7 +198,7 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.FAILURE)
 
     def test_not_all_match_list(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -215,7 +215,7 @@ class TestFilterMatch(unittest.TestCase):
 </list>
 """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(data)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.FAILURE)
     
     def test_match_string_equal(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -226,7 +226,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koala</string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
 
     def test_match_string_not_equal(self):
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
@@ -237,7 +237,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koalaa</string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
         
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
         <string filter="equals">koala</string>
@@ -247,7 +247,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koal</string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
         
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
         <string filter="equals">koala</string>
@@ -257,7 +257,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koale</string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
         
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
         <string filter="equals">koala</string>
@@ -267,7 +267,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koala   </string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
         
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
         <string filter="equals">koala</string>
@@ -279,7 +279,7 @@ class TestFilterMatch(unittest.TestCase):
         </string>
         """
 
-        self.assertEqual(matchFilter(ET.fromstring(filterElement), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
 
     def test_empty_string_equal(self):
         pass

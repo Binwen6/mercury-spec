@@ -1,1 +1,2 @@
-Develop a DSL for describing filter operations applied to model metadata and code an interpreter for Python.
+Refine key names in the specification.
+Add more model extensions.

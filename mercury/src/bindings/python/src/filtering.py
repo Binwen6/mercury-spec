@@ -1,9 +1,48 @@
+from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 from enum import Enum
+from typing import Self, Sequence
 
-from .spec_interface import TagNames, AttributeNames, FilterOperationTypes
+from .spec_interface import TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs
 from .exceptions import InvalidTagException, InvalidFilterOperationTypeException
 from .utils import dictElementToDict
+
+
+# These are tested when testing the `select` method of `ModelCollection`.
+@dataclass
+class Filter:
+    
+    filterElement: ET.Element
+
+    @staticmethod
+    def fromXML(xmlElement: ET.Element) -> Self:
+        """Constructs a filter from an XML element.
+
+        Args:
+            xmlElement (ET.Element): The filter XML element.
+
+        Returns:
+            Self: The constructed filter.
+        """
+        
+        return Filter(filterElement=xmlElement)
+    
+    @staticmethod
+    def fromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> Self:
+        """Constructs a filter from simple arguments.
+
+        Args:
+            modelType (str | None): The type of the model. E.g., chat-completion, image-classification, etc.
+            callScheme (str | None): The call scheme. E.g., chat-completion, image-classification, etc.
+            capabilities (Sequence[str] | None): The required capabilities. E.g., question-answering, math, etc.
+
+        Returns:
+            Self: The constructed filter.
+        """
+
+        return Filter.fromXML(xmlElement=ET.fromstring(filterXMLfromArgs(
+            modelType=modelType, callScheme=callScheme, capabilities=capabilities
+        )))
 
 
 class FilterMatchResult(Enum):
@@ -11,7 +50,7 @@ class FilterMatchResult(Enum):
     FAILURE = 1
 
 
-def matchFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMatchResult:
+def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchResult:
     """
     Match model metadata against a filter.
     Typically, both `filter` and `element` are obtained by parsing an xml document.
@@ -20,6 +59,8 @@ def matchFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMat
         filterElement (ET.Element): The filter to match against.
         dataElement (ET.Element): The element to match.
     """
+    
+    filterElement = filterObject.filterElement
 
     if dataElement.tag != filterElement.tag:
         return FilterMatchResult.FAILURE
@@ -37,7 +78,7 @@ def matchFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMat
                         return FilterMatchResult.FAILURE
 
                     return FilterMatchResult.SUCCESS \
-                        if all(matchFilter(filter_children_dict[key], element_children_dict[key])
+                        if all(matchFilter(Filter.fromXML(filter_children_dict[key]), element_children_dict[key])
                                == FilterMatchResult.SUCCESS
                                for key in filter_children_dict.keys()) \
                         else FilterMatchResult.FAILURE
@@ -54,7 +95,7 @@ def matchFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMat
 
                     # assume the list is ordered, match each sub-filter v.s. sub-element in order
                     return FilterMatchResult.SUCCESS \
-                        if all(matchFilter(sub_filter, sub_element) == FilterMatchResult.SUCCESS
+                        if all(matchFilter(Filter.fromXML(sub_filter), sub_element) == FilterMatchResult.SUCCESS
                                for sub_filter, sub_element in zip(filterElement, dataElement)) \
                         else FilterMatchResult.FAILURE
                 case FilterOperationTypes.none.value:

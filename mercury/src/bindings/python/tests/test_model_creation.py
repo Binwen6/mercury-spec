@@ -5,8 +5,9 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
+import os
 import sys
-sys.path.append('..')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import src as mc
 
@@ -15,27 +16,15 @@ class TestModelCreation(unittest.TestCase):
     
     def test_chatapi_creation(self):
         all_available_models = mc.enumerateAvailableModels()
-        filterElement = ET.fromstring(
-"""<?xml version="1.0" encoding="UTF-8"?>
-<dict filter="all">
-    <named-field name="metadata">
-        <dict filter="all">
-            <named-field name="class">
-                <string filter="equals">chat-completion</string>
-            </named-field>
-        </dict>
-    </named-field>
-</dict>
-"""
-        )
+        filterObject = mc.Filter.fromArgs(modelType='chat-completion')
 
-        chat_model = all_available_models.select(filterElement=filterElement)[0]
-        self.assertEqual(mc.ManifestUtils.getModelName(chat_model.manifestData), 'ChatGPT-cloud')
+        chat_model = all_available_models.select(filterObject=filterObject)[0]
+        self.assertEqual(mc.ManifestUtils.getModelName(chat_model.metadata), 'ChatGPT-cloud')
 
         chat_api = mc.instantiateModel(chat_model)
         self.assertEqual(
             mc.utils.dictElementToDict(
-                mc.utils.dictElementToDict(chat_api.metadata)['metadata'])['name'].text,
+                mc.utils.dictElementToDict(chat_api.metadata)['header'])['name'].text,
             'ChatGPT-cloud')
 
         response = chat_api.call(inputs=[

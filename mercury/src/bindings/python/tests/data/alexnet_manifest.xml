@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dict>
-    <named-field name="modelSpecs">
+    <named-field name="specs">
         <dict>
-            <named-field name="metadata">
+            <named-field name="header">
                 <dict>
                     <named-field name="name">
                         <string>AlexNet</string>
