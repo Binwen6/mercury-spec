@@ -138,4 +138,6 @@ In |project_name|, same type of models ("chat-completion" in this case) all use 
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents
+    :caption: Next Steps:
+
+    getting-started.rst
