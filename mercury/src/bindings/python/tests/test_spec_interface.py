@@ -30,13 +30,13 @@ class TestFilterXMLfromArgs(unittest.TestCase):
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
-            <named-field name="signatureType">
+            <named-field name="callScheme">
                 <string filter="none"/>
             </named-field>
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -46,7 +46,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -84,13 +84,13 @@ class TestFilterXMLfromArgs(unittest.TestCase):
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
-            <named-field name="signatureType">
+            <named-field name="callScheme">
                 <string filter="equals">image-classification</string>
             </named-field>
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -100,7 +100,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -138,13 +138,13 @@ class TestFilterXMLfromArgs(unittest.TestCase):
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
-            <named-field name="signatureType">
+            <named-field name="callScheme">
                 <string filter="none"/>
             </named-field>
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -154,7 +154,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -192,13 +192,13 @@ class TestFilterXMLfromArgs(unittest.TestCase):
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
-            <named-field name="signatureType">
+            <named-field name="callScheme">
                 <string filter="equals">image-classification</string>
             </named-field>
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -208,7 +208,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>

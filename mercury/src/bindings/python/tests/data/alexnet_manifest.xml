@@ -20,13 +20,13 @@
             </named-field>
             <named-field name="callSpecs">
                 <dict>
-                    <named-field name="signatureType">
+                    <named-field name="callScheme">
                         <string>image-classification</string>
                     </named-field>
                     <named-field name="input">
                         <dict>
                             <named-field name="type">
-                                <type-identifier>image[224, 224, 3]</type-identifier>
+                                <type-declaration>image[224, 224, 3]</type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>The image to classify, with width, height, and channels being 224, 224, and 3.</string>
@@ -36,7 +36,7 @@
                     <named-field name="output">
                         <dict>
                             <named-field name="type">
-                                <type-identifier>category-scores[bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign]</type-identifier>
+                                <type-declaration>category-scores[bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign]</type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>The scores of the categories that the image may belong to.</string>

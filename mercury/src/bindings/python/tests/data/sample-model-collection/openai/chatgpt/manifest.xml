@@ -25,13 +25,22 @@
             </named-field>
             <named-field name="callSpecs">
                 <dict>
-                    <named-field name="signatureType">
+                    <named-field name="callScheme">
                         <string>chat-completion</string>
                     </named-field>
                     <named-field name="input">
                         <dict>
                             <named-field name="type">
-                                <type-identifier>list[tuple[string, bool]]</type-identifier>
+                                <type-declaration>
+                                    <type-list>
+                                    <!-- `list-type` is a variable-length type. The element inside a `list-type` is interpreted -->
+                                    <!-- as the type of each element. -->
+                                        <type-tuple>
+                                            <type-string/>
+                                            <type-bool/>
+                                        </type-tuple>
+                                    </type-list>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>An list of chat messages. The first element of the tuple is the content, the second being true if the message is user-sent, false if bot-sent.</string>
@@ -41,7 +50,9 @@
                     <named-field name="output">
                         <dict>
                             <named-field name="type">
-                                <type-identifier>string</type-identifier>
+                                <type-declaration>
+                                    <type-string/>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>The next bot-sent message.</string>

@@ -6,13 +6,13 @@ import importlib.util
 from .model_selection import ModelCollection
 from .exceptions import InvalidModelInstanceException
 from .core import Model
-from .spec_interface import ManifestUtils
+from .spec_interface import MetadataUtils
 
 
 # TODO: write tests
 def instantiateModel(modelEntry: ModelCollection.ModelEntry) -> Model:
-    metadata = ManifestUtils.getModelSpecs(modelEntry.metadata)
-    implementation_info = ManifestUtils.getImplementationInfo(modelEntry.metadata)
+    metadata = MetadataUtils.getModelSpecs(modelEntry.metadata)
+    implementation_info = MetadataUtils.getImplementationInfo(modelEntry.metadata)
 
     # import module
     spec = importlib.util.spec_from_file_location("module", str(modelEntry.path.joinpath(implementation_info.sourceFile)))

@@ -280,6 +280,10 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+    
+    def test_match_type_equals(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        """
 
     def test_empty_string_equal(self):
         pass

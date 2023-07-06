@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="callSpecs">
+        <dict filter="all">
+            <named-field name="input">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-declaration filter="equals">
+                            <type-list filter="equals">
+                                <type-tuple filter="all">
+                                    <type-string/>
+                                    <type-bool/>
+                                </type-tuple>
+                            </type-list>
+                        </type-declaration>
+                    </named-field>
+                    <named-field name="description">
+                        <string filter="none"/>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="output">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-declaration filter="equals">
+                            <type-string/>
+                        </type-declaration>
+                    </named-field>
+                    <named-field name="description">
+                        <string filter="none"/>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+    </named-field>
+    <named-field name="properties">
+        <dict filter="none"/>
+    </named-field>
+</dict>

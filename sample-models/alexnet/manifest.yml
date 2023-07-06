@@ -5,7 +5,7 @@ modelSpecs:
     description: An image classification model.
   capabilities: []
   callSpecs:
-    signatureType: image-classification
+    callScheme: image-classification
     input:
       type: image<224, 224, 3>
       description: The image to classify, with width, height, and channels being 224, 224, and 3.

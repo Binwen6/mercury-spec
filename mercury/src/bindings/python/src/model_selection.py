@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from .filtering import matchFilter, FilterMatchResult, Filter
-from .spec_interface import FileNames, ManifestUtils
+from .spec_interface import FileNames, MetadataUtils
 from .config import Config
 
 
@@ -31,7 +31,7 @@ class ModelCollection:
         return ModelCollection(list(
             entry for entry in self._entries
             if matchFilter(filterObject=filterObject,
-                           dataElement=ManifestUtils.getModelSpecs(entry.metadata))
+                           dataElement=MetadataUtils.getModelSpecs(entry.metadata))
             == FilterMatchResult.SUCCESS))
 
 
@@ -67,4 +67,4 @@ def enumerateAvailableModels() -> ModelCollection:
 
     return ModelCollection(
         [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath.value))
-         if ManifestUtils.supportPythonImplementation(model_entry.metadata)])
+         if MetadataUtils.supportPythonImplementation(model_entry.metadata)])

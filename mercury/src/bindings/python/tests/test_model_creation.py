@@ -19,7 +19,7 @@ class TestModelCreation(unittest.TestCase):
         filterObject = mc.Filter.fromArgs(modelType='chat-completion')
 
         chat_model = all_available_models.select(filterObject=filterObject)[0]
-        self.assertEqual(mc.ManifestUtils.getModelName(chat_model.metadata), 'ChatGPT-cloud')
+        self.assertEqual(mc.MetadataUtils.getModelName(chat_model.metadata), 'ChatGPT-cloud')
 
         chat_api = mc.instantiateModel(chat_model)
         self.assertEqual(

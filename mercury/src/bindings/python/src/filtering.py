@@ -116,9 +116,13 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
                     raise InvalidFilterOperationTypeException()
         case TagNames.typeIdentifier.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
-                # TODO: add more filter types for type identifiers
+                # TODO: write tests
                 case FilterOperationTypes.none.value:
                     return FilterMatchResult.SUCCESS
+                case FilterOperationTypes.equals:
+                    return FilterMatchResult.SUCCESS \
+                        if dataElement.text.strip().replace(' ', '') == filterElement.text.strip().replace(' ', '') \
+                        else FilterMatchResult.FAILURE
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.time.value:

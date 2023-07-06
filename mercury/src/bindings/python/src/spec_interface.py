@@ -31,7 +31,7 @@ class TagNames(Enum):
     listType = 'list'
     namedField = 'named-field'
     string = 'string'
-    typeIdentifier = 'type-identifier'
+    typeIdentifier = 'type-declaration'
     time = 'time'
 
 
@@ -53,7 +53,7 @@ class ImplementationInfo:
 
 
 # TODO: write tests
-class ManifestUtils:
+class MetadataUtils:
     
     @staticmethod
     def getModelSpecs(metadata: ET.Element) -> ET.Element:
@@ -98,7 +98,7 @@ class ManifestUtils:
     @staticmethod
     def getModelName(metadata: ET.Element):
         return dictElementToDict(
-            dictElementToDict(ManifestUtils.getModelSpecs(metadata))
+            dictElementToDict(MetadataUtils.getModelSpecs(metadata))
             [KeyNames.headerKeyName.value])[KeyNames.modelNameKeyName.value].text
 
 
@@ -135,13 +135,13 @@ f"""<?xml version="1.0" encoding="UTF-8"?>
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
-            <named-field name="signatureType">
+            <named-field name="callScheme">
                 {'<string filter="none"/>' if callScheme is None else f'<string filter="equals">{callScheme}</string>'}
             </named-field>
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -151,7 +151,7 @@ f"""<?xml version="1.0" encoding="UTF-8"?>
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-identifier filter="none"/>
+                        <type-declaration filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
@@ -165,3 +165,18 @@ f"""<?xml version="1.0" encoding="UTF-8"?>
     </named-field>
 </dict>
 """
+
+
+class TypeDeclarationTagNames(Enum):
+    # primitives
+    STRING = 'type-string'
+    BOOL = 'type-bool'
+    TENSOR = 'type-tensor'
+
+    # composers
+    LIST = 'type-list'
+    TUPLE = 'type-tuple'
+
+    # others
+    NAMED_VALUE_COLLECTION = 'type-named-value-collection'
+    NAMED_VALUE = 'type-named-value'
