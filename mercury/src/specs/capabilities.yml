@@ -1,7 +1,0 @@
-capabilities:
-  question-answering: The ability to answer questions.
-  world-knowledge: Factual knowledge about the world.
-  question-asking: The ability to ask questions.
-  task-breakdown: The ability to decompose a large task into smaller ones.
-  math: The ability to solve math problems correctly.
-  science-reasoning: The ability to do logical reasoning with science problems.

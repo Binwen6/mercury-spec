@@ -1,6 +1,10 @@
 import xml.etree.ElementTree as ET
 
-from .spec_interface import TagNames, AttributeNames
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
+
+from python_interface.interface import TagNames, AttributeNames
 
 
 # TODO: write tests

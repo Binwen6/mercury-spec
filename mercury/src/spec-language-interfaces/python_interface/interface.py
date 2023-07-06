@@ -32,7 +32,6 @@ class TagNames(Enum):
     namedField = 'named-field'
     string = 'string'
     typeIdentifier = 'type-declaration'
-    time = 'time'
 
 
 class AttributeNames(Enum):
@@ -52,9 +51,11 @@ class TypeDeclarationFilterOperationTypes(Enum):
     NONE = 'none'
     ALL = 'all'
     EQUALS = 'equals'
-
-    NDIM_EQUALS = 'ndim-equals'
-    SHAPE_EQUALS = 'shape-equals'
+    
+    LESS_THAN = 'lt'
+    LESS_THAN_OR_EQUALS = 'le'
+    GREATER_THAN = 'gt'
+    GREATER_THAN_OR_EQUALS = 'ge'
 
 
 @dataclass
@@ -191,6 +192,9 @@ class TypeDeclarationTagNames(Enum):
     # others
     NAMED_VALUE_COLLECTION = 'type-named-value-collection'
     NAMED_VALUE = 'type-named-value'
+
+    # auxiliary tag names
+    DIM = 'dim'
 
 
 class TypeDeclarationAttributeNames(Enum):

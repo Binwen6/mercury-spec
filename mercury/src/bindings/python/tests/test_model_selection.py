@@ -5,7 +5,12 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import src as mc
-from src.spec_interface import MetadataUtils
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
+
+from python_interface.interface import MetadataUtils
 
 
 class TestEnumerateModels(unittest.TestCase):

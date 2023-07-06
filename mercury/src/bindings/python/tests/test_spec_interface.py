@@ -2,9 +2,9 @@ import unittest
 
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
 
-from src.spec_interface import filterXMLfromArgs
+from python_interface.interface import filterXMLfromArgs
 
 
 class TestFilterXMLfromArgs(unittest.TestCase):

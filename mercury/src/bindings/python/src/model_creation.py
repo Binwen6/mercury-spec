@@ -6,7 +6,11 @@ import importlib.util
 from .model_selection import ModelCollection
 from .exceptions import InvalidModelInstanceException
 from .core import Model
-from .spec_interface import MetadataUtils
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
+from python_interface.interface import MetadataUtils
 
 
 # TODO: write tests

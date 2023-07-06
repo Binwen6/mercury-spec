@@ -3,7 +3,11 @@ import xml.etree.ElementTree as ET
 from enum import Enum
 from typing import Self, Sequence
 
-from .spec_interface import (
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
+
+from python_interface.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames
 )
@@ -137,6 +141,7 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
             raise InvalidTagException()
 
 
+# TODO: add support for comparison filters
 def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMatchResult:
     """Tests whether `dataElement` matches the requirements specified in `filterElement`.
 

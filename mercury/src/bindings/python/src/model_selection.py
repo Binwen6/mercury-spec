@@ -4,7 +4,12 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from .filtering import matchFilter, FilterMatchResult, Filter
-from .spec_interface import FileNames, MetadataUtils
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
+
+from python_interface.interface import FileNames, MetadataUtils
 from .config import Config
 
 
