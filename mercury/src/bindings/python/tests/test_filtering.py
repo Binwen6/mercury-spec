@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # from ..src.filter import match_filter, FilterMatchResult
-from src.filtering import matchFilter, FilterMatchResult, Filter
+from src.filtering import matchFilter, FilterMatchResult, Filter, InvalidFilterOperationTypeException, _matchTypeDeclarationFilter, InvalidTagException
 
 
 class TestFilterMatch(unittest.TestCase):
@@ -280,13 +280,597 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
-    
-    def test_match_type_equals(self):
+
+    def test_type_Match(self):
+        
         filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration filter="type-match">
+            <type-tuple filter="all">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration>
+            <type-tuple>
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
+    
+    def test_type_NoMatch(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration filter="type-match">
+            <type-tuple filter="all">
+                <type-string/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration>
+            <type-tuple>
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.FAILURE)
+    
+    def test_type_MatchNone(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration filter="none">
+            <type-tuple filter="all">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-declaration>
+            <type-tuple>
+                <type-string/>
+            </type-tuple>
+        </type-declaration>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
+    
+    def test_TypeAndOther_Match(self):
+        filterElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <dict filter="all">
+        
+            <named-field name="type">
+                <type-declaration filter="type-match">
+                    <type-tuple filter="all">
+                        <type-string/>
+                        <type-bool/>
+                    </type-tuple>
+                </type-declaration>
+            </named-field>
+
+            <named-field name="name">
+                <string filter="none"/>
+            </named-field>
+            
+        </dict>
+        """
+        
+        dataElement = """<?xml version="1.0" encoding="UTF-8"?>
+        <dict filter="all">
+        
+            <named-field name="name">
+                <string>koala</string>
+            </named-field>
+
+            <named-field name="type">
+                <type-declaration>
+                    <type-tuple>
+                        <type-string/>
+                        <type-bool/>
+                    </type-tuple>
+                </type-declaration>
+            </named-field>
+            
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXML(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.SUCCESS)
+
+
+# The following code are authored by ChatGPT and finetuned by Trent Fellbootman.
+class TestMatchTypeDeclarationFilter(unittest.TestCase):
+    def test_list_AllFilter_AllMatch_ReturnsSuccess(self):
+        # Test scenario for 'type-list' tag with 'all' filter operation type and all elements matching
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list filter="all">
+                <type-string/>
+            </type-list>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list>
+                <type-string/>
+            </type-list>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_list_AllFilter_OneMismatch_ReturnsFailure(self):
+        # Test scenario for 'type-list' tag with 'all' filter operation type and one element mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list filter="all">
+                <type-string/>
+            </type-list>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list>
+                <type-bool/>
+            </type-list>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+
+    def test_list_NoneFilter_ReturnsSuccess(self):
+        # Test scenario for 'type-list' tag with 'none' filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list filter="none">
+                <type-string/>
+            </type-list>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list>
+                <type-int/>
+            </type-list>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_list_InvalidFilterOpType_RaisesException(self):
+        # Test scenario for 'type-list' tag with invalid filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list filter="invalid">
+                <type-bool/>
+            </type-list>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-list>
+                <type-bool/>
+            </type-list>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        with self.assertRaises(InvalidFilterOperationTypeException):
+            _matchTypeDeclarationFilter(filter_element, data_element)
+
+    def test_tuple_AllFilter_AllMatch_ReturnsSuccess(self):
+        # Test scenario for 'type-tuple' tag with 'all' filter operation type and all elements matching
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple filter="all">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple>
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tuple_AllFilter_OneMismatch_ReturnsFailure(self):
+        # Test scenario for 'type-tuple' tag with 'all' filter operation type and one element mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple filter="all">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple>
+                <type-string/>
+                <type-int/>
+            </type-tuple>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+    
+    def test_tuple_AllFilter_WrongOrder_ReturnsFailure(self):
+        # Test scenario for 'type-tuple' tag with 'all' filter operation type and one element mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple filter="all">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple>
+                <type-bool/>
+                <type-string/>
+            </type-tuple>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+
+    def test_tuple_NoneFilter_ReturnsSuccess(self):
+        # Test scenario for 'type-tuple' tag with 'none' filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple filter="none">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple>
+                <type-string/>
+                <type-int/>
+            </type-tuple>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tuple_InvalidFilterOpType_RaisesException(self):
+        # Test scenario for 'type-tuple' tag with invalid filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple filter="invalid">
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tuple>
+                <type-string/>
+                <type-bool/>
+            </type-tuple>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        with self.assertRaises(InvalidFilterOperationTypeException):
+            _matchTypeDeclarationFilter(filter_element, data_element)
+
+    def test_string_ReturnsSuccess(self):
+        # Test scenario for 'type-string' tag
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-string/>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-string/>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_bool_ReturnsSuccess(self):
+        # Test scenario for 'type-bool' tag
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-bool/>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+        <type-bool/>
         """
 
-    def test_empty_string_equal(self):
-        pass
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tensor_NdimEquals_NDimMatch_ReturnsSuccess(self):
+        # Test scenario for 'type-tensor' tag with 'ndim-equals' filter operation type and all dimensions matching
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="ndim-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>5</dim>
+                <dim>6</dim>
+                <dim>7</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tensor_NdimEquals_OneDimMismatch_ReturnsFailure(self):
+        # Test scenario for 'type-tensor' tag with 'ndim-equals' filter operation type and one dimension mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="ndim-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+
+    def test_tensor_ShapeEquals_AllDimsMatch_ReturnsSuccess(self):
+        # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and all dimensions matching
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="shape-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tensor_ShapeEquals_OneDimMismatch_ReturnsFailure(self):
+        # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="shape-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>5</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+    
+    def test_tensor_ShapeEquals_WrongOrder_ReturnsFailure(self):
+        # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="shape-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>4</dim>
+                <dim>3</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+    
+    def test_tensor_ShapeEquals_WrongDimNumber_ReturnsFailure(self):
+        # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="shape-equals">
+                <dim>2</dim>
+                <dim>3</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+
+    def test_tensor_NoneFilter_ReturnsSuccess(self):
+        # Test scenario for 'type-tensor' tag with 'none' filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="none"/>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_tensor_InvalidFilterOpType_RaisesException(self):
+        # Test scenario for 'type-tensor' tag with invalid filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="invalid"/>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>3</dim>
+                <dim>4</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        with self.assertRaises(InvalidFilterOperationTypeException):
+            _matchTypeDeclarationFilter(filter_element, data_element)
+
+    def test_namedValueCollection_AllFilter_AllKeysMatch_ReturnsSuccess(self):
+        # Test scenario for 'type-named-value-collection' tag with 'all' filter operation type and all keys matching
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection filter="all">
+                <type-named-value name="key1" />
+                <type-named-value name="key2" />
+            </type-named-value-collection>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection>
+                <type-named-value name="key2" />
+                <type-named-value name="key1" />
+            </type-named-value-collection>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_namedValueCollection_AllFilter_OneKeyMismatch_ReturnsFailure(self):
+        # Test scenario for 'type-named-value-collection' tag with 'all' filter operation type and one key mismatch
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection filter="all">
+                <type-named-value name="key1" />
+                <type-named-value name="key2" />
+            </type-named-value-collection>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection>
+                <type-named-value name="key1" />
+                <type-named-value name="key3" />
+            </type-named-value-collection>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.FAILURE)
+
+    def test_namedValueCollection_NoneFilter_ReturnsSuccess(self):
+        # Test scenario for 'type-named-value-collection' tag with 'none' filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection filter="none">
+                <type-named-value name="key1" />
+                <type-named-value name="key2" />
+            </type-named-value-collection>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection>
+                <type-named-value name="key3" />
+            </type-named-value-collection>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        result = _matchTypeDeclarationFilter(filter_element, data_element)
+        self.assertEqual(result, FilterMatchResult.SUCCESS)
+
+    def test_namedValueCollection_InvalidFilterOpType_RaisesException(self):
+        # Test scenario for 'type-named-value-collection' tag with invalid filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection filter="invalid">
+                <type-named-value name="key1" />
+                <type-named-value name="key2" />
+            </type-named-value-collection>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-named-value-collection>
+                <type-named-value name="key1" />
+                <type-named-value name="key2" />
+            </type-named-value-collection>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        with self.assertRaises(InvalidFilterOperationTypeException):
+            _matchTypeDeclarationFilter(filter_element, data_element)
+
+    def test_invalidTag_RaisesException(self):
+        # Test scenario for an invalid tag
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-invalid/>
+        """
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-invalid/>
+        """
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        with self.assertRaises(InvalidTagException):
+            _matchTypeDeclarationFilter(filter_element, data_element)
 
 
 if __name__ == '__main__':

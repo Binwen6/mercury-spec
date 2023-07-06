@@ -6,7 +6,8 @@
                 <dict filter="all">
                     <named-field name="type">
                         <type-declaration filter="equals">
-                            <type-list filter="equals">
+                            <!-- The "all" filter type means that element type must be equal to child XML element in `type-list` context -->
+                            <type-list filter="all">
                                 <type-tuple filter="all">
                                     <type-string/>
                                     <type-bool/>

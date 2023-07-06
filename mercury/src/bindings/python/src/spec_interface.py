@@ -41,9 +41,20 @@ class AttributeNames(Enum):
 
 
 class FilterOperationTypes(Enum):
-    none = 'none'
-    all = 'all'
-    equals = 'equals'
+    NONE = 'none'
+    ALL = 'all'
+    EQUALS = 'equals'
+
+    TYPE_MATCH = 'type-match'
+
+
+class TypeDeclarationFilterOperationTypes(Enum):
+    NONE = 'none'
+    ALL = 'all'
+    EQUALS = 'equals'
+
+    NDIM_EQUALS = 'ndim-equals'
+    SHAPE_EQUALS = 'shape-equals'
 
 
 @dataclass
@@ -180,3 +191,7 @@ class TypeDeclarationTagNames(Enum):
     # others
     NAMED_VALUE_COLLECTION = 'type-named-value-collection'
     NAMED_VALUE = 'type-named-value'
+
+
+class TypeDeclarationAttributeNames(Enum):
+    namedValueNameAttributeName = 'name'
