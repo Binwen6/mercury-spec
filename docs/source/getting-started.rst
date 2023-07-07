@@ -13,8 +13,9 @@ Basically, they are:
 
 In this tutorial, you will create your very first application with |project_name|:
 An AI-powered chatbot that outputs text with image illustrations.
-In principle, |project_name| is a language-independent specification with bindings for multiple programming languages;
-for simplicity, however, this tutorial uses the Python binding.
+In principle, |project_name| is a language-independent specification with bindings for multiple programming languages,
+which means you can use |project_name| from any supported language.
+For simplicity, however, this tutorial uses the Python binding.
 
 While this tutorial is designed to get your hands dirty with |project_name|,
 it also serves as a good introduction to developing AI-powered applications.

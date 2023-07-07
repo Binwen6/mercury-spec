@@ -19,6 +19,8 @@ and for researchers to publish their models for use by the development community
    introduction.rst
    getting-started.rst
 
+   guide/index.rst
+
 
 Indices and tables
 ==================
