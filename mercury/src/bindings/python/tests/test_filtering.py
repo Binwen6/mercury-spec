@@ -6,7 +6,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # from ..src.filter import match_filter, FilterMatchResult
-from src.filtering import matchFilter, FilterMatchResult, Filter, InvalidFilterOperationTypeException, _matchTypeDeclarationFilter, InvalidTagException
+from src.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
+from src.exceptions import InvalidFilterOperationTypeException
 
 
 class TestFilterMatch(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestFilterMatch(unittest.TestCase):
     <named-field name="cute">
         <list filter="all">
             <string filter="none"/>
-            <time filter="none"/>
+            <bool filter="none"/>
         </list>
     </named-field>
     
@@ -52,7 +53,7 @@ class TestFilterMatch(unittest.TestCase):
     <named-field name="cute">
         <list>
             <string>koala</string>
-            <time>20230702</time>
+            <bool>false</bool>
             <string>cute</string>
         </list>
     </named-field>
@@ -594,10 +595,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_NdimEquals_NDimMatch_ReturnsSuccess(self):
         # Test scenario for 'type-tensor' tag with 'ndim-equals' filter operation type and all dimensions matching
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="ndim-equals">
-                <dim>2</dim>
-                <dim>3</dim>
-                <dim>4</dim>
+            <type-tensor filter="all">
+                <dim filter="none"/>
+                <dim filter="none"/>
+                <dim filter="none"/>
             </type-tensor>
         """
         
@@ -618,10 +619,8 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_NdimEquals_OneDimMismatch_ReturnsFailure(self):
         # Test scenario for 'type-tensor' tag with 'ndim-equals' filter operation type and one dimension mismatch
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="ndim-equals">
-                <dim>2</dim>
-                <dim>3</dim>
-                <dim>4</dim>
+            <type-tensor filter="all">
+                <dim filter="none"/>
             </type-tensor>
         """
         
@@ -641,10 +640,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_ShapeEquals_AllDimsMatch_ReturnsSuccess(self):
         # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and all dimensions matching
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="shape-equals">
-                <dim>2</dim>
-                <dim>3</dim>
-                <dim>4</dim>
+            <type-tensor filter="all">
+                <dim filter="equals">2</dim>
+                <dim filter="equals">3</dim>
+                <dim filter="equals">4</dim>
             </type-tensor>
         """
         
@@ -665,10 +664,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_ShapeEquals_OneDimMismatch_ReturnsFailure(self):
         # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="shape-equals">
-                <dim>2</dim>
-                <dim>3</dim>
-                <dim>4</dim>
+            <type-tensor filter="all">
+                <dim filter="equals">2</dim>
+                <dim filter="equals">3</dim>
+                <dim filter="equals">4</dim>
             </type-tensor>
         """
         
@@ -689,10 +688,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_ShapeEquals_WrongOrder_ReturnsFailure(self):
         # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="shape-equals">
-                <dim>2</dim>
-                <dim>3</dim>
-                <dim>4</dim>
+            <type-tensor filter="all">
+                <dim filter="equals">2</dim>
+                <dim filter="equals">3</dim>
+                <dim filter="equals">4</dim>
             </type-tensor>
         """
         
@@ -713,9 +712,9 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_ShapeEquals_WrongDimNumber_ReturnsFailure(self):
         # Test scenario for 'type-tensor' tag with 'shape-equals' filter operation type and one dimension mismatch
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="shape-equals">
-                <dim>2</dim>
-                <dim>3</dim>
+            <type-tensor filter="all">
+                <dim filter="equals">2</dim>
+                <dim filter="equals">3</dim>
             </type-tensor>
         """
         
@@ -756,7 +755,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
     def test_tensor_InvalidFilterOpType_RaisesException(self):
         # Test scenario for 'type-tensor' tag with invalid filter operation type
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
-            <type-tensor filter="invalid"/>
+            <type-tensor filter="shape-equals"/>
         """
         
         data_xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -772,6 +771,110 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
 
         with self.assertRaises(InvalidFilterOperationTypeException):
             _matchTypeDeclarationFilter(filter_element, data_element)
+     
+    def test_tensor_MixedRequirementsSomeMisMatch_ReturnFailure(self):
+        # Test scenario for 'type-tensor' tag with invalid filter operation type
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="all">
+                <dim filter="equals">2</dim>
+                <dim filter="lt">3</dim>
+                <dim filter="lt">4</dim>
+                <dim filter="le">5</dim>
+                <dim filter="le">6</dim>
+                <dim filter="gt">7</dim>
+                <dim filter="gt">8</dim>
+                <dim filter="ge">9</dim>
+                <dim filter="ge">10</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>2</dim>
+                <dim>2</dim>
+                <dim>4</dim>
+                <dim>5</dim>
+                <dim>7</dim>
+                <dim>8</dim>
+                <dim>8</dim>
+                <dim>9</dim>
+                <dim>9</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
+    
+    def test_tensor_MixedRequirementsAllMatch_ReturnSuccess(self):
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="all">
+                <dim filter="lt">3</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>3</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
+
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="all">
+                <dim filter="le">5</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>6</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
+
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="all">
+                <dim filter="gt">7</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>7</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
+
+        filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor filter="all">
+                <dim filter="ge">9</dim>
+            </type-tensor>
+        """
+        
+        data_xml = """<?xml version="1.0" encoding="UTF-8"?>
+            <type-tensor>
+                <dim>8</dim>
+            </type-tensor>
+        """
+        
+        filter_element = ET.fromstring(filter_xml)
+        data_element = ET.fromstring(data_xml)
+
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
 
     def test_namedValueCollection_AllFilter_AllKeysMatch_ReturnsSuccess(self):
         # Test scenario for 'type-named-value-collection' tag with 'all' filter operation type and all keys matching

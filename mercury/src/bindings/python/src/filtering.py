@@ -123,16 +123,15 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
                     raise InvalidFilterOperationTypeException()
         case TagNames.typeIdentifier.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
-                # TODO: write tests
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.SUCCESS
                 case FilterOperationTypes.TYPE_MATCH.value:
                     return _matchTypeDeclarationFilter(filterElement[0], dataElement[0])
                 case _:
                     raise InvalidFilterOperationTypeException()
-        case TagNames.time.value:
+        case TagNames.bool.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
-                # TODO: add more filter types for time
+                # TODO: add more filter types for bool, e.g., regular expressions
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.SUCCESS
                 case _:
@@ -141,7 +140,6 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
             raise InvalidTagException()
 
 
-# TODO: add support for comparison filters
 def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMatchResult:
     """Tests whether `dataElement` matches the requirements specified in `filterElement`.
 
@@ -178,7 +176,7 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
                     return FilterMatchResult.SUCCESS \
                         if len(filterElement) == len(dataElement) and \
                             all(_matchTypeDeclarationFilter(sub_filter, sub_element) == FilterMatchResult.SUCCESS
-                                for sub_filter, sub_element in zip(filterElement, dataElement)) \
+                               for sub_filter, sub_element in zip(filterElement, dataElement)) \
                         else FilterMatchResult.FAILURE
                 case TypeDeclarationFilterOperationTypes.NONE.value:
                     return FilterMatchResult.SUCCESS
@@ -193,20 +191,43 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
         # there are more possible filter operation types for tensor
         case TypeDeclarationTagNames.TENSOR.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
-                # ndim-equals requires the number of dimensions to match
-                case TypeDeclarationFilterOperationTypes.NDIM_EQUALS.value:
+                case TypeDeclarationFilterOperationTypes.ALL.value:
+                    if len(filterElement) != len(dataElement):
+                        # Tensor filters requires that number of dims must match exactly
+                        return FilterMatchResult.FAILURE
+                    
                     return FilterMatchResult.SUCCESS \
-                        if len(filterElement) == len(dataElement) \
+                        if all(_matchTypeDeclarationFilter(sub_filter, sub_element) == FilterMatchResult.SUCCESS
+                               for sub_filter, sub_element in zip(filterElement, dataElement)) \
                         else FilterMatchResult.FAILURE
-                # shape-equals requires the shapes to be exactly the same
-                case TypeDeclarationFilterOperationTypes.SHAPE_EQUALS.value:
-                    return FilterMatchResult.SUCCESS \
-                        if len(filterElement) == len(dataElement) and \
-                            all(int(dim_filter.text.strip()) == int(dim_data.text.strip())
-                                for dim_filter, dim_data in zip(filterElement, dataElement)) \
-                        else FilterMatchResult.FAILURE
+
                 case TypeDeclarationFilterOperationTypes.NONE.value:
                     return FilterMatchResult.SUCCESS
+                case _:
+                    raise InvalidFilterOperationTypeException()
+        
+        case TypeDeclarationTagNames.DIM.value:
+            filterOp = filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]
+            
+            if filterOp == TypeDeclarationFilterOperationTypes.NONE.value:
+                return FilterMatchResult.SUCCESS
+            
+            # we are counting on the `int()` function to raise exceptions
+            # if the dimension specified is not a valid integer
+            filterDim = int(filterElement.text.strip())
+            dataDim = int(dataElement.text.strip())
+
+            match filterOp:
+                case TypeDeclarationFilterOperationTypes.EQUALS.value:
+                    return FilterMatchResult.SUCCESS if dataDim == filterDim else FilterMatchResult.FAILURE
+                case TypeDeclarationFilterOperationTypes.LESS_THAN.value:
+                    return FilterMatchResult.SUCCESS if dataDim < filterDim else FilterMatchResult.FAILURE
+                case TypeDeclarationFilterOperationTypes.LESS_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.SUCCESS if dataDim <= filterDim else FilterMatchResult.FAILURE
+                case TypeDeclarationFilterOperationTypes.GREATER_THAN.value:
+                    return FilterMatchResult.SUCCESS if dataDim > filterDim else FilterMatchResult.FAILURE
+                case TypeDeclarationFilterOperationTypes.GREATER_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.SUCCESS if dataDim >= filterDim else FilterMatchResult.FAILURE
                 case _:
                     raise InvalidFilterOperationTypeException()
 

@@ -31,6 +31,7 @@ class TagNames(Enum):
     listType = 'list'
     namedField = 'named-field'
     string = 'string'
+    bool = 'bool'
     typeIdentifier = 'type-declaration'
 
 

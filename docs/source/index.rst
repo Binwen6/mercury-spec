@@ -16,10 +16,9 @@ and for researchers to publish their models for use by the development community
    :maxdepth: 2
    :caption: Contents:
 
-   introduction.rst
-   getting-started.rst
+   guides/index.rst
 
-   guide/index.rst
+   spec/index.rst
 
 
 Indices and tables
