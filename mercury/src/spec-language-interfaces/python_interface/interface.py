@@ -32,7 +32,7 @@ class TagNames(Enum):
     namedField = 'named-field'
     string = 'string'
     bool = 'bool'
-    typeIdentifier = 'type-declaration'
+    typeDeclaration = 'type-declaration'
 
 
 class AttributeNames(Enum):

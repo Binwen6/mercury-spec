@@ -121,7 +121,7 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
                         else FilterMatchResult.FAILURE
                 case _:
                     raise InvalidFilterOperationTypeException()
-        case TagNames.typeIdentifier.value:
+        case TagNames.typeDeclaration.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.SUCCESS

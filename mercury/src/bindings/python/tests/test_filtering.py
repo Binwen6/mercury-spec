@@ -772,19 +772,15 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         with self.assertRaises(InvalidFilterOperationTypeException):
             _matchTypeDeclarationFilter(filter_element, data_element)
      
-    def test_tensor_MixedRequirementsSomeMisMatch_ReturnFailure(self):
+    def test_tensor_MixedRequirementsAllMatch_ReturnSuccess(self):
         # Test scenario for 'type-tensor' tag with invalid filter operation type
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
             <type-tensor filter="all">
                 <dim filter="equals">2</dim>
                 <dim filter="lt">3</dim>
-                <dim filter="lt">4</dim>
                 <dim filter="le">5</dim>
-                <dim filter="le">6</dim>
                 <dim filter="gt">7</dim>
-                <dim filter="gt">8</dim>
                 <dim filter="ge">9</dim>
-                <dim filter="ge">10</dim>
             </type-tensor>
         """
         
@@ -792,12 +788,8 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
             <type-tensor>
                 <dim>2</dim>
                 <dim>2</dim>
-                <dim>4</dim>
                 <dim>5</dim>
-                <dim>7</dim>
                 <dim>8</dim>
-                <dim>8</dim>
-                <dim>9</dim>
                 <dim>9</dim>
             </type-tensor>
         """
@@ -805,9 +797,9 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.FAILURE)
+        self.assertEqual(_matchTypeDeclarationFilter(filter_element, data_element), FilterMatchResult.SUCCESS)
     
-    def test_tensor_MixedRequirementsAllMatch_ReturnSuccess(self):
+    def test_tensor_FailedDimRequirementMatches(self):
         filter_xml = """<?xml version="1.0" encoding="UTF-8"?>
             <type-tensor filter="all">
                 <dim filter="lt">3</dim>

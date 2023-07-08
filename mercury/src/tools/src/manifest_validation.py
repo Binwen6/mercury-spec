@@ -10,7 +10,6 @@ from python_interface.interface import (
 )
 
 
-# TODO: write tests
 def checkSyntax(element: ET.Element) -> bool:
     match element.tag:
         case TagNames.dictType.value:
@@ -58,7 +57,7 @@ def checkSyntax(element: ET.Element) -> bool:
             
             return True
 
-        case TagNames.typeIdentifier.value:
+        case TagNames.typeDeclaration.value:
             if len(element) != 1:
                 # type identifier elements must have exactly one child
                 return False
@@ -70,11 +69,10 @@ def checkSyntax(element: ET.Element) -> bool:
             return False
 
 
-# TODO: write tests
 def checkTypeDeclarationSyntax(element: ET.Element) -> bool:
     match element.tag:
         case TypeDeclarationTagNames.STRING.value | TypeDeclarationTagNames.BOOL.value:
-            if len(element) > 0 or len(element.text) > 0:
+            if len(element) > 0 or element.text is not None:
                 # a string / bool type declaration must have no children or enclosed content
                 return False
             
@@ -124,15 +122,15 @@ def checkTypeDeclarationSyntax(element: ET.Element) -> bool:
             return True
         
         case TypeDeclarationTagNames.NAMED_VALUE.value:
-            # element must have a name attribute
-            if TypeDeclarationAttributeNames.namedValueNameAttributeName.value not in element.attrib.keys():
+            if TypeDeclarationAttributeNames.namedValueNameAttributeName.value not in element.keys():
+                # must have a name attribute
                 return False
             
-            # element must have no children or enclosed content
-            if len(element) > 0 or len(element.text) > 0:
+            if len(element) != 1:
+                # must have exactly one child
                 return False
             
-            return True
+            return checkTypeDeclarationFilterSyntax(element[0])
         
         case TypeDeclarationTagNames.DIM.value:
             if len(element) > 0:
@@ -191,9 +189,11 @@ def checkFilterSyntax(element: ET.Element) -> bool:
                     return True
                 
                 case FilterOperationTypes.NONE.value:
-                    if len(element) > 0 or len(element.text) > 0:
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
+                    
+                    return True
                 
                 case _:
                     # invalid filter operation type
@@ -208,9 +208,11 @@ def checkFilterSyntax(element: ET.Element) -> bool:
                 case FilterOperationTypes.ALL.value:
                     return all(checkFilterSyntax(child) for child in element)
                 case FilterOperationTypes.NONE.value:
-                    if len(element) > 0 or len(element.text) > 0:
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
+                    
+                    return True
                 case _:
                     # invalid filter operation type
                     return False
@@ -237,18 +239,20 @@ def checkFilterSyntax(element: ET.Element) -> bool:
                         # string filters can have no children
                         return False
                     
-                    return False
+                    return True
 
                 case FilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
+                    
+                    return True
 
                 case _:
                     # invalid filter operation type
                     return False
 
-        case TagNames.typeIdentifier.value:
+        case TagNames.typeDeclaration.value:
             if not hasFilterOpAttribute(element):
                 # must have a filter op attribute
                 return False
@@ -262,7 +266,7 @@ def checkFilterSyntax(element: ET.Element) -> bool:
                     return checkTypeDeclarationFilterSyntax(element[0])
                 
                 case FilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
@@ -286,9 +290,11 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
     
     match element.tag:
         case TypeDeclarationTagNames.STRING.value | TypeDeclarationTagNames.BOOL.value:
-            if len(element) > 0 or element.text != '':
+            if len(element) > 0 or element.text is not None:
                 # primitive, atomic types declarations can have no children or enclosed content
                 return False
+            
+            return True
             
         case TypeDeclarationTagNames.TENSOR.value:
             if not hasFilterOpAttribute(element):
@@ -306,7 +312,7 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                     return all(checkTypeDeclarationFilterSyntax(child) for child in element)
 
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
@@ -329,7 +335,7 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                     
                     return checkTypeDeclarationFilterSyntax(element[0])
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
@@ -347,7 +353,7 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                 case TypeDeclarationFilterOperationTypes.ALL.value:
                     return all(checkTypeDeclarationFilterSyntax(child) for child in element)
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
@@ -384,7 +390,7 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                     return True
                 
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    if len(element) > 0 or element.text != '':
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
@@ -399,11 +405,11 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                 # must have a name attribute
                 return False
             
-            if len(element) > 0 or element.text != '':
-                # must have no children or enclosed content
+            if len(element) != 1:
+                # must have exactly one child
                 return False
             
-            return True
+            return checkTypeDeclarationFilterSyntax(element[0])
             
         case TypeDeclarationTagNames.DIM.value:
             if not hasFilterOpAttribute(element):
@@ -415,7 +421,8 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                 return False
             
             match element.attrib[filterOpAttribName]:
-                case TypeDeclarationFilterOperationTypes.LESS_THAN.value | \
+                case TypeDeclarationFilterOperationTypes.EQUALS.value | \
+                        TypeDeclarationFilterOperationTypes.LESS_THAN.value | \
                         TypeDeclarationFilterOperationTypes.LESS_THAN_OR_EQUALS.value | \
                         TypeDeclarationFilterOperationTypes.GREATER_THAN.value | \
                         TypeDeclarationFilterOperationTypes.GREATER_THAN_OR_EQUALS.value:
@@ -427,8 +434,8 @@ def checkTypeDeclarationFilterSyntax(element: ET.Element) -> bool:
                         return False
                     
                     return True
-                case TypeDeclarationFilterOperationTypes.NONE.NONE:
-                    if len(element) > 0 or element.text != '':
+                case TypeDeclarationFilterOperationTypes.NONE.value:
+                    if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
                         return False
                     
