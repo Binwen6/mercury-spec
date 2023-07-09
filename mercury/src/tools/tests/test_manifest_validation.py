@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.manifest_validation import (
-    checkSyntax, checkTypeDeclarationSyntax, checkFilterSyntax, checkTypeDeclarationFilterSyntax, SyntaxValidationResult
+    checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult
 )
 
 
@@ -135,8 +135,8 @@ class TestCheckSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.INVALID_TAG,
-            invalidityPosition=_InvalidityPosition(9)
+            invalidityType=_InvalidityTypes.DICT_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
         ))
 
     def test_checkSyntax_invalidDict_duplicateNames(self):
@@ -151,7 +151,10 @@ class TestCheckSyntax(unittest.TestCase):
                     </dict>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.DICT_DUPLICATE_KEYS,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkSyntax_validList(self):
         xml_data = """
@@ -171,7 +174,10 @@ class TestCheckSyntax(unittest.TestCase):
                     </list>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_TAG,
+            invalidityPosition=_InvalidityPosition(4)
+        ))
 
     def test_checkSyntax_validNamedField(self):
         xml_data = """
@@ -189,7 +195,10 @@ class TestCheckSyntax(unittest.TestCase):
                     </named-field>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.NAMED_FIELD_MISSING_NAME_ATTRIBUTE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkSyntax_invalidNamedField_invalidChildrenCount(self):
         xml_data = """
@@ -199,7 +208,10 @@ class TestCheckSyntax(unittest.TestCase):
                     </named-field>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.NAMED_FIELD_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkSyntax_validString(self):
         xml_data = """
@@ -215,7 +227,10 @@ class TestCheckSyntax(unittest.TestCase):
                     </string>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkSyntax_validTypeIdentifier(self):
         xml_data = """
@@ -231,7 +246,10 @@ class TestCheckSyntax(unittest.TestCase):
                     <type-declaration></type-declaration>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
 
 class TestCheckTypeDeclarationSyntax(unittest.TestCase):
@@ -249,7 +267,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-string>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertTrue(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_INVALID_CHILD,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_validTensor(self):
         xml_data = """
@@ -268,7 +289,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-tensor>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_validList(self):
         xml_data = """
@@ -284,14 +308,20 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     <type-list></type-list>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
     
     def test_checkTypeDeclarationSyntax_invalidList_invalidChildrenCount_TooMany(self):
         xml_data = """
                     <type-list><type-string/><type-string/></type-list>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_validTuple(self):
         xml_data = """
@@ -313,7 +343,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-tuple>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_TAG,
+            invalidityPosition=_InvalidityPosition(4)
+        ))
 
     def test_checkTypeDeclarationSyntax_validNamedValueCollection(self):
         xml_data = """
@@ -334,7 +367,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-named-value-collection>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_invalidNamedValueCollection_duplicateNames(self):
         xml_data = """
@@ -344,7 +380,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-named-value-collection>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DUPLICATE_KEYS,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_validNamedValue(self):
         xml_data = """
@@ -358,7 +397,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     <type-named-value><type-string/></type-named-value>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_invalidNamedValue_invalidContent(self):
         xml_data = """
@@ -367,7 +409,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-named-value>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_TAG,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
     
     def test_checkTypeDeclarationSyntax_invalidNamedValue_NotEnoughChildren(self):
         xml_data = """
@@ -375,7 +420,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-named-value>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
     
     def test_checkTypeDeclarationSyntax_invalidNamedValue_TooManyChildren(self):
         xml_data = """
@@ -385,7 +433,10 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     </type-named-value>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_validDim(self):
         xml_data = """
@@ -399,11 +450,21 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                     <dim>Invalid</dim>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkTypeDeclarationSyntax_invalidTag(self):
         xml_data = """
                     <invalid-tag>Invalid</invalid-tag>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
-        self.assertFalse(result)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+
+
+if __name__ == '__main__':
+    unittest.main()

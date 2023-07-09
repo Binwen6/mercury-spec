@@ -41,6 +41,10 @@ class SyntaxValidationResult:
             
             TYPE_DECLARATION_INCORRECT_CHILDREN_COUNT = auto()
             
+            TYPE_DECLARATION_BOOL_INVALID_CHILD = auto()
+
+            TYPE_DECLARATION_STRING_INVALID_CHILD = auto()
+            
             TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG = auto()
 
             TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT = auto()
@@ -216,7 +220,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) > 0 or element.text is not None:
                 # a string / bool type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_INVALID_CHILD,
                     invalidityPosition=invalidityPosition
                 )
             
@@ -226,7 +230,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) > 0 or element.text is not None:
                 # a string / bool type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.BOOL_ILLEGAL_CHILD,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_BOOL_INVALID_CHILD,
                     invalidityPosition=invalidityPosition
                 )
             
@@ -242,8 +246,10 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityType=_InvalidityTypes.TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG,
                     invalidityPosition=invalidityPosition
                 )
+                
+            children_validity = [checkTypeDeclarationSyntax(child) for child in element]
             
-            return _validation_result_from_children_results(checkTypeDeclarationSyntax(child) for child in element)
+            return _validation_result_from_children_results(children_validity)
         
         case TypeDeclarationTagNames.LIST.value:
             if len(element) != 1:
@@ -256,7 +262,9 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             return checkTypeDeclarationSyntax(element[0])
         
         case TypeDeclarationTagNames.TUPLE.value:
-            return _validation_result_from_children_results(checkTypeDeclarationSyntax(child) for child in element)
+            children_validity = [checkTypeDeclarationSyntax(child) for child in element]
+            
+            return _validation_result_from_children_results(children_validity)
         
         case TypeDeclarationTagNames.NAMED_VALUE_COLLECTION.value:
             # all children must be of named-value type
