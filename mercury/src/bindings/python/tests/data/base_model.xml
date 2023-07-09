@@ -7,7 +7,6 @@
     <named-field name="header">
         <dict filter="all">
             <named-field name="name">
-                <!-- "none" means that the content can be anything (the type still needs to match the tag, though). -->
                 <string filter="none"/>
             </named-field>
             <named-field name="class">

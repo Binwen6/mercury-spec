@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-import xml.etree.ElementTree as ET
-from enum import Enum
-from typing import Self, Sequence
+from lxml import etree as ET
+from enum import Enum, auto
+from typing import Self, Sequence, Tuple, Iterable
 
 import sys
 import os
@@ -19,14 +19,14 @@ from .utils import dictElementToDict
 @dataclass
 class Filter:
     
-    filterElement: ET.Element
+    filterElement: ET._Element
 
     @staticmethod
-    def fromXML(xmlElement: ET.Element) -> Self:
+    def fromXMLElement(xmlElement: ET._Element) -> Self:
         """Constructs a filter from an XML element.
 
         Args:
-            xmlElement (ET.Element): The filter XML element.
+            xmlElement (ET._Element): The filter XML element.
 
         Returns:
             Self: The constructed filter.
@@ -47,30 +47,129 @@ class Filter:
             Self: The constructed filter.
         """
 
-        return Filter.fromXML(xmlElement=ET.fromstring(filterXMLfromArgs(
+        return Filter.fromXMLElement(xmlElement=ET.fromstring(filterXMLfromArgs(
             modelType=modelType, callScheme=callScheme, capabilities=capabilities
         )))
 
 
-class FilterMatchResult(Enum):
-    SUCCESS = 0
-    FAILURE = 1
+@dataclass
+class FilterMatchResult:
 
+    class ResultType(Enum):
+        SUCCESS = auto()
+        FAILURE = auto()
+    
+    @dataclass
+    class FailureInfo:
+        class FailureType(Enum):
+            TAG_MISMATCH = auto()
+            # TODO: add more types
+            
+            DICT_MISSING_KEY = auto()
+            
+            LIST_INSUFFICIENT_CHILDREN = auto()
+            
+            STRING_VALUE_NOT_EQUAL = auto()
+            
+            TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT = auto()
 
-def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchResult:
+            TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER = auto()
+            
+            TYPE_DECLARATION_DIM_FAILED_COMPARISON = auto()
+            
+            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = auto()
+        
+        @dataclass
+        class FailurePosition:
+            filtererLine: int
+            filtereeLine: int
+            
+            def __eq__(self, __value: Self) -> bool:
+                return self.filtererLine == __value.filtererLine and self.filtereeLine == __value.filtereeLine
+        
+        failureType: FailureType
+        failurePosition: FailurePosition
+        
+        def __eq__(self, __value: Self) -> bool:
+            return self.failureType == __value.failureType and self.failurePosition == __value.failurePosition
+    
+    resultType: ResultType
+    failureInfo: FailureInfo | None
+
+    @property
+    def isSuccess(self) -> bool:
+        return self.resultType == FilterMatchResult.ResultType.SUCCESS
+
+    @staticmethod
+    def success() -> Self:
+        return FilterMatchResult(
+            resultType=FilterMatchResult.ResultType.SUCCESS,
+            failureInfo=None
+        )
+    
+    @staticmethod
+    def failure(failureType, failurePosition) -> Self:
+        """
+        `failureType` and `failurePosition` must match the types specified in `FailureInfo`
+        """
+        return FilterMatchResult(
+            resultType=FilterMatchResult.ResultType.FAILURE,
+            failureInfo=FilterMatchResult.FailureInfo(
+                failureType=failureType,
+                failurePosition=failurePosition
+            )
+        )
+    
+    def __eq__(self, __value: Self) -> bool:
+        if self.resultType != __value.resultType:
+            return False
+        
+        match self.resultType:
+            case FilterMatchResult.ResultType.SUCCESS:
+                return True
+            case FilterMatchResult.ResultType.FAILURE:
+                return self.failureInfo == __value.failureInfo
+    
+    
+# convenient classes
+_FailureInfo = FilterMatchResult.FailureInfo
+_FailureTypes = FilterMatchResult.FailureInfo.FailureType
+_FailurePosition = FilterMatchResult.FailureInfo.FailurePosition
+
+# convenient methods
+_all_children_match_successful = lambda children_match_results: all(result.isSuccess for result in children_match_results)
+_get_first_failured_child_match = lambda children_match_results: next(iter(filter(lambda x: not x.isSuccess, children_match_results)))
+_result_from_children_results = \
+    lambda children_match_results: FilterMatchResult.success() \
+        if _all_children_match_successful(children_match_results) \
+        else _get_first_failured_child_match(children_match_results)
+    
+
+def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchResult:
     """
     Match model metadata against a filter.
     Typically, both `filter` and `element` are obtained by parsing an xml document.
+    
+    NOTE: The validity of arguments are NOT checked.
 
     Args:
-        filterElement (ET.Element): The filter to match against.
-        dataElement (ET.Element): The element to match.
+        filterElement (ET._Element): The filter to match against.
+        dataElement (ET._Element): The element to match.
     """
     
     filterElement = filterObject.filterElement
+    
+    # convenient objects
+    failurePosition = _FailurePosition(
+        filtererLine=filterElement.sourceline,
+        filtereeLine=dataElement.sourceline
+    )
 
     if dataElement.tag != filterElement.tag:
-        return FilterMatchResult.FAILURE
+        return FilterMatchResult.failure(
+            failureType=_FailureTypes.TAG_MISMATCH,
+            failurePosition=failurePosition
+        )
 
     match filterElement.tag:
         case TagNames.dictType.value:
@@ -82,31 +181,44 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
                     filter_children_dict = dictElementToDict(filterElement)
 
                     if not set(filter_children_dict.keys()).issubset(set(element_children_dict.keys())):
-                        return FilterMatchResult.FAILURE
+                        # missing key
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.DICT_MISSING_KEY,
+                            failurePosition=failurePosition
+                        )
 
-                    return FilterMatchResult.SUCCESS \
-                        if all(matchFilter(Filter.fromXML(filter_children_dict[key]), element_children_dict[key])
-                               == FilterMatchResult.SUCCESS
-                               for key in filter_children_dict.keys()) \
-                        else FilterMatchResult.FAILURE
+                    children_match_results = [
+                        matchFilter(Filter.fromXMLElement(filter_children_dict[key]), element_children_dict[key])
+                        for key in filter_children_dict.keys()
+                    ]
+                    
+                    return FilterMatchResult.success() \
+                        if _all_children_match_successful(children_match_results) \
+                        else _get_first_failured_child_match(children_match_results)
                 case FilterOperationTypes.NONE.value:
                     # since tag is compared in the beginning, we can just return success.
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.listType.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.ALL.value:
                     if len(dataElement) < len(filterElement):
-                        return FilterMatchResult.FAILURE
+                        # insufficient list children
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.LIST_INSUFFICIENT_CHILDREN,
+                            failurePosition=failurePosition
+                        )
+                    
+                    children_match_results = [
+                        matchFilter(Filter.fromXMLElement(sub_filter), sub_element)
+                        for sub_filter, sub_element in zip(filterElement, dataElement)
+                    ]
 
                     # assume the list is ordered, match each sub-filter v.s. sub-element in order
-                    return FilterMatchResult.SUCCESS \
-                        if all(matchFilter(Filter.fromXML(sub_filter), sub_element) == FilterMatchResult.SUCCESS
-                               for sub_filter, sub_element in zip(filterElement, dataElement)) \
-                        else FilterMatchResult.FAILURE
+                    return _result_from_children_results(children_match_results)
                 case FilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
         case TagNames.namedField.value:
             # just raise since it should be guaranteed that named field will always be unwrapped before calling `match`
             raise InvalidTagException()
@@ -114,17 +226,20 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 # TODO: add more filter types for strings, e.g., regular expressions
                 case FilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case FilterOperationTypes.EQUALS.value:
-                    return FilterMatchResult.SUCCESS \
+                    return FilterMatchResult.success() \
                         if dataElement.text == filterElement.text \
-                        else FilterMatchResult.FAILURE
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.STRING_VALUE_NOT_EQUAL,
+                            failurePosition=failurePosition
+                        )
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.typeDeclaration.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case FilterOperationTypes.TYPE_MATCH.value:
                     return _matchTypeDeclarationFilter(filterElement[0], dataElement[0])
                 case _:
@@ -133,19 +248,21 @@ def matchFilter(filterObject: Filter, dataElement: ET.Element) -> FilterMatchRes
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 # TODO: add more filter types for bool, e.g., regular expressions
                 case FilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
         case _:
             raise InvalidTagException()
 
 
-def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Element) -> FilterMatchResult:
+def _matchTypeDeclarationFilter(filterElement: ET._Element, dataElement: ET._Element) -> FilterMatchResult:
     """Tests whether `dataElement` matches the requirements specified in `filterElement`.
 
+    NOTE: The validity of arguments are NOT checked.
+
     Args:
-        filterElement (ET.Element): The type declaration (XML element) to be matched.
-        dataElement (ET.Element): The filter to be matched against.
+        filterElement (ET._Element): The type declaration (XML element) to be matched.
+        dataElement (ET._Element): The filter to be matched against.
 
     Raises:
         InvalidFilterOperationTypeException: If `filterElement` contains invalid filter operation types (i.e., syntactical error).
@@ -153,40 +270,55 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
     Returns:
         FilterMatchResult: SUCCESS if `dataElement` matches, FAILURE otherwise.
     """
+
+    # convenient objects
+    failurePosition = _FailurePosition(
+        filtererLine=filterElement.sourceline,
+        filtereeLine=dataElement.sourceline
+    )
     
     if filterElement.tag != dataElement.tag:
-        return FilterMatchResult.FAILURE
+        return FilterMatchResult.failure(
+            failureType=_FailureTypes.TAG_MISMATCH,
+            failurePosition=failurePosition
+        )
 
     match filterElement.tag:
         # composers: recurse
         case TypeDeclarationTagNames.LIST.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case TypeDeclarationFilterOperationTypes.ALL.value:
-                    return FilterMatchResult.SUCCESS \
-                        if _matchTypeDeclarationFilter(filterElement[0], dataElement[0]) == FilterMatchResult.SUCCESS \
-                        else FilterMatchResult.FAILURE
+                    return _matchTypeDeclarationFilter(filterElement[0], dataElement[0])
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
                 
         case TypeDeclarationTagNames.TUPLE.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case TypeDeclarationFilterOperationTypes.ALL.value:
-                    return FilterMatchResult.SUCCESS \
-                        if len(filterElement) == len(dataElement) and \
-                            all(_matchTypeDeclarationFilter(sub_filter, sub_element) == FilterMatchResult.SUCCESS
-                               for sub_filter, sub_element in zip(filterElement, dataElement)) \
-                        else FilterMatchResult.FAILURE
+                    if len(filterElement) != len(dataElement):
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT,
+                            failurePosition=failurePosition
+                        )
+                    
+                    children_match_results = [
+                        _matchTypeDeclarationFilter(sub_filter, sub_element)
+                        for sub_filter, sub_element in zip(filterElement, dataElement)
+                    ]
+
+                    return _result_from_children_results(children_match_results)
+                
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
 
         # primitives: check
         case TypeDeclarationTagNames.STRING.value | TypeDeclarationTagNames.BOOL.value:
             # type checked at beginning of function; so can return SUCCESS directly.
-            return FilterMatchResult.SUCCESS
+            return FilterMatchResult.success()
 
         # there are more possible filter operation types for tensor
         case TypeDeclarationTagNames.TENSOR.value:
@@ -194,15 +326,20 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
                 case TypeDeclarationFilterOperationTypes.ALL.value:
                     if len(filterElement) != len(dataElement):
                         # Tensor filters requires that number of dims must match exactly
-                        return FilterMatchResult.FAILURE
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER,
+                            failurePosition=failurePosition
+                        )
                     
-                    return FilterMatchResult.SUCCESS \
-                        if all(_matchTypeDeclarationFilter(sub_filter, sub_element) == FilterMatchResult.SUCCESS
-                               for sub_filter, sub_element in zip(filterElement, dataElement)) \
-                        else FilterMatchResult.FAILURE
+                    children_match_results = [
+                        _matchTypeDeclarationFilter(sub_filter, sub_element)
+                        for sub_filter, sub_element in zip(filterElement, dataElement)
+                    ]
+                    
+                    return _result_from_children_results(children_match_results)
 
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
         
@@ -210,24 +347,30 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
             filterOp = filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]
             
             if filterOp == TypeDeclarationFilterOperationTypes.NONE.value:
-                return FilterMatchResult.SUCCESS
+                return FilterMatchResult.success()
             
             # we are counting on the `int()` function to raise exceptions
             # if the dimension specified is not a valid integer
             filterDim = int(filterElement.text.strip())
             dataDim = int(dataElement.text.strip())
+            
+            # convenient object
+            failure = FilterMatchResult.failure(
+                failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
+                failurePosition=failurePosition
+            )
 
             match filterOp:
                 case TypeDeclarationFilterOperationTypes.EQUALS.value:
-                    return FilterMatchResult.SUCCESS if dataDim == filterDim else FilterMatchResult.FAILURE
+                    return FilterMatchResult.success() if dataDim == filterDim else failure
                 case TypeDeclarationFilterOperationTypes.LESS_THAN.value:
-                    return FilterMatchResult.SUCCESS if dataDim < filterDim else FilterMatchResult.FAILURE
+                    return FilterMatchResult.success() if dataDim < filterDim else failure
                 case TypeDeclarationFilterOperationTypes.LESS_THAN_OR_EQUALS.value:
-                    return FilterMatchResult.SUCCESS if dataDim <= filterDim else FilterMatchResult.FAILURE
+                    return FilterMatchResult.success() if dataDim <= filterDim else failure
                 case TypeDeclarationFilterOperationTypes.GREATER_THAN.value:
-                    return FilterMatchResult.SUCCESS if dataDim > filterDim else FilterMatchResult.FAILURE
+                    return FilterMatchResult.success() if dataDim > filterDim else failure
                 case TypeDeclarationFilterOperationTypes.GREATER_THAN_OR_EQUALS.value:
-                    return FilterMatchResult.SUCCESS if dataDim >= filterDim else FilterMatchResult.FAILURE
+                    return FilterMatchResult.success() if dataDim >= filterDim else failure
                 case _:
                     raise InvalidFilterOperationTypeException()
 
@@ -236,15 +379,33 @@ def _matchTypeDeclarationFilter(filterElement: ET.Element, dataElement: ET.Eleme
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case TypeDeclarationFilterOperationTypes.ALL.value:
                     # "all" means that the key names are exactly the same in the context of a named value collection.
-                    filter_key_names = {sub_element.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName.value]
-                                        for sub_element in filterElement}
-                    data_key_names = {sub_element.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName.value]
-                                        for sub_element in dataElement}
+                    filter_children_dict = {
+                        sub_element.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName.value]: sub_element[0]
+                        for sub_element in filterElement
+                    }
                     
-                    return FilterMatchResult.SUCCESS if filter_key_names == data_key_names else FilterMatchResult.FAILURE
+                    data_children_dict = {
+                        sub_element.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName.value]: sub_element[0]
+                        for sub_element in dataElement
+                    }
+                    
+                    if set(filter_children_dict.keys()) != set(data_children_dict.keys()):
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS,
+                            failurePosition=failurePosition
+                        )
+                    
+                    children_match_results = [
+                        _matchTypeDeclarationFilter(filter_children_dict[key], data_children_dict[key])
+                        for key in filter_children_dict.keys()
+                    ]
+                    
+                    return _result_from_children_results(children_match_results)
+
                 case TypeDeclarationFilterOperationTypes.NONE.value:
-                    return FilterMatchResult.SUCCESS
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
+        
         case _:
             raise InvalidTagException()
