@@ -1,6 +1,6 @@
 from typing import List, Self, Any, Iterable
 from dataclasses import dataclass
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 from pathlib import Path
 
 from .filtering import matchFilter, FilterMatchResult, Filter
@@ -10,14 +10,14 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
 
 from python_interface.interface import FileNames, MetadataUtils
-from .config import Config
+from python_interface.config import Config
 
 
 class ModelCollection:
     @dataclass
     class ModelEntry:
         path: Path
-        metadata: ET.Element
+        metadata: ET._Element
 
     def __init__(self, entries: List[ModelEntry]):
         self._entries = entries
@@ -37,7 +37,7 @@ class ModelCollection:
             entry for entry in self._entries
             if matchFilter(filterObject=filterObject,
                            dataElement=MetadataUtils.getModelSpecs(entry.metadata))
-            == FilterMatchResult.SUCCESS))
+                .isSuccess))
 
 
 def enumerateAvailableModels() -> ModelCollection:

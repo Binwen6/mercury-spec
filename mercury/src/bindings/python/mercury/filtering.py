@@ -9,7 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-
 
 from python_interface.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
-    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames
+    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
+    FilterMatchFailureType
 )
 from .exceptions import InvalidTagException, InvalidFilterOperationTypeException
 from .utils import dictElementToDict
@@ -61,23 +62,7 @@ class FilterMatchResult:
     
     @dataclass
     class FailureInfo:
-        class FailureType(Enum):
-            TAG_MISMATCH = auto()
-            # TODO: add more types
-            
-            DICT_MISSING_KEY = auto()
-            
-            LIST_INSUFFICIENT_CHILDREN = auto()
-            
-            STRING_VALUE_NOT_EQUAL = auto()
-            
-            TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT = auto()
-
-            TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER = auto()
-            
-            TYPE_DECLARATION_DIM_FAILED_COMPARISON = auto()
-            
-            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = auto()
+        
         
         @dataclass
         class FailurePosition:
@@ -87,7 +72,7 @@ class FilterMatchResult:
             def __eq__(self, __value: Self) -> bool:
                 return self.filtererLine == __value.filtererLine and self.filtereeLine == __value.filtereeLine
         
-        failureType: FailureType
+        failureType: FilterMatchFailureType
         failurePosition: FailurePosition
         
         def __eq__(self, __value: Self) -> bool:
@@ -133,7 +118,7 @@ class FilterMatchResult:
     
 # convenient classes
 _FailureInfo = FilterMatchResult.FailureInfo
-_FailureTypes = FilterMatchResult.FailureInfo.FailureType
+_FailureTypes = FilterMatchFailureType
 _FailurePosition = FilterMatchResult.FailureInfo.FailurePosition
 
 # convenient methods

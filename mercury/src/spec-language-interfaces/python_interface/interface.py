@@ -1,12 +1,12 @@
 from enum import Enum
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 from pathlib import Path
 from typing import Sequence
 from dataclasses import dataclass
 
 
 # TODO: avoid duplication with definition in utils.py
-def dictElementToDict(dictElement: ET.Element):
+def dictElementToDict(dictElement: ET._Element):
     assert dictElement.tag == TagNames.dictType.value
     
     return {item.attrib[AttributeNames.nameAttribute.value]: item[0] for item in dictElement}
@@ -69,24 +69,24 @@ class ImplementationInfo:
 class MetadataUtils:
     
     @staticmethod
-    def getModelSpecs(metadata: ET.Element) -> ET.Element:
+    def getModelSpecs(metadata: ET._Element) -> ET._Element:
         """Returns the metadata element of the model's manifest data.
 
         Args:
-            metadata (ET.Element): The model's manifest data.
+            metadata (ET._Element): The model's manifest data.
 
         Returns:
-            ET.Element: The metadata element.
+            ET._Element: The metadata element.
         """
         
         return dictElementToDict(metadata)[KeyNames.specs.value]
     
     @staticmethod
-    def supportPythonImplementation(metadata: ET.Element) -> bool:
+    def supportPythonImplementation(metadata: ET._Element) -> bool:
         """Returns True if manifest data indicates that model has a Python implementation, False otherwise.
 
         Args:
-            metadata (ET.Element): The model's manifest data.
+            metadata (ET._Element): The model's manifest data.
 
         Returns:
             bool: Whether the model has a Python implementation.
@@ -98,7 +98,7 @@ class MetadataUtils:
         return KeyNames.pythonImplementationIdentifier.value in supported_implementations
     
     @staticmethod
-    def getImplementationInfo(metadata: ET.Element):
+    def getImplementationInfo(metadata: ET._Element):
         implementationDict = dictElementToDict(
             dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations.value])
             [KeyNames.pythonImplementationIdentifier.value])
@@ -109,7 +109,7 @@ class MetadataUtils:
         )
     
     @staticmethod
-    def getModelName(metadata: ET.Element):
+    def getModelName(metadata: ET._Element):
         return dictElementToDict(
             dictElementToDict(MetadataUtils.getModelSpecs(metadata))
             [KeyNames.headerKeyName.value])[KeyNames.modelNameKeyName.value].text
@@ -128,7 +128,7 @@ def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, c
     """
 
     return \
-f"""<?xml version="1.0" encoding="UTF-8"?>
+f"""
 <dict filter="all">
     <named-field name="header">
         <dict filter="all">
@@ -269,3 +269,21 @@ class ManifestSyntaxInvalidityType(Enum):
     
     TYPE_DECLARATION_DIM_ILLEGAL_CHILD = 'TYPE_DECLARATION_DIM_ILLEGAL_CHILD'
     TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL = 'TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL'
+
+class FilterMatchFailureType(Enum):
+    TAG_MISMATCH = 'TAG_MISMATCH'
+    # TODO: add more types
+    
+    DICT_MISSING_KEY = 'DICT_MISSING_KEY'
+    
+    LIST_INSUFFICIENT_CHILDREN = 'LIST_INSUFFICIENT_CHILDREN'
+    
+    STRING_VALUE_NOT_EQUAL = 'STRING_VALUE_NOT_EQUAL'
+    
+    TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT = 'TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT'
+
+    TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER = 'TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER'
+    
+    TYPE_DECLARATION_DIM_FAILED_COMPARISON = 'TYPE_DECLARATION_DIM_FAILED_COMPARISON'
+    
+    TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = 'TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS'

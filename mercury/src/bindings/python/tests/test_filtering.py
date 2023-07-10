@@ -4,15 +4,18 @@ from lxml import etree as ET
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'spec-language-interfaces'))
 
 # from ..src.filter import match_filter, FilterMatchResult
-from src.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
-from src.exceptions import InvalidFilterOperationTypeException
+from mercury.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
+from mercury.exceptions import InvalidFilterOperationTypeException
+
+from python_interface.interface import FilterMatchFailureType
 
 
 # convenient classes
 _FailureInfo = FilterMatchResult.FailureInfo
-_FailureTypes = FilterMatchResult.FailureInfo.FailureType
+_FailureTypes = FilterMatchFailureType
 _FailurePosition = FilterMatchResult.FailureInfo.FailurePosition
 
 

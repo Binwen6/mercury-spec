@@ -7,29 +7,30 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-language-interfaces'))
+
 from python_interface.config import Config
 
 
 @dataclass
-class ValidUsage:
+class FilterMatchFailureSpec:
     name: str
     description: str
 
 
-def loadValidUsage(filepath: Path) -> Dict[str, ValidUsage]:
+def loadFilterMatchFailureSpecs(filepath: Path) -> Dict[str, FilterMatchFailureSpec]:
     
-    """Loads valid usage specifications from a file.
+    """Loads filter match failure specifications from a file.
     
     The file must be an XML with the following form:
     
     <?xml version="1.0" encoding="UTF-8"?>
     <array>
-        <valid-usage>
+        <match-failure>
             <name>...</name>
             <description>
                 ...
             </description>
-        </valid-usage>
+        </match-failure>
         
         ...
     </array>
@@ -45,17 +46,17 @@ def loadValidUsage(filepath: Path) -> Dict[str, ValidUsage]:
     with open(filepath, 'r') as f:
         root: ET._Element = ET.parse(f).getroot()
     
-    valid_usages = {}
+    filter_match_failure_specs = {}
 
     for child in root:
-        assert child.tag == 'valid-usage'
+        assert child.tag == 'match-failure'
 
         property_dict = {property.tag: property.text for property in child}
 
-        vu = ValidUsage(name=property_dict['name'], description=property_dict['description'])
+        match_failure = FilterMatchFailureSpec(name=property_dict['name'], description=property_dict['description'])
 
-        valid_usages[vu.name] = vu
+        filter_match_failure_specs[match_failure.name] = match_failure
     
-    assert len(valid_usages) == len(root)
+    assert len(filter_match_failure_specs) == len(root)
 
-    return valid_usages
+    return filter_match_failure_specs

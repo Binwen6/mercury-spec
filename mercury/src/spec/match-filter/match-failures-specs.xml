@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<array>
+    <match-failure>
+        <name>TAG_MISMATCH</name>
+        <description>
+            The tags on the element being compared is different from that of the filter.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>DICT_MISSING_KEY</name>
+        <description>
+            The element being compared is a `dict`,
+            and its keys are not a super set of those of the corresponding `dict` in the filter.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>LIST_INSUFFICIENT_CHILDREN</name>
+        <description>
+            The element being compared is a `list`,
+            and it does not contain as many children as contained in the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>STRING_VALUE_NOT_EQUAL</name>
+        <description>
+            The element being compared is a `string`,
+            and its content is not the same as that of the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT</name>
+        <description>
+            The element being compared is a tuple type declaration,
+            and the number of sub-elements are not the same as those in the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER</name>
+        <description>
+            The element being compared is a tensor type declaration,
+            but its number of dimensions does not match that of the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>TYPE_DECLARATION_DIM_FAILED_COMPARISON</name>
+        <description>
+            The element being compared is a dimension declaration of a tensor type declaration,
+            but the size of the dimension (i.e., "axis") does not satisfy the requirement specified in the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
+        <name>TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS</name>
+        <description>
+            The element being compared is a named value collection (i.e., a dict) type declaration,
+            but the keys of the collection are not the same as those in the corresponding filter element.
+        </description>
+    </match-failure>
+</array>

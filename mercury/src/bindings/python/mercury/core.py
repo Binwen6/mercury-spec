@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 
 
 T = TypeVar('T')
@@ -10,15 +10,15 @@ U = TypeVar('U')
 # TODO: write tests
 class Model(ABC, Generic[T, U]):
     
-    def __init__(self, metadata: ET.Element):
+    def __init__(self, metadata: ET._Element):
         self._metadata = metadata
 
     @property
-    def metadata(self) -> ET.Element:
+    def metadata(self) -> ET._Element:
         """Returns the metadata of this model.
 
         Returns:
-            ET.Element: The model's metadata.
+            ET._Element: The model's metadata.
         """
         
         return self._metadata

@@ -14,10 +14,18 @@ import filter_validation
 from filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
 import manifest_validation
 from manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
-from load_valid_usages import loadValidUsage
-from config import Config
 
-from python_interface.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType
+from load_valid_usages import loadValidUsage
+from load_filter_match_failure_specs import loadFilterMatchFailureSpecs
+
+
+
+from python_interface.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
+from python_interface.config import Config
+
+sys.path.append(str(Config.pythonBindingRootPath.value.parent))
+
+from mercury.filtering import Filter, matchFilter
 
 import argparse
 
@@ -62,25 +70,30 @@ args = parser.parse_args()
 filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile.value)
 manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile.value)
 
+# validation
+assert set(x.value for x in FilterSyntaxInvalidityType) == set(filter_syntax_valid_usages.keys())
+assert set(x.value for x in ManifestSyntaxInvalidityType) == set(manifest_syntax_valid_usages.keys())
+
+# load filter match failure specs
+filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile.value)
 
 # validation
-assert set(x.value for x in FilterSyntaxInvalidityType).issubset(set(filter_syntax_valid_usages.keys()))
-assert set(x.value for x in ManifestSyntaxInvalidityType).issubset(set(manifest_syntax_valid_usages.keys()))
+assert set(x.value for x in FilterMatchFailureType) == set(filter_match_failure_specs.keys())
 
 
-def main(args):
+def main(args) -> int:
     match args.command:
         case CommandTypes.VALIDATE_MANIFEST.value:
             try:
                 with open(args.manifest_file, 'r') as f:
-                    xml_element = ET.parse(f)
-                    xml_element = xml_element.getroot()
+                    manifest_element = ET.parse(f)
+                    manifest_element = manifest_element.getroot()
             except FileNotFoundError:
                 print(f'File not found: {args.manifest_file}', file=sys.stderr)
-                return
+                return 1
 
             # syntax validation
-            syntax_validation_result = manifest_validation.checkSyntax(xml_element)
+            syntax_validation_result = manifest_validation.checkSyntax(manifest_element)
 
             if not syntax_validation_result.isValid:
                 # syntax is invalid
@@ -88,9 +101,32 @@ def main(args):
                 print(f'Manifest syntax valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
                 print(f'Description of valid usage: {manifest_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
 
-                return
+                return 1
             
             # syntax is valid, match the manifest against base model
+            try:
+                with open(Config.baseModelFilterPath.value, 'r') as f:
+                    filter_element = ET.parse(f)
+                    filter_element = filter_element.getroot()
+            except FileNotFoundError:
+                print(f'File not found: {Config.baseModelFilterPath.value}', file=sys.stderr)
+                
+                return 1
+            
+            base_model_filter = Filter.fromXMLElement(filter_element)
+            
+            match_result = matchFilter(filterObject=base_model_filter, dataElement=manifest_element)
+
+            if match_result.isSuccess:
+                print('Manifest is valid.')
+
+                return 0
+            else:
+                failure_info = match_result.failureInfo
+
+                print(f'Manifest failed to match the base model filter at line {failure_info.failurePosition.filtereeLine} (manifest), {failure_info.failurePosition.filtererLine} (base model filter): {failure_info.failureType.value}', file=sys.stderr)
+                print(f'Description of failure: {filter_match_failure_specs[failure_info.failureType.value].description}', file=sys.stderr)
+
 
         case CommandTypes.VALIDATE_FILTER.value:
             try:
@@ -100,24 +136,32 @@ def main(args):
             except FileNotFoundError:
                 print(f'File not found: {args.filter_file}', file=sys.stderr)
                 
-                return
+                return 1
                     
             validation_result = filter_validation.checkFilterSyntax(xml_element)
 
             if validation_result.isValid:
                 print('Filter is valid.')
+                
+                return 0
             else:
                 invalidity_info = validation_result.invalidityInfo
                 
                 print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
                 print(f'Description of valid usage: {filter_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
+
+                return 1
                 
         case CommandTypes.MATCH_FILTER.value:
             # TODO
-            pass
+            return 1
+        
         case _:
             print(f'Invalid command: {args.command}', file=sys.stderr)
+            
+            return 1
 
 
 if __name__ == '__main__':
-    main(args)
+    return_code = main(args)
+    exit(return_code)

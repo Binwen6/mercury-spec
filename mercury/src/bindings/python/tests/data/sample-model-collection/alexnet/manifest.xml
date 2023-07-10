@@ -44,16 +44,16 @@
                             <named-field name="type">
                                 <type-declaration>
                                     <type-named-value-collection>
-                                        <type-named-value name="bird"/>
-                                        <type-named-value name="dog"/>
-                                        <type-named-value name="truck"/>
-                                        <type-named-value name="cat"/>
-                                        <type-named-value name="koala"/>
-                                        <type-named-value name="car"/>
-                                        <type-named-value name="airplane"/>
-                                        <type-named-value name="duck"/>
-                                        <type-named-value name="goose"/>
-                                        <type-named-value name="traffic-sign"/>
+                                        <type-named-value name="bird"><type-string/></type-named-value>
+                                        <type-named-value name="dog"><type-string/></type-named-value>
+                                        <type-named-value name="truck"><type-string/></type-named-value>
+                                        <type-named-value name="cat"><type-string/></type-named-value>
+                                        <type-named-value name="koala"><type-string/></type-named-value>
+                                        <type-named-value name="car"><type-string/></type-named-value>
+                                        <type-named-value name="airplane"><type-string/></type-named-value>
+                                        <type-named-value name="duck"><type-string/></type-named-value>
+                                        <type-named-value name="goose"><type-string/></type-named-value>
+                                        <type-named-value name="traffic-sign"><type-string/></type-named-value>
                                     </type-named-value-collection>
                                 </type-declaration>
                             </named-field>
@@ -70,7 +70,7 @@
                         <string>local</string>
                     </named-field>
                     <named-field name="latency">
-                        <time>1ms</time>
+                        <string>1ms</string>
                     </named-field>
                 </dict>
             </named-field>

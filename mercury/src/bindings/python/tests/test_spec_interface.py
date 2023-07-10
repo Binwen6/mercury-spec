@@ -10,7 +10,7 @@ from python_interface.interface import filterXMLfromArgs
 class TestFilterXMLfromArgs(unittest.TestCase):
     
     def test_modelClass(self):
-        expected_string = """<?xml version="1.0" encoding="UTF-8"?>
+        expected_string = """
 <dict filter="all">
     <named-field name="header">
         <dict filter="all">
@@ -64,7 +64,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         self.assertEqual(filterXMLfromArgs(modelType='chat-completion'), expected_string)
 
     def test_callScheme(self):
-        expected_string = """<?xml version="1.0" encoding="UTF-8"?>
+        expected_string = """
 <dict filter="all">
     <named-field name="header">
         <dict filter="all">
@@ -118,7 +118,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         self.assertEqual(filterXMLfromArgs(callScheme='image-classification'), expected_string)
 
     def test_capabilities(self):
-        expected_string = f"""<?xml version="1.0" encoding="UTF-8"?>
+        expected_string = f"""
 <dict filter="all">
     <named-field name="header">
         <dict filter="all">
@@ -172,7 +172,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         self.assertEqual(filterXMLfromArgs(capabilities=('question-answering', 'math')), expected_string)
 
     def test_all_combined(self):
-        expected_string = f"""<?xml version="1.0" encoding="UTF-8"?>
+        expected_string = f"""
 <dict filter="all">
     <named-field name="header">
         <dict filter="all">
