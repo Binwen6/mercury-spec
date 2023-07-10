@@ -26,7 +26,13 @@
                     <named-field name="input">
                         <dict>
                             <named-field name="type">
-                                <type-declaration>image[224, 224, 3]</type-declaration>
+                                <type-declaration>
+                                    <type-tensor>
+                                        <dim>224</dim>
+                                        <dim>224</dim>
+                                        <dim>3</dim>
+                                    </type-tensor>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>The image to classify, with width, height, and channels being 224, 224, and 3.</string>
@@ -36,7 +42,20 @@
                     <named-field name="output">
                         <dict>
                             <named-field name="type">
-                                <type-declaration>category-scores[bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign]</type-declaration>
+                                <type-declaration>
+                                    <type-named-value-collection>
+                                        <type-named-value name="bird"><type-string/></type-named-value>
+                                        <type-named-value name="dog"><type-string/></type-named-value>
+                                        <type-named-value name="truck"><type-string/></type-named-value>
+                                        <type-named-value name="cat"><type-string/></type-named-value>
+                                        <type-named-value name="koala"><type-string/></type-named-value>
+                                        <type-named-value name="car"><type-string/></type-named-value>
+                                        <type-named-value name="airplane"><type-string/></type-named-value>
+                                        <type-named-value name="duck"><type-string/></type-named-value>
+                                        <type-named-value name="goose"><type-string/></type-named-value>
+                                        <type-named-value name="traffic-sign"><type-string/></type-named-value>
+                                    </type-named-value-collection>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
                                 <string>The scores of the categories that the image may belong to.</string>
@@ -51,7 +70,7 @@
                         <string>local</string>
                     </named-field>
                     <named-field name="latency">
-                        <time>1ms</time>
+                        <string>1ms</string>
                     </named-field>
                 </dict>
             </named-field>

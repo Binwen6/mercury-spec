@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<array>
+    <valid-usage>
+        <name>INVALID_TAG</name>
+        <description>
+            Tags used in filter XML must be valid, e.g., dict, list, etc.
+        </description>
+    </valid-usage>
+    
+    <valid-usage>
+        <name>INVALID_FILTER_OPERATION_TYPE</name>
+        <description>
+            Filter operation type attribute must be a valid operation respective to the element's tag.
+            For example, "gt" (greater than) is valid in a `dim` element, but invalid in a `dict` element.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE</name>
+        <description>
+            Except for special "auxiliary" tags (e.g., `named-field`),
+            each XML element in a filter must have a "filter" attribute
+            specifying the type of filter operation to apply to the element.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE</name>
+        <description>
+            If the "filter" attribute is "none", the element can have no children or enclosed content.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>DICT_INVALID_CHILD_TAG</name>
+        <description>
+            All child elements of a "dict" **must** be "named-field" elements.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>DICT_DUPLICATE_KEYS</name>
+        <description>
+            The child `named-field`s of a `dict` **must** have unique names,
+            specified in the `name` attribute.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>NAMED_FIELD_MISSING_NAME_ATTRIBUTE</name>
+        <description>
+            A `named-field` must have a "name" attribute.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>NAMED_FIELD_INCORRECT_CHILDREN_COUNT</name>
+        <description>
+            A `named-field` must have exactly one child element.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>STRING_ILLEGAL_CHILD</name>
+        <description>
+            A `string` **must** have no child elements.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_INCORRECT_CHILD_COUNT</name>
+        <description>
+            A `type-declaration` **must** have exactly one child element.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG</name>
+        <description>
+            All child elements of a `type-tensor` must be `dim`s.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_DIM_ILLEGAL_CHILD</name>
+        <description>
+            A `dim` **must** have no child elements.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL</name>
+        <description>
+            The enclosed text of a `dim` must be an integer literal, e.g., "224",
+            specifying the size of the corresponding dimension in the tensor.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_STRING_ILLEGAL_CONTENT</name>
+        <description>
+            "Terminal types" in a type declaration, e.g., strings, numbers, booleans, etc.,
+            must have no children or enclosed text content.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT</name>
+        <description>
+            "Terminal types" in a type declaration, e.g., strings, numbers, booleans, etc.,
+            must have no children or enclosed text content.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT</name>
+        <description>
+            A `type-list` **must** have exactly one child element,
+            specifying the type of each list element.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG</name>
+        <description>
+            Each child element of a `type-named-value-collection` must be a `type-named-value`.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DUPLICATE_KEYS</name>
+        <description>
+            The child `type-named-value`s of a `type-named-value-collection` **must** have unique names,
+            specified in the `name` attribute.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE</name>
+        <description>
+            A `type-named-value` must have a "name" attribute.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT</name>
+        <description>
+            A `type-named-value` must have exactly one child element.
+        </description>
+    </valid-usage>
+</array>

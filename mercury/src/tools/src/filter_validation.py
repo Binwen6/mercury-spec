@@ -10,7 +10,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-langua
 
 from python_interface.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
-    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames
+    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
+    FilterSyntaxInvalidityType
 )
 
 
@@ -23,39 +24,6 @@ class SyntaxValidationResult:
         
     @dataclass
     class InvalidityInfo:
-        
-        class InvalidityType(Enum):
-            INVALID_TAG = auto()
-            INVALID_FILTER_OPERATION_TYPE = auto()
-            MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE = auto()
-            ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE = auto()
-            
-            DICT_INVALID_CHILD_TAG = auto()
-            DICT_DUPLICATE_KEYS = auto()
-            
-            NAMED_FIELD_MISSING_NAME_ATTRIBUTE = auto()
-            NAMED_FIELD_INCORRECT_CHILDREN_COUNT = auto()
-            
-            STRING_ILLEGAL_CHILD = auto()
-            
-            TYPE_DECLARATION_INCORRECT_CHILD_COUNT = auto()
-            
-            TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG = auto()
-            
-            TYPE_DECLARATION_DIM_ILLEGAL_CHILD = auto()
-            TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL = auto()
-            
-            TYPE_DECLARATION_STRING_ILLEGAL_CONTENT = auto()
-            
-            TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT = auto()
-            
-            TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT = auto()
-            
-            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG = auto()
-            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DUPLICATE_KEYS = auto()
-            
-            TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE = auto()
-            TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT = auto()
             
         @dataclass
         class InvalidityPosition:
@@ -64,7 +32,7 @@ class SyntaxValidationResult:
             def __eq__(self, __value: Self) -> bool:
                 return self.line == __value.line
         
-        invalidityType: InvalidityType
+        invalidityType: FilterSyntaxInvalidityType
         invalidityPosition: InvalidityPosition
 
         def __eq__(self, __value: Self) -> bool:
@@ -111,7 +79,7 @@ class SyntaxValidationResult:
 
 # convenient classes
 _InvalidityInfo = SyntaxValidationResult.InvalidityInfo
-_InvalidityTypes = SyntaxValidationResult.InvalidityInfo.InvalidityType
+_InvalidityTypes = FilterSyntaxInvalidityType
 _InvalidityPosition = SyntaxValidationResult.InvalidityInfo.InvalidityPosition
 
 

@@ -9,13 +9,13 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.filter_validation import (
-    checkFilterSyntax, checkTypeDeclarationFilterSyntax, SyntaxValidationResult
+    checkFilterSyntax, checkTypeDeclarationFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType
 )
 
 
 # convenient classes
 _InvalidityInfo = SyntaxValidationResult.InvalidityInfo
-_InvalidityTypes = SyntaxValidationResult.InvalidityInfo.InvalidityType
+_InvalidityTypes = FilterSyntaxInvalidityType
 _InvalidityPosition = SyntaxValidationResult.InvalidityInfo.InvalidityPosition
 
 class TestSyntaxValidationResult(unittest.TestCase):

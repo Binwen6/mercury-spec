@@ -9,13 +9,13 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.manifest_validation import (
-    checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult
+    checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult, ManifestSyntaxInvalidityType
 )
 
 
 # convenient classes
 _InvalidityInfo = SyntaxValidationResult.InvalidityInfo
-_InvalidityTypes = SyntaxValidationResult.InvalidityInfo.InvalidityType
+_InvalidityTypes = ManifestSyntaxInvalidityType
 _InvalidityPosition = SyntaxValidationResult.InvalidityInfo.InvalidityPosition
 
 
@@ -247,7 +247,7 @@ class TestCheckSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TYPE_DECLARATION_INCORRECT_CHILDREN_COUNT,
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_INCORRECT_CHILD_COUNT,
             invalidityPosition=_InvalidityPosition(2)
         ))
 
@@ -268,7 +268,7 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_INVALID_CHILD,
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_ILLEGAL_CONTENT,
             invalidityPosition=_InvalidityPosition(2)
         ))
 
@@ -309,7 +309,7 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT,
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT,
             invalidityPosition=_InvalidityPosition(2)
         ))
     
@@ -319,7 +319,7 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT,
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT,
             invalidityPosition=_InvalidityPosition(2)
         ))
 

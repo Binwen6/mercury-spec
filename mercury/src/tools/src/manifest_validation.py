@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-langua
 
 from python_interface.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
-    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames
+    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType
 )
 
 
@@ -24,40 +24,6 @@ class SyntaxValidationResult:
     @dataclass
     class InvalidityInfo:
         
-        class InvalidityType(Enum):
-            INVALID_TAG = auto()
-
-            DICT_INVALID_CHILD_TAG = auto()
-            DICT_DUPLICATE_KEYS = auto()
-            
-            NAMED_FIELD_MISSING_NAME_ATTRIBUTE = auto()
-            NAMED_FIELD_INCORRECT_CHILDREN_COUNT = auto()
-            
-            # a string element cannot have any children
-            STRING_ILLEGAL_CHILD = auto()
-            
-            # a bool element cannot have any children
-            BOOL_ILLEGAL_CHILD = auto()
-            
-            TYPE_DECLARATION_INCORRECT_CHILDREN_COUNT = auto()
-            
-            TYPE_DECLARATION_BOOL_INVALID_CHILD = auto()
-
-            TYPE_DECLARATION_STRING_INVALID_CHILD = auto()
-            
-            TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG = auto()
-
-            TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT = auto()
-
-            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG = auto()
-            TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DUPLICATE_KEYS = auto()
-            
-            TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE = auto()
-            TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT = auto()
-            
-            TYPE_DECLARATION_DIM_ILLEGAL_CHILD = auto()
-            TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL = auto()
-            
         @dataclass
         class InvalidityPosition:
             line: int
@@ -65,7 +31,7 @@ class SyntaxValidationResult:
             def __eq__(self, __value: Self) -> bool:
                 return self.line == __value.line
         
-        invalidityType: InvalidityType
+        invalidityType: ManifestSyntaxInvalidityType
         invalidityPosition: InvalidityPosition
 
         def __eq__(self, __value: Self) -> bool:
@@ -112,7 +78,7 @@ class SyntaxValidationResult:
 
 # convenient classes
 _InvalidityInfo = SyntaxValidationResult.InvalidityInfo
-_InvalidityTypes = SyntaxValidationResult.InvalidityInfo.InvalidityType
+_InvalidityTypes = ManifestSyntaxInvalidityType
 _InvalidityPosition = SyntaxValidationResult.InvalidityInfo.InvalidityPosition
 
 
@@ -181,7 +147,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityPosition=invalidityPosition
                 )
             
-            return SyntaxValidationResult.valid()
+            return checkSyntax(element[0])
 
         case TagNames.string.value:
             if len(element) > 0:
@@ -197,7 +163,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) != 1:
                 # type declaration elements must have exactly one child
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_INCORRECT_CHILDREN_COUNT,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_INCORRECT_CHILD_COUNT,
                     invalidityPosition=invalidityPosition
                 )
 
@@ -220,7 +186,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) > 0 or element.text is not None:
                 # a string / bool type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_INVALID_CHILD,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_ILLEGAL_CONTENT,
                     invalidityPosition=invalidityPosition
                 )
             
@@ -230,7 +196,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) > 0 or element.text is not None:
                 # a string / bool type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_BOOL_INVALID_CHILD,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT,
                     invalidityPosition=invalidityPosition
                 )
             
@@ -255,7 +221,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             if len(element) != 1:
                 # a list type declaration must have exactly one child
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILDREN_COUNT,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT,
                     invalidityPosition=invalidityPosition
                 )
             

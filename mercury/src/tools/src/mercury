@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from enum import Enum
+
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-language-interfaces'))
+
+from lxml import etree as ET
+
+import filter_validation
+from filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
+import manifest_validation
+from manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
+from load_valid_usages import loadValidUsage
+from config import Config
+
+from python_interface.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType
+
+import argparse
+
+
+class CommandTypes(Enum):
+    VALIDATE_MANIFEST = "validate-manifest"
+    VALIDATE_FILTER = "validate-filter"
+    MATCH_FILTER = "match-filter"
+
+
+# argparse
+parser = argparse.ArgumentParser(description="Mercury Command-Line Utility")
+
+subparsers = parser.add_subparsers(dest='command')
+
+manifest_validation_subparser = subparsers.add_parser(
+    CommandTypes.VALIDATE_MANIFEST.value,
+    help='Validates a manifest.'
+)
+
+manifest_validation_subparser.add_argument('manifest_file', type=str)
+
+filter_validation_subparser = subparsers.add_parser(
+    CommandTypes.VALIDATE_FILTER.value,
+    help='Validates a filter.'
+)
+
+filter_validation_subparser.add_argument('filter_file', type=str)
+
+match_filter_subparser = subparsers.add_parser(
+    CommandTypes.MATCH_FILTER.value,
+    help='Matches a manifest against a filter.'
+)
+
+match_filter_subparser.add_argument('manifest_file', type=str)
+match_filter_subparser.add_argument('filter_file', type=str)
+
+args = parser.parse_args()
+
+
+# load valid usages
+filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile.value)
+manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile.value)
+
+
+# validation
+assert set(x.value for x in FilterSyntaxInvalidityType).issubset(set(filter_syntax_valid_usages.keys()))
+assert set(x.value for x in ManifestSyntaxInvalidityType).issubset(set(manifest_syntax_valid_usages.keys()))
+
+
+def main(args):
+    match args.command:
+        case CommandTypes.VALIDATE_MANIFEST.value:
+            try:
+                with open(args.manifest_file, 'r') as f:
+                    xml_element = ET.parse(f)
+                    xml_element = xml_element.getroot()
+            except FileNotFoundError:
+                print(f'File not found: {args.manifest_file}', file=sys.stderr)
+                return
+
+            # syntax validation
+            syntax_validation_result = manifest_validation.checkSyntax(xml_element)
+
+            if not syntax_validation_result.isValid:
+                # syntax is invalid
+                invalidity_info = syntax_validation_result.invalidityInfo
+                print(f'Manifest syntax valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
+                print(f'Description of valid usage: {manifest_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
+
+                return
+            
+            # syntax is valid, match the manifest against base model
+
+        case CommandTypes.VALIDATE_FILTER.value:
+            try:
+                with open(args.filter_file, 'r') as f:
+                    xml_element = ET.parse(f)
+                    xml_element = xml_element.getroot()
+            except FileNotFoundError:
+                print(f'File not found: {args.filter_file}', file=sys.stderr)
+                
+                return
+                    
+            validation_result = filter_validation.checkFilterSyntax(xml_element)
+
+            if validation_result.isValid:
+                print('Filter is valid.')
+            else:
+                invalidity_info = validation_result.invalidityInfo
+                
+                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
+                print(f'Description of valid usage: {filter_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
+                
+        case CommandTypes.MATCH_FILTER.value:
+            # TODO
+            pass
+        case _:
+            print(f'Invalid command: {args.command}', file=sys.stderr)
+
+
+if __name__ == '__main__':
+    main(args)
