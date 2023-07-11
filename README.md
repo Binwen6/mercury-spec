@@ -1,8 +1,36 @@
 # Mercury: A DNN Specification for Developers
 
+## We need your help!
+
+Mercury is still young and not yet fully-fledged.
+We need help in the following aspects:
+
+1. The most urgent thing is to write more Mercury
+extensions, so that developers can access a large collection of
+deep learning services through Mercury.
+We need people who publish deep learning models (e.g., LLAMA, Alpaca, etc.)
+to write extensions for their models and make their models compatible with and accessible from Mercury.
+
+2. We also need beta-tester developers to use Mercury for application development
+and provide feedback for potential improvement in the core specification, which includes improvement in Mercury XML syntax, definitions of new tags / call schemes, etc.
+This will make Mercury more sophisticated and more suitable for application development.
+You don't need any sign-up process to become a beta-tester;
+just install Mercury, use it, and provide feedback if you would like to.
+
+The goal of Mercury is to promote open source, open access AI
+and make AI easy to use and accessible for everyone.
+As we move forward to achieving this goal,
+we highly value feedback & pull requests from both the development and the research community!
+
+Our contact email: **trentfellbootman@gmail.com**.
+
 ## Quick Links
 
 [Documentation](https://mercurynn.readthedocs.io/en/latest/)
+
+[Project Homepage](https://trent-fellbootman.github.io/mercury.io/)
+
+[Test PyPI](https://test.pypi.org/project/mercury-nn/)
 
 ## What is Mercury?
 
