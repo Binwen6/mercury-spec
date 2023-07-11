@@ -5,9 +5,8 @@ from typing import Self, Sequence, Tuple, Iterable
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
 
-from python_interface.interface import (
+from .interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
     FilterMatchFailureType

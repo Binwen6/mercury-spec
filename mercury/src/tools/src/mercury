@@ -33,7 +33,6 @@ import argparse
 class CommandTypes(Enum):
     VALIDATE_MANIFEST = "validate-manifest"
     VALIDATE_FILTER = "validate-filter"
-    MATCH_FILTER = "match-filter"
 
 
 # argparse
@@ -54,14 +53,6 @@ filter_validation_subparser = subparsers.add_parser(
 )
 
 filter_validation_subparser.add_argument('filter_file', type=str)
-
-match_filter_subparser = subparsers.add_parser(
-    CommandTypes.MATCH_FILTER.value,
-    help='Matches a manifest against a filter.'
-)
-
-match_filter_subparser.add_argument('manifest_file', type=str)
-match_filter_subparser.add_argument('filter_file', type=str)
 
 args = parser.parse_args()
 
@@ -152,10 +143,6 @@ def main(args) -> int:
 
                 return 1
                 
-        case CommandTypes.MATCH_FILTER.value:
-            # TODO
-            return 1
-        
         case _:
             print(f'Invalid command: {args.command}', file=sys.stderr)
             

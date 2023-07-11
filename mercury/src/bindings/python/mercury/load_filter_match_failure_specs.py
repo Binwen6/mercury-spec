@@ -6,9 +6,7 @@ from pathlib import Path
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-language-interfaces'))
-
-from python_interface.config import Config
+from .config import Config
 
 
 @dataclass

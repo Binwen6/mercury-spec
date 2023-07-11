@@ -8,7 +8,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.manifest_validation import (
+from mercury.manifest_validation import (
     checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult, ManifestSyntaxInvalidityType
 )
 

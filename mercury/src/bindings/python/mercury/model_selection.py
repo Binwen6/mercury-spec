@@ -7,10 +7,9 @@ from .filtering import matchFilter, FilterMatchResult, Filter
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
 
-from python_interface.interface import FileNames, MetadataUtils
-from python_interface.config import Config
+from .interface import FileNames, MetadataUtils
+from .config import Config
 
 
 class ModelCollection:

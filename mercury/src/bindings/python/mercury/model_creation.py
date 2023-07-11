@@ -9,8 +9,7 @@ from .core import Model
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
-from python_interface.interface import MetadataUtils
+from .interface import MetadataUtils
 
 
 # TODO: write tests

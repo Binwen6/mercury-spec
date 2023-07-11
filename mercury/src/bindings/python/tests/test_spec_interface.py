@@ -2,9 +2,10 @@ import unittest
 
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'spec-language-interfaces'))
 
-from python_interface.interface import filterXMLfromArgs
+sys.path.append('..')
+
+from mercury.interface import filterXMLfromArgs
 
 
 class TestFilterXMLfromArgs(unittest.TestCase):
