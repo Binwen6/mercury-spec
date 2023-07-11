@@ -9,7 +9,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import mercury as mc
+import src.mercury_nn as mc
 
 
 class TestModelCreation(unittest.TestCase):

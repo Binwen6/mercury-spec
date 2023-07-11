@@ -4,7 +4,10 @@ from enum import Enum
 
 class Config(Enum):
     # TODO: this value is for TESTING ONLY
-    specRootPath = Path(__file__).resolve().parent.parent.parent.parent.joinpath(Path("spec"))
+    # specRootPath = Path(__file__).resolve().parent.parent.parent.parent.parent.joinpath(Path("spec"))
+    # Set the Mercury specification installation directory below in form of Path("<mercury-specification-installation-path>")
+    # use ABSOLUTE path.
+    specRootPath = Path()
     
     validUsageRootPath = specRootPath.joinpath(Path("valid-usage"))
     filterSyntaxValidUsageFile = validUsageRootPath.joinpath(Path("filter-syntax.xml"))
@@ -18,4 +21,7 @@ class Config(Enum):
     pythonBindingRootPath = Path(__file__).resolve().parent
     
     # TODO: this value is for TESTING ONLY
-    modelCollectionRootPath = pythonBindingRootPath.parent.joinpath(Path("tests/data/sample-model-collection"))
+    # modelCollectionRootPath = pythonBindingRootPath.parent.parent.joinpath(Path("tests/data/sample-model-collection"))
+    # Set the model collection directory below in form of Path("<model-collection-directory>")
+    # use ABSOLUTE path.
+    modelCollectionRootPath = Path()

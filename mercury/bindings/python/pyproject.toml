@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mercury_nn"
+version = "0.0.1"
+authors = [
+  { name="Trent Fellbootman", email="trentfellbootman@gmail.com" },
+]
+description = "A Python binding for Mercury, an AI framework for developers."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "lxml>=4.9.2, <5.0.0"
+]
+
+[project.urls]
+"Homepage" = "https://trent-fellbootman.github.io/mercury.io/"
+"GitHub" = "https://github.com/Trent-Fellbootman/mercury"
+"Documentation" = "https://mercurynn.readthedocs.io/en/latest/"

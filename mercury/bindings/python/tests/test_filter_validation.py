@@ -8,7 +8,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from mercury.filter_validation import (
+from src.mercury_nn.filter_validation import (
     checkFilterSyntax, checkTypeDeclarationFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType
 )
 

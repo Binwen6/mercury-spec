@@ -4,12 +4,12 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import mercury as mc
+import src.mercury_nn as mc
 
 import sys
 import os
 
-from mercury.interface import MetadataUtils
+from src.mercury_nn.interface import MetadataUtils
 
 
 class TestEnumerateModels(unittest.TestCase):

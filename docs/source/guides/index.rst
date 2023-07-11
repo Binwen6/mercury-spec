@@ -6,6 +6,7 @@ Mercury User Guide
     :caption: Contents
 
     introduction.rst
+    installation.rst
     getting-started.rst
     extension-development.rst
     diving-deeper.rst

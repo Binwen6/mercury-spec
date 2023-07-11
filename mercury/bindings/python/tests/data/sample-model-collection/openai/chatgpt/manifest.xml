@@ -33,8 +33,6 @@
                             <named-field name="type">
                                 <type-declaration>
                                     <type-list>
-                                    <!-- `list-type` is a variable-length type. The element inside a `list-type` is interpreted -->
-                                    <!-- as the type of each element. -->
                                         <type-tuple>
                                             <type-string/>
                                             <type-bool/>
@@ -68,12 +66,6 @@
                     </named-field>
                     <named-field name="supportEncryption">
                         <bool>false</bool>
-                    </named-field>
-                    <named-field name="latency">
-                        <time>100ms</time>
-                    </named-field>
-                    <named-field name="costPerToken">
-                        <money>$0.001</money>
                     </named-field>
                 </dict>
             </named-field>

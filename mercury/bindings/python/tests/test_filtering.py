@@ -8,11 +8,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pathlib import Path
 
 # from ..src.filter import match_filter, FilterMatchResult
-from mercury.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
-from mercury.exceptions import InvalidFilterOperationTypeException
+from src.mercury_nn.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
+from src.mercury_nn.exceptions import InvalidFilterOperationTypeException
 
-from mercury.interface import FilterMatchFailureType
-from mercury.config import Config
+from src.mercury_nn.interface import FilterMatchFailureType
+from src.mercury_nn.config import Config
 
 
 # convenient classes
