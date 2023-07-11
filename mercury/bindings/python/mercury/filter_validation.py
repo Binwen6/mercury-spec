@@ -94,6 +94,7 @@ def _validation_result_from_children_results(children_validation_results: Iterab
     return _get_first_invalid_child_result(children_validation_results)
 
 
+# TODO: add tests for int & float
 def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
     filterOpAttribName: str = AttributeNames.filterOperationTypeAttribute.value
     
@@ -104,7 +105,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
         return filterOpAttribName in element.keys()
     
     match element.tag:
-        case TagNames.dictType.value:
+        case TagNames.DICT.value:
             if not hasFilterOpAttribute(element):
                 # must have a filter op attribute
                 return SyntaxValidationResult.invalid(
@@ -118,7 +119,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                     # all children must be of named-field type
                     children_tags = {child.tag for child in element}
                     
-                    if children_tags != {TagNames.namedField.value}:
+                    if children_tags != {TagNames.NAMED_FIELD.value}:
                         # invalid tag for a child of dict
                         return SyntaxValidationResult.invalid(
                             invalidityType=_InvalidityTypes.DICT_INVALID_CHILD_TAG,
@@ -160,7 +161,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityPosition=invalidityPosition
                     )
 
-        case TagNames.listType.value:
+        case TagNames.LIST.value:
             if not hasFilterOpAttribute(element):
                 # must have a filter op attribute
                 return SyntaxValidationResult.invalid(
@@ -189,7 +190,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityPosition=invalidityPosition
                     )
                 
-        case TagNames.namedField.value:
+        case TagNames.NAMED_FIELD.value:
             if AttributeNames.nameAttribute.value not in element.keys():
                 # named field elements must have a name attribute
                 return SyntaxValidationResult.invalid(
@@ -206,7 +207,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return checkFilterSyntax(element[0])
 
-        case TagNames.string.value:
+        case TagNames.STRING.value:
             if not hasFilterOpAttribute(element):
                 # must have a filter op attribute
                 return SyntaxValidationResult.invalid(
@@ -219,7 +220,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                     if len(element) > 0:
                         # string filters can have no children
                         return SyntaxValidationResult.invalid(
-                            invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+                            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
                             invalidityPosition=invalidityPosition
                         )
                     
@@ -241,8 +242,141 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
                         invalidityPosition=invalidityPosition
                     )
+        
+        case TagNames.BOOL.value:
+            if not hasFilterOpAttribute(element):
+                # must have a filter op attribute
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            match element.attrib[filterOpAttribName]:
+                case FilterOperationTypes.EQUALS.value:
+                    # TODO: check for validity of boolean literal
+                    if len(element) > 0:
+                        # terminal filters can have no children
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return SyntaxValidationResult.valid()
 
-        case TagNames.typeDeclaration.value:
+                case FilterOperationTypes.NONE.value:
+                    if len(element) > 0 or element.text is not None:
+                        # if the filter operation is none, there cannot be children or enclosed content
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return SyntaxValidationResult.valid()
+
+                case _:
+                    # invalid filter operation type
+                    return SyntaxValidationResult.invalid(
+                        invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+                        invalidityPosition=invalidityPosition
+                    )
+        
+        case TagNames.INT.value:
+            if not hasFilterOpAttribute(element):
+                # must have a filter op attribute
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            match element.attrib[filterOpAttribName]:
+                case FilterOperationTypes.EQUALS.value | \
+                        FilterOperationTypes.GREATER_THAN.value | \
+                        FilterOperationTypes.GREATER_THAN_OR_EQUALS.value | \
+                        FilterOperationTypes.LESS_THAN.value | \
+                        FilterOperationTypes.LESS_THAN_OR_EQUALS.value:
+                    if len(element) > 0:
+                        # terminal filters can have no children
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                            invalidityPosition=invalidityPosition
+                        )
+                        
+                    try:
+                        number = int(element.text.strip())
+                        
+                        return SyntaxValidationResult.valid()
+                    except Exception:
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.INT_INVALID_INT_LITERAL,
+                            invalidityPosition=invalidityPosition
+                        )
+
+                case FilterOperationTypes.NONE.value:
+                    if len(element) > 0 or element.text is not None:
+                        # if the filter operation is none, there cannot be children or enclosed content
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return SyntaxValidationResult.valid()
+
+                case _:
+                    # invalid filter operation type
+                    return SyntaxValidationResult.invalid(
+                        invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+                        invalidityPosition=invalidityPosition
+                    )
+        
+        case TagNames.FLOAT.value:
+            if not hasFilterOpAttribute(element):
+                # must have a filter op attribute
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            match element.attrib[filterOpAttribName]:
+                case FilterOperationTypes.EQUALS.value | \
+                        FilterOperationTypes.GREATER_THAN.value | \
+                        FilterOperationTypes.GREATER_THAN_OR_EQUALS.value | \
+                        FilterOperationTypes.LESS_THAN.value | \
+                        FilterOperationTypes.LESS_THAN_OR_EQUALS.value:
+                    if len(element) > 0:
+                        # terminal filters can have no children
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                            invalidityPosition=invalidityPosition
+                        )
+                        
+                    try:
+                        number = float(element.text.strip())
+                        
+                        return SyntaxValidationResult.valid()
+                    except Exception:
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.FLOAT_INVALID_FLOAT_LITERAL,
+                            invalidityPosition=invalidityPosition
+                        )
+
+                case FilterOperationTypes.NONE.value:
+                    if len(element) > 0 or element.text is not None:
+                        # if the filter operation is none, there cannot be children or enclosed content
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return SyntaxValidationResult.valid()
+
+                case _:
+                    # invalid filter operation type
+                    return SyntaxValidationResult.invalid(
+                        invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+                        invalidityPosition=invalidityPosition
+                    )
+
+        case TagNames.TYPE_DECLARATION.value:
             if not hasFilterOpAttribute(element):
                 # must have a filter op attribute
                 return SyntaxValidationResult.invalid(
@@ -286,6 +420,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
             )
 
 
+# TODO: write tests for int / float support
 def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
     filterOpAttribName: str = AttributeNames.filterOperationTypeAttribute.value
 
@@ -296,21 +431,14 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
         return filterOpAttribName in element.keys()
     
     match element.tag:
-        case TypeDeclarationTagNames.STRING.value:
+        case TypeDeclarationTagNames.STRING.value | \
+                TypeDeclarationTagNames.BOOL.value | \
+                TypeDeclarationTagNames.INT.value | \
+                TypeDeclarationTagNames.FLOAT.value:
             if len(element) > 0 or element.text is not None:
                 # primitive, atomic types declarations can have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_ILLEGAL_CONTENT,
-                    invalidityPosition=invalidityPosition
-                )
-            
-            return SyntaxValidationResult.valid()
-        
-        case TypeDeclarationTagNames.BOOL.value:
-            if len(element) > 0 or element.text is not None:
-                # primitive, atomic types declarations can have no children or enclosed content
-                return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
                     invalidityPosition=invalidityPosition
                 )
             
@@ -547,21 +675,3 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
                 invalidityType=_InvalidityTypes.INVALID_TAG,
                 invalidityPosition=invalidityPosition
             )
-
-
-def validateManifest(manifest: ET._Element):
-    """Validates manifest data, throwing an error if the manifest is invalid.
-
-    Args:
-        manifest (ET._Element): The manifest data to validated, in parsed XML form.
-    """
-    
-    # syntax check
-    
-
-def validateFilter(filterElement: ET._Element):
-    """Validates a filter in XML form, throwing an error if the filter is invalid.
-
-    Args:
-        filterElement (ET._Element): The filter to validate.
-    """

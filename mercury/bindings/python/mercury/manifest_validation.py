@@ -97,10 +97,10 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
     invalidityPosition = _InvalidityPosition(element.sourceline)
 
     match element.tag:
-        case TagNames.dictType.value:
+        case TagNames.DICT.value:
             # all children must be of named-field type
             children_tags = {child.tag for child in element}
-            if children_tags != {TagNames.namedField.value}:
+            if children_tags != {TagNames.NAMED_FIELD.value}:
                 # invalid tag for a child of dict
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.DICT_INVALID_CHILD_TAG,
@@ -125,11 +125,11 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TagNames.listType.value:
+        case TagNames.LIST.value:
             children_validity = [checkSyntax(child) for child in element]
             return _validation_result_from_children_results(children_validity)
 
-        case TagNames.namedField.value:
+        case TagNames.NAMED_FIELD.value:
             # element must have a "name" attribute
             if AttributeNames.nameAttribute.value not in element.attrib.keys():
                 # element does not have a "name" attribute
@@ -148,17 +148,65 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return checkSyntax(element[0])
 
-        case TagNames.string.value:
+        case TagNames.STRING.value:
             if len(element) > 0:
                 # child element is detected on a string element
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+                    invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
                     invalidityPosition=invalidityPosition
                 )
             
             return SyntaxValidationResult.valid()
+        
+        case TagNames.BOOL.value:
+            if len(element) > 0:
+                # child element is detected on a bool element
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            # TODO: check validity of bool literal
+            
+            return SyntaxValidationResult.valid()
+        
+        case TagNames.INT.value:
+            if len(element) > 0:
+                # child element is detected on a terminal element
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            try:
+                number = int(element.text.strip())
 
-        case TagNames.typeDeclaration.value:
+                return SyntaxValidationResult.valid()
+            except Exception:
+                return  SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.INT_INVALID_INT_LITERAL,
+                    invalidityPosition=invalidityPosition
+                )
+        
+        case TagNames.FLOAT.value:
+            if len(element) > 0:
+                # child element is detected on a terminal element
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            try:
+                number = float(element.text.strip())
+
+                return SyntaxValidationResult.valid()
+            except Exception:
+                return  SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.FLOAT_INVALID_FLOAT_LITERAL,
+                    invalidityPosition=invalidityPosition
+                )
+
+        case TagNames.TYPE_DECLARATION.value:
             if len(element) != 1:
                 # type declaration elements must have exactly one child
                 return SyntaxValidationResult.invalid(
@@ -181,21 +229,14 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
     invalidityPosition = _InvalidityPosition(element.sourceline)
 
     match element.tag:
-        case TypeDeclarationTagNames.STRING.value:
+        case TypeDeclarationTagNames.STRING.value | \
+                TypeDeclarationTagNames.BOOL.value | \
+                TypeDeclarationTagNames.INT.value | \
+                TypeDeclarationTagNames.FLOAT.value:
             if len(element) > 0 or element.text is not None:
-                # a string / bool type declaration must have no children or enclosed content
+                # a terminal type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_ILLEGAL_CONTENT,
-                    invalidityPosition=invalidityPosition
-                )
-            
-            return SyntaxValidationResult.valid()
-        
-        case TypeDeclarationTagNames.BOOL.value:
-            if len(element) > 0 or element.text is not None:
-                # a string / bool type declaration must have no children or enclosed content
-                return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT,
+                    invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
                     invalidityPosition=invalidityPosition
                 )
             

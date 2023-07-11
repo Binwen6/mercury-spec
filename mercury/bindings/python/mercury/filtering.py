@@ -156,7 +156,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
         )
 
     match filterElement.tag:
-        case TagNames.dictType.value:
+        case TagNames.DICT.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.ALL.value:
                     # match each child element
@@ -184,7 +184,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                     return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
-        case TagNames.listType.value:
+        case TagNames.LIST.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.ALL.value:
                     if len(dataElement) < len(filterElement):
@@ -203,10 +203,10 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                     return _result_from_children_results(children_match_results)
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.success()
-        case TagNames.namedField.value:
+        case TagNames.NAMED_FIELD.value:
             # just raise since it should be guaranteed that named field will always be unwrapped before calling `match`
             raise InvalidTagException()
-        case TagNames.string.value:
+        case TagNames.STRING.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 # TODO: add more filter types for strings, e.g., regular expressions
                 case FilterOperationTypes.NONE.value:
@@ -220,7 +220,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
                 case _:
                     raise InvalidFilterOperationTypeException()
-        case TagNames.typeDeclaration.value:
+        case TagNames.TYPE_DECLARATION.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.success()
@@ -228,11 +228,91 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                     return _matchTypeDeclarationFilter(filterElement[0], dataElement[0])
                 case _:
                     raise InvalidFilterOperationTypeException()
-        case TagNames.bool.value:
+        case TagNames.BOOL.value:
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
                 # TODO: add more filter types for bool, e.g., regular expressions
                 case FilterOperationTypes.NONE.value:
                     return FilterMatchResult.success()
+                case _:
+                    raise InvalidFilterOperationTypeException()
+        
+        case TagNames.INT.value:
+            match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
+                case FilterOperationTypes.EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if int(dataElement.text.strip()) == int(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.LESS_THAN.value:
+                    return FilterMatchResult.success() \
+                        if int(dataElement.text.strip()) < int(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.LESS_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if int(dataElement.text.strip()) <= int(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.GREATER_THAN.value:
+                    return FilterMatchResult.success() \
+                        if int(dataElement.text.strip()) > int(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.GREATER_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if int(dataElement.text.strip()) >= int(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case _:
+                    raise InvalidFilterOperationTypeException()
+                
+        case TagNames.FLOAT.value:
+            match filterElement.attrib[AttributeNames.filterOperationTypeAttribute.value]:
+                case FilterOperationTypes.EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if float(dataElement.text.strip()) == float(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.LESS_THAN.value:
+                    return FilterMatchResult.success() \
+                        if float(dataElement.text.strip()) < float(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.LESS_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if float(dataElement.text.strip()) <= float(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.GREATER_THAN.value:
+                    return FilterMatchResult.success() \
+                        if float(dataElement.text.strip()) > float(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
+                case FilterOperationTypes.GREATER_THAN_OR_EQUALS.value:
+                    return FilterMatchResult.success() \
+                        if float(dataElement.text.strip()) >= float(filterElement.text.strip()) \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                            failurePosition=failurePosition
+                        )
                 case _:
                     raise InvalidFilterOperationTypeException()
         case _:

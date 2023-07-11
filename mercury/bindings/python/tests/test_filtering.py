@@ -5,11 +5,14 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from pathlib import Path
+
 # from ..src.filter import match_filter, FilterMatchResult
 from mercury.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
 from mercury.exceptions import InvalidFilterOperationTypeException
 
 from mercury.interface import FilterMatchFailureType
+from mercury.config import Config
 
 
 # convenient classes
@@ -189,9 +192,12 @@ class TestFilterMatch(unittest.TestCase):
         self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.success())
 
     def test_base_model_match(self):
+        with open(str(Config.baseModelFilterPath.value), 'r') as f:
+            filterElement = ET.parse(f).getroot()
+
         result = matchFilter(
-            filterObject=Filter.fromXMLElement(ET.parse('data/base_model.xml').getroot()),
-            dataElement=ET.parse('data/alexnet_manifest.xml').getroot()[0][0]
+            filterObject=Filter.fromXMLElement(filterElement),
+            dataElement=ET.parse(Config.modelCollectionRootPath.value.joinpath(Path('alexnet/manifest.xml'))).getroot()
         )
         
         self.assertEqual(result, FilterMatchResult.success())
@@ -367,6 +373,259 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+    
+    def test_float_comparisons(self):
+        filterElement = """
+        <float filter="equals">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.0</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <float filter="equals">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.1</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+
+        filterElement = """
+        <float filter="gt">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.1</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <float filter="gt">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.0</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <float filter="ge">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.0</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <float filter="ge">1.0</float>
+        """
+
+        dataElement = """
+        <float>0.9</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <float filter="lt">1.0</float>
+        """
+
+        dataElement = """
+        <float>0.9</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <float filter="lt">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.0</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <float filter="le">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.0</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <float filter="le">1.0</float>
+        """
+
+        dataElement = """
+        <float>1.1</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+    def test_int_comparisons(self):
+        filterElement = """
+        <int filter="equals">1</int>
+        """
+
+        dataElement = """
+        <int>1</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <int filter="equals">1</int>
+        """
+
+        dataElement = """
+        <int>2</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+
+        filterElement = """
+        <int filter="gt">1</int>
+        """
+
+        dataElement = """
+        <int>2</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <int filter="gt">1</int>
+        """
+
+        dataElement = """
+        <int>1</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <int filter="ge">1</int>
+        """
+
+        dataElement = """
+        <int>1</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <int filter="ge">1</int>
+        """
+
+        dataElement = """
+        <int>0</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <int filter="lt">1</int>
+        """
+
+        dataElement = """
+        <int>0</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <int filter="lt">1</int>
+        """
+
+        dataElement = """
+        <int>1</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+        
+        filterElement = """
+        <int filter="le">1</int>
+        """
+
+        dataElement = """
+        <int>1</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+
+        filterElement = """
+        <int filter="le">1</int>
+        """
+
+        dataElement = """
+        <int>2</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2)
+        ))
+
 
     def test_match_string_not_equal(self):
         # convenient objects

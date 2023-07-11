@@ -247,7 +247,71 @@ class TestCheckFilterSyntax(unittest.TestCase):
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_int_with_equals_filter_operation(self):
+        xml_string = '''
+                       <int filter="lt">1</int>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_int_with_invalid_literal(self):
+        xml_string = '''
+                       <int filter="equals">1.0</int>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INT_INVALID_INT_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+
+    def test_invalid_int_with_excess_child_element(self):
+        xml_string = '''
+                       <int filter="equals">value1
+                           <child>child element</child>
+                       </int>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_float_with_equals_filter_operation(self):
+        xml_string = '''
+                       <float filter="gt">1</float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <float filter="equals">1.5</float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_float_with_invalid_literal(self):
+        xml_string = '''
+                       <float filter="equals">test</float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.FLOAT_INVALID_FLOAT_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+
+    def test_invalid_float_with_excess_child_element(self):
+        xml_string = '''
+                       <float filter="equals">value1
+                           <child>child element</child>
+                       </float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
         ))
 
@@ -354,6 +418,67 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         element = ET.fromstring(xml_string)
         result = checkTypeDeclarationFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_type_string_with_no_filter_operation(self):
+        xml_string = '''
+                       <type-string>test</type-string>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_type_bool_with_no_filter_operation(self):
+        xml_string = '''
+                       <type-bool></type-bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_type_bool_with_illegal_content(self):
+        xml_string = '''
+                       <type-bool>test</type-bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_type_int_with_no_filter_operation(self):
+        xml_string = '''
+                       <type-int></type-int>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_type_int_with_illegal_content(self):
+        xml_string = '''
+                       <type-int>test</type-int>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_type_float_with_no_filter_operation(self):
+        xml_string = '''
+                       <type-float></type-float>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_type_float_with_illegal_content(self):
+        xml_string = '''
+                       <type-float>test</type-float>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_valid_type_tensor_with_all_filter_operation(self):
         xml_string = '''

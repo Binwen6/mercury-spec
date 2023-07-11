@@ -8,6 +8,6 @@ from .interface import TagNames, AttributeNames
 
 # TODO: write tests
 def dictElementToDict(dictElement: ET._Element):
-    assert dictElement.tag == TagNames.dictType.value
+    assert dictElement.tag == TagNames.DICT.value
     
     return {item.attrib[AttributeNames.nameAttribute.value]: item[0] for item in dictElement}

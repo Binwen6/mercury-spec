@@ -49,7 +49,7 @@ class TestSyntaxValidationResult(unittest.TestCase):
         )
 
         b = _InvalidityInfo(
-            invalidityType=_InvalidityTypes.BOOL_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(1)
         )
 
@@ -90,7 +90,7 @@ class TestSyntaxValidationResult(unittest.TestCase):
         )
 
         b = SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.BOOL_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(1)
         )
 
@@ -228,7 +228,90 @@ class TestCheckSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.STRING_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkSyntax_validBool(self):
+        xml_data = """
+                    <bool>value1</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkSyntax_invalidBool_invalidChild(self):
+        xml_data = """
+                    <bool>
+                        <invalid-child>Invalid</invalid-child>
+                    </bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkSyntax_validInt(self):
+        xml_data = """
+                    <int>1</int>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkSyntax_invalidInt_invalidChild(self):
+        xml_data = """
+                    <int>
+                        <invalid-child>Invalid</invalid-child>
+                    </int>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkSyntax_invalidInt_invalidIntLiteral(self):
+        xml_data = """
+                    <int>1.0</int>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INT_INVALID_INT_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkSyntax_validFloat(self):
+        xml_data = """
+                    <float>1</float>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <float>1.0</float>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkSyntax_invalidFloat_invalidChild(self):
+        xml_data = """
+                    <float>
+                        <invalid-child>Invalid</invalid-child>
+                    </float>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkSyntax_invalidFloat_invalidFloatLiteral(self):
+        xml_data = """
+                    <float>test</float>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.FLOAT_INVALID_FLOAT_LITERAL,
             invalidityPosition=_InvalidityPosition(2)
         ))
 
@@ -268,7 +351,58 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TYPE_DECLARATION_STRING_ILLEGAL_CONTENT,
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkTypeDeclarationSyntax_validBool(self):
+        xml_data = """
+                    <type-bool></type-bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkTypeDeclarationSyntax_invalidBool_illegalContent(self):
+        xml_data = """
+                    <type-bool>test</type-bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertTrue(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkTypeDeclarationSyntax_validInt(self):
+        xml_data = """
+                    <type-int></type-int>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkTypeDeclarationSyntax_invalidInt_illegalContent(self):
+        xml_data = """
+                    <type-int>test</type-int>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertTrue(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_checkTypeDeclarationSyntax_validFloat(self):
+        xml_data = """
+                    <type-float></type-float>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_checkTypeDeclarationSyntax_invalidFloat_illegalContent(self):
+        xml_data = """
+                    <type-float>test</type-float>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertTrue(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
         ))
 

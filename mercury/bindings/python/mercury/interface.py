@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 # TODO: avoid duplication with definition in utils.py
 def dictElementToDict(dictElement: ET._Element):
-    assert dictElement.tag == TagNames.dictType.value
+    assert dictElement.tag == TagNames.DICT.value
     
     return {item.attrib[AttributeNames.nameAttribute.value]: item[0] for item in dictElement}
 
@@ -27,12 +27,14 @@ class KeyNames(Enum):
 
 
 class TagNames(Enum):
-    dictType = 'dict'
-    listType = 'list'
-    namedField = 'named-field'
-    string = 'string'
-    bool = 'bool'
-    typeDeclaration = 'type-declaration'
+    DICT = 'dict'
+    LIST = 'list'
+    NAMED_FIELD = 'named-field'
+    STRING = 'string'
+    BOOL = 'bool'
+    INT = 'int'
+    FLOAT = 'float'
+    TYPE_DECLARATION = 'type-declaration'
 
 
 class AttributeNames(Enum):
@@ -46,6 +48,11 @@ class FilterOperationTypes(Enum):
     EQUALS = 'equals'
 
     TYPE_MATCH = 'type-match'
+    
+    LESS_THAN = 'lt'
+    LESS_THAN_OR_EQUALS = 'le'
+    GREATER_THAN = 'gt'
+    GREATER_THAN_OR_EQUALS = 'ge'
 
 
 class TypeDeclarationFilterOperationTypes(Enum):
@@ -184,6 +191,8 @@ class TypeDeclarationTagNames(Enum):
     # primitives
     STRING = 'type-string'
     BOOL = 'type-bool'
+    INT = 'type-int'
+    FLOAT = 'type-float'
     TENSOR = 'type-tensor'
 
     # composers
@@ -214,7 +223,10 @@ class FilterSyntaxInvalidityType(Enum):
     NAMED_FIELD_MISSING_NAME_ATTRIBUTE = 'NAMED_FIELD_MISSING_NAME_ATTRIBUTE'
     NAMED_FIELD_INCORRECT_CHILDREN_COUNT = 'NAMED_FIELD_INCORRECT_CHILDREN_COUNT'
     
-    STRING_ILLEGAL_CHILD = 'STRING_ILLEGAL_CHILD'
+    ILLEGAL_CHILD_ON_TERMINAL_ELEMENT = 'ILLEGAL_CHILD_ON_TERMINAL_ELEMENT'
+    
+    INT_INVALID_INT_LITERAL = 'INT_INVALID_INT_LITERAL'
+    FLOAT_INVALID_FLOAT_LITERAL = 'FLOAT_INVALID_FLOAT_LITERAL'
     
     TYPE_DECLARATION_INCORRECT_CHILD_COUNT = 'TYPE_DECLARATION_INCORRECT_CHILD_COUNT'
     
@@ -223,9 +235,7 @@ class FilterSyntaxInvalidityType(Enum):
     TYPE_DECLARATION_DIM_ILLEGAL_CHILD = 'TYPE_DECLARATION_DIM_ILLEGAL_CHILD'
     TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL = 'TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL'
     
-    TYPE_DECLARATION_STRING_ILLEGAL_CONTENT = 'TYPE_DECLARATION_STRING_ILLEGAL_CONTENT'
-    
-    TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT = 'TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT'
+    TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT = 'TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT'
     
     TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT = 'TYPE_DECLARATION_LIST_INCORRECT_CHILD_COUNT'
     
@@ -245,17 +255,15 @@ class ManifestSyntaxInvalidityType(Enum):
     NAMED_FIELD_MISSING_NAME_ATTRIBUTE = 'NAMED_FIELD_MISSING_NAME_ATTRIBUTE'
     NAMED_FIELD_INCORRECT_CHILDREN_COUNT = 'NAMED_FIELD_INCORRECT_CHILDREN_COUNT'
     
-    # a string element cannot have any children
-    STRING_ILLEGAL_CHILD = 'STRING_ILLEGAL_CHILD'
-    
-    # a bool element cannot have any children
-    BOOL_ILLEGAL_CHILD = 'BOOL_ILLEGAL_CHILD'
+    # a terminal element cannot have any children
+    ILLEGAL_CHILD_ON_TERMINAL_ELEMENT = 'ILLEGAL_CHILD_ON_TERMINAL_ELEMENT'
+
+    INT_INVALID_INT_LITERAL = 'INT_INVALID_INT_LITERAL'
+    FLOAT_INVALID_FLOAT_LITERAL = 'FLOAT_INVALID_FLOAT_LITERAL'
     
     TYPE_DECLARATION_INCORRECT_CHILD_COUNT = 'TYPE_DECLARATION_INCORRECT_CHILD_COUNT'
     
-    TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT = 'TYPE_DECLARATION_BOOL_ILLEGAL_CONTENT'
-
-    TYPE_DECLARATION_STRING_ILLEGAL_CONTENT = 'TYPE_DECLARATION_STRING_ILLEGAL_CONTENT'
+    TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT = 'TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT'
     
     TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG = 'TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG'
 
@@ -279,6 +287,8 @@ class FilterMatchFailureType(Enum):
     LIST_INSUFFICIENT_CHILDREN = 'LIST_INSUFFICIENT_CHILDREN'
     
     STRING_VALUE_NOT_EQUAL = 'STRING_VALUE_NOT_EQUAL'
+
+    NUMERIC_FAILED_COMPARISON = 'NUMERIC_FAILED_COMPARISON'
     
     TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT = 'TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT'
 

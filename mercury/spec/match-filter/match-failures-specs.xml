@@ -32,6 +32,14 @@
     </match-failure>
 
     <match-failure>
+        <name>NUMERIC_FAILED_COMPARISON</name>
+        <description>
+            The element being compared is a numeric type (e.g., int, float, etc.),
+            and it does not satisfy the requirement specified in the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
         <name>TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT</name>
         <description>
             The element being compared is a tuple type declaration,

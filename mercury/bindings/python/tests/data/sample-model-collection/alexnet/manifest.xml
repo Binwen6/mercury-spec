@@ -44,16 +44,16 @@
                             <named-field name="type">
                                 <type-declaration>
                                     <type-named-value-collection>
-                                        <type-named-value name="bird"><type-string/></type-named-value>
-                                        <type-named-value name="dog"><type-string/></type-named-value>
-                                        <type-named-value name="truck"><type-string/></type-named-value>
-                                        <type-named-value name="cat"><type-string/></type-named-value>
-                                        <type-named-value name="koala"><type-string/></type-named-value>
-                                        <type-named-value name="car"><type-string/></type-named-value>
-                                        <type-named-value name="airplane"><type-string/></type-named-value>
-                                        <type-named-value name="duck"><type-string/></type-named-value>
-                                        <type-named-value name="goose"><type-string/></type-named-value>
-                                        <type-named-value name="traffic-sign"><type-string/></type-named-value>
+                                        <type-named-value name="bird"><type-float/></type-named-value>
+                                        <type-named-value name="dog"><type-float/></type-named-value>
+                                        <type-named-value name="truck"><type-float/></type-named-value>
+                                        <type-named-value name="cat"><type-float/></type-named-value>
+                                        <type-named-value name="koala"><type-float/></type-named-value>
+                                        <type-named-value name="car"><type-float/></type-named-value>
+                                        <type-named-value name="airplane"><type-float/></type-named-value>
+                                        <type-named-value name="duck"><type-float/></type-named-value>
+                                        <type-named-value name="goose"><type-float/></type-named-value>
+                                        <type-named-value name="traffic-sign"><type-float/></type-named-value>
                                     </type-named-value-collection>
                                 </type-declaration>
                             </named-field>

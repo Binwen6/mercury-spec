@@ -3,7 +3,8 @@ from enum import Enum
 
 
 class Config(Enum):
-    specRootPath = Path(__file__).parent.parent.parent.joinpath(Path("spec"))
+    # TODO: this value is for TESTING ONLY
+    specRootPath = Path(__file__).resolve().parent.parent.parent.parent.joinpath(Path("spec"))
     
     validUsageRootPath = specRootPath.joinpath(Path("valid-usage"))
     filterSyntaxValidUsageFile = validUsageRootPath.joinpath(Path("filter-syntax.xml"))
@@ -14,7 +15,7 @@ class Config(Enum):
     filtersRootPath = specRootPath.joinpath(Path("filters"))
     baseModelFilterPath = filtersRootPath.joinpath(Path("base_model.xml"))
 
-    pythonBindingRootPath = Path(__file__).parent
+    pythonBindingRootPath = Path(__file__).resolve().parent
     
-    # TODO: this configuration is for TESTING ONLY
+    # TODO: this value is for TESTING ONLY
     modelCollectionRootPath = pythonBindingRootPath.parent.joinpath(Path("tests/data/sample-model-collection"))

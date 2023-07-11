@@ -5,25 +5,22 @@ from enum import Enum
 import sys
 import os
 
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'spec-language-interfaces'))
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent.joinpath(Path('bindings/python'))))
 
 from lxml import etree as ET
 
-import filter_validation
-from filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
-import manifest_validation
-from manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
+from mercury import filter_validation
+from mercury.filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
+from mercury import manifest_validation
+from mercury.manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
 
-from load_valid_usages import loadValidUsage
-from load_filter_match_failure_specs import loadFilterMatchFailureSpecs
+from mercury.load_valid_usages import loadValidUsage
+from mercury.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
 
-
-
-from python_interface.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
-from python_interface.config import Config
-
-sys.path.append(str(Config.pythonBindingRootPath.value.parent))
+from mercury.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
+from mercury.config import Config
 
 from mercury.filtering import Filter, matchFilter
 
