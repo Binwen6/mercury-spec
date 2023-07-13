@@ -7,7 +7,7 @@ so that |project_name| supports using your model.
 What is a |project_name| Model Extension?
 -----------------------------------------
 
-If you have read the :doc:`introduction </introduction>` or the :doc:`getting-started tutorial </getting-started>`,
+If you have read the :doc:`introduction </guides/introduction>` or the :doc:`getting-started tutorial </guides/getting-started>`,
 you should know that |project_name| decides which model to use on the user's platform at run-time, instead of develop time.
 
 How does |project_name| find the available models on a platform?
