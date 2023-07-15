@@ -20,7 +20,11 @@ it also serves as a good introduction to developing AI-powered applications.
 Throughout the tutorial, you will be introduced to several fundamental concepts,
 methods and principles for developing applications that use AI.
 
-**# TODO: Currently, there is binding for Python only.**
+Notice that this tutorial requires that you have at least a chat-completion model and an image-generation model available on your device.
+If you don't, follow the instructions in the :ref:`installation guide <sample-extensions-installation>` to install the model extensions for ChatGPT and DALL E;
+they are known to work with this tutorial.
+
+In addition, this tutorial requires `matplotlib`.
 
 Defining your needs
 -------------------
@@ -255,8 +259,8 @@ and if so, what to feed into the image-generation model.
 This is what the `illustration_decision_input` prompt do.
 Notice that we are giving to the model only that prompt, instead of the whole message history.
 If the model decides to generate an illustration, we call the image generation model,
-retrieve the generated image and save it as a file.
-In a real application, of course, the image should be displayed on screen instead of being saved to disk.
+then retrieve and use matplotlib to show the generated image.
+In a real application, of course, you should use something more user-friendly than `matplotlib.pyplot`.
 The lines after that are self-explanatory.
 
 Graceful Shutdown
@@ -292,6 +296,11 @@ Summary
 -------
 
 Congratulations! In this tutorial, you have learned the basics of |project_name|, as well as AI application development.
+
+If you try using the chat bot, you may notice that it often fails to generate images.
+As this is just a simple tutorial with a few lines of code, such a "bug" is expected.
+If you would want the application to perform better, you will need to adopt additional techniques which requires more code,
+or use a toolkit for AI application development, such as Athena (**# TODO: Athena is still under development**).
 
 Next, check out the tutorial on :doc:`extension development </guides/extension-development>`
 to learn how to allow |project_name| to use deep learning models that you developed!

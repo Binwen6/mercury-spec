@@ -78,14 +78,18 @@ You can place the model collection directory wherever you like, e.g.:
     
     mkdir ~/mercury-extensions
 
+.. _sample-extensions-installation:
+
 If you want some predefined models to start with (so that you will be able to use those models in |project_name|),
-there is an extension for GPT-3.5 Turbo (i.e., ChatGPT) developed for testing purposes in the |project_name| GitHub repository,
-under `<path-to-cloned-repo>/mercury/bindings/python/tests/data/sample-model-collection/openai/chatgpt`
+there are extensions for GPT-3.5 Turbo (i.e., ChatGPT) and DALL E developed for demonstration purposes in the |project_name| GitHub repository,
+under `<path-to-cloned-repo>/sample-model-collection/openai`.
 To install the extension, copy the extension folder to your model collection directory, e.g.:
 
 .. code-block:: bash
 
-    cp -r <path-to-cloned-repo>/mercury/bindings/python/tests/data/sample-model-collection/openai/chatgpt ~/mercury-extensions
+    cp -r <path-to-cloned-repo>/sample-model-collection/openai ~/mercury-extensions
+
+Notice that the Python implementations for the extensions require `openai`, `pillow`, and `numpy` to work.
 
 The procedure above which installs the ChatGPT extension is also applicable to other extensions.
 Generally, an extension is just a folder containing a bunch of files (which typically includes a `manifest.xml` at top-level),
