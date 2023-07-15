@@ -3,7 +3,7 @@ from typing import Tuple, Sequence
 import sys
 sys.path.append('../../../../..')
 
-import src.mercury_nn as mc
+import mercury_nn as mc
 
 import os
 import openai

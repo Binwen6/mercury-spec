@@ -1,45 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dict>
-    <named-field name="modelSpecs">
+    <named-field name="specs">
         <dict>
-            <named-field name="metadata">
+            <named-field name="header">
                 <dict>
                     <named-field name="name">
-                        <string>AlexNet</string>
+                        <string>ChatGPT-cloud</string>
                     </named-field>
                     <named-field name="class">
-                        <string>image-classification</string>
+                        <string>chat-completion</string>
                     </named-field>
                     <named-field name="description">
-                        <string>An image classification model.</string>
+                        <string>A chat-completion model.</string>
                     </named-field>
                 </dict>
             </named-field>
             <named-field name="capabilities">
-                <list/>
+                <list>
+                    <string>instruction-comprehension</string>
+                    <string>question-answering</string>
+                    <string>world-knowledge</string>
+                    <string>question-asking</string>
+                    <string>task-breakdown</string>
+                </list>
             </named-field>
             <named-field name="callSpecs">
                 <dict>
                     <named-field name="callScheme">
-                        <string>image-classification</string>
+                        <string>chat-completion</string>
                     </named-field>
                     <named-field name="input">
                         <dict>
                             <named-field name="type">
-                                <type-declaration>image[224, 224, 3]</type-declaration>
+                                <type-declaration>
+                                    <type-list>
+                                        <type-tuple>
+                                            <type-string/>
+                                            <type-bool/>
+                                        </type-tuple>
+                                    </type-list>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
-                                <string>The image to classify, with width, height, and channels being 224, 224, and 3.</string>
+                                <string>An list of chat messages. The first element of the tuple is the content, the second being true if the message is user-sent, false if bot-sent.</string>
                             </named-field>
                         </dict>
                     </named-field>
                     <named-field name="output">
                         <dict>
                             <named-field name="type">
-                                <type-declaration>category-scores[bird, dog, truck, cat, koala, car, airplane, duck, goose, traffic-sign]</type-declaration>
+                                <type-declaration>
+                                    <type-string/>
+                                </type-declaration>
                             </named-field>
                             <named-field name="description">
-                                <string>The scores of the categories that the image may belong to.</string>
+                                <string>The next bot-sent message.</string>
                             </named-field>
                         </dict>
                     </named-field>
@@ -48,10 +63,10 @@
             <named-field name="properties">
                 <dict>
                     <named-field name="deploymentType">
-                        <string>local</string>
+                        <string>cloud</string>
                     </named-field>
-                    <named-field name="latency">
-                        <time>1ms</time>
+                    <named-field name="supportEncryption">
+                        <bool>false</bool>
                     </named-field>
                 </dict>
             </named-field>

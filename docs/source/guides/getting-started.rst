@@ -1,8 +1,6 @@
 Getting Started with |project_name|
 ===================================
 
-**# TODO: Code sample won't work for now since no there is currently no image-generation model extension.**
-
 This tutorial introduces some basic concepts in |project_name| and
 walks you through the basic steps of creating an AI-powered application with |project_name|.
 Basically, they are:
@@ -92,11 +90,12 @@ Hence, we define the filter in the following way:
 .. code-block:: python
 
     # import libraries
-    import mercury as mc
+    import mercury_nn as mc
+    import matplotlib.pyplot as plt
 
 
     chat_filter = mc.Filter.fromArgs(callScheme="chat-completion",
-                                     capabilities=["instruction-comprehension"])
+                                    capabilities=["instruction-comprehension"])
 
 Typically, you will use `mc.Filter` to construct filters.
 
@@ -143,7 +142,7 @@ For simplicity, we just select the first model that satisfies the requirements:
     
     # `ModelCollection` implements `__getitem__` method
     chat_model = chat_models[0]
-    image_generation_models = image_generation_models[0]
+    image_generation_model = image_generation_models[0]
 
 In production environment, however, the model should be selected according to some criteria, such as price.
 
@@ -189,10 +188,15 @@ We implement such functionality with the following code:
 
 .. code-block:: python
 
-    messages = []
-
-    # the file that the image will be saved as
-    image_filepath = "/tmp/image.png"
+    messages = [("""
+    You are a chatbot talking to a user.
+    Although you are a text-based chatting model,
+    you now have the ability to generate images,
+    because each time you say something, I will analyze what you said and see if you intend to create an image.
+    Just speak normally as if you can generate images,
+    and when you do need to create an image, ALWAYS LEAVE A PLACEHOLDER in your response, e.g., "[image-placeholder]".
+    There is no delay in image generation; each time you show the intent to make an image, the image is generated instantly,
+    so there is no need to say things like "wait a moment".""", True)]
 
     while True:
         # retrieve user input
@@ -206,29 +210,35 @@ We implement such functionality with the following code:
 
         # illustration generation
         illustration_decision_input = f"""
-    You are talking to a user. You decided to say:
-    
+    You are talking to a user. You decided to respond to the user:
+
     {ai_response}
 
-    Do you think there is a need to make an illustration for what you said?
-    If yes, output a description for the illustration and NOTHING ELSE;
-    otherwise, output "NO" and NOTHING ELSE.
+    Do you think there is image content in the above response?
+    If yes, output a description for the image and NOTHING ELSE;
+    if you are SURE there is no image content, output "NO" and NOTHING ELSE.
+    If there is an image-placeholder in your response (e.g., [image-placeholder]), it is guaranteed that there is image content;
+    in this case, you should output the description for the image, and DO NOT output "NO".
     """
 
-        illustration_decision = chat_model.call((illustration_decision_input, True))
+        illustration_decision = chat_model.call([(illustration_decision_input, True)])
 
         image = None
         if illustration_decision != "NO":
             # generate image
             image = image_generation_model.call(illustration_decision)
-            # save image
-            image.save(image_filepath)
-        
+
         # print AI's message
         print(ai_response)
 
-        if image != None:
-            print(f"I also made an illustration, which is saved as {image_filepath}.")
+        if image is not None:
+            print(f"I also made an illustration.")
+            plt.figure(figsize=(10, 10))
+            plt.imshow(image)
+            plt.title('illustration')
+            plt.axis('off')
+            plt.show()
+
 
 If you are new to AI application development, the above code might be a lot to take in even if you are familiar with deep learning.
 The `while` loop is self-explanatory; each iteration represents one round of interaction.
@@ -270,7 +280,7 @@ To achieve this, we append the following code to the `while` loop's body:
     Does the user want to end the conversation? Output "YES" or "NO" ONLY and NOTHING ELSE.
     """
 
-    response = chat_model.call((shutdown_decision_prompt, True))
+    response = chat_model.call([(shutdown_decision_prompt, True)])
 
     if response == "YES":
         break
@@ -283,9 +293,5 @@ Summary
 
 Congratulations! In this tutorial, you have learned the basics of |project_name|, as well as AI application development.
 
-Next steps:
-
-**# TODO: add more links**
-
-.. toctree::
-    :maxdepth: 2
+Next, check out the tutorial on :doc:`extension development </guides/extension-development>`
+to learn how to allow |project_name| to use deep learning models that you developed!

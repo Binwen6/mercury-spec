@@ -22,7 +22,7 @@
             <named-field name="callSpecs">
                 <dict>
                     <named-field name="callScheme">
-                        <string>the call scheme of your model. e.g., chat-completion, image-classfication</string>
+                        <string>image-generation</string>
                     </named-field>
                     <named-field name="input">
                         <dict>
