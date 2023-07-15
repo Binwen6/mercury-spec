@@ -11,18 +11,18 @@ sys.path.append(str(Path(__file__).parent.parent.parent.joinpath(Path('bindings/
 
 from lxml import etree as ET
 
-from mercury import filter_validation
-from mercury.filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
-from mercury import manifest_validation
-from mercury.manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
+from mercury_nn import filter_validation
+from mercury_nn.filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
+from mercury_nn import manifest_validation
+from mercury_nn.manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
 
-from mercury.load_valid_usages import loadValidUsage
-from mercury.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
+from mercury_nn.load_valid_usages import loadValidUsage
+from mercury_nn.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
 
-from mercury.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
-from mercury.config import Config
+from mercury_nn.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
+from mercury_nn.config import Config
 
-from mercury.filtering import Filter, matchFilter
+from mercury_nn.filtering import Filter, matchFilter
 
 import argparse
 
