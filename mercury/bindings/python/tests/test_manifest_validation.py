@@ -121,6 +121,13 @@ class TestCheckSyntax(unittest.TestCase):
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
+    def test_checkSyntax_validDict_noKeys(self):
+        xml_data = """
+                    <dict></dict>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
     def test_checkSyntax_invalidDict_invalidTag(self):
         xml_data = """
                     <dict>
@@ -488,6 +495,13 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
                         <type-named-value name="field1"><type-string/></type-named-value>
                         <type-named-value name="field2"><type-string/></type-named-value>
                     </type-named-value-collection>"""
+        element = ET.fromstring(xml_data)
+        result = checkTypeDeclarationSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_checkTypeDeclarationSyntax_validNamedValueCollection_noKeys(self):
+        xml_data = """
+                    <type-named-value-collection></type-named-value-collection>"""
         element = ET.fromstring(xml_data)
         result = checkTypeDeclarationSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())

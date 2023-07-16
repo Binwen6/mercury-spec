@@ -1,34 +1,16 @@
-import mercury.src.bindings.python.src as mc
+import mercury_nn as mc
 
-import logging
 
-model_collection = mc.enumerateAvailableModels()
+model_entries = mc.enumerateAvailableModels()
 
-try:
-    # get all models that fits the application
-    chat_completion_models = model_collection.select(
-        mc.buildFilter(usageScheme="chat-completion",
-                       capabilities="imagination"))
-    
-    # find the cheapest model available
-    selected_model = sorted(chat_completion_models,
-                            key=lambda model: model.price)[0]
+print([mc.MetadataUtils.getModelName(entry.metadata) for entry in model_entries])
 
-except mc.exceptions.ModelNotFoundException:
-    logging.critical("Failed to find compatible model!")
+from lxml import etree as ET
+from mercury_nn import manifest_validation
 
-model = mc.instantiateModel(selected_model)
 
-request = input('Please tell me what kind of story you want to create: ')
+base_model_filter = mc.Filter.fromXMLElement(ET.parse(mc.config.Config.baseModelFilterPath.value).getroot())
 
-# "True" indicates that the message is user-sent
-response = model.call([
-    f"""A user has made a request to create a story. Here is the user's request:
-
-{request}
-
-Please generate a story for the user. Output the story ONLY and NOTHING ELSE.""", True
-])
-
-print(f'Here is your story:\n{response}')
-
+for entry in model_entries:
+    assert manifest_validation.checkSyntax(entry.metadata).isValid
+    assert mc.filtering.matchFilter(base_model_filter, entry.metadata).isSuccess

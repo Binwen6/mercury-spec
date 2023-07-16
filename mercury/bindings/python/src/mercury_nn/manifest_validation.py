@@ -100,7 +100,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
         case TagNames.DICT.value:
             # all children must be of named-field type
             children_tags = {child.tag for child in element}
-            if children_tags != {TagNames.NAMED_FIELD.value}:
+            if not children_tags.issubset({TagNames.NAMED_FIELD.value}):
                 # invalid tag for a child of dict
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.DICT_INVALID_CHILD_TAG,
@@ -276,7 +276,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             # all children must be of named-value type
             children_tags = {child.tag for child in element}
             
-            if children_tags != {TypeDeclarationTagNames.NAMED_VALUE.value}:
+            if not children_tags.issubset({TypeDeclarationTagNames.NAMED_VALUE.value}):
                 # invalid tag for a child of dict
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG,

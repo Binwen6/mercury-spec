@@ -340,6 +340,13 @@ class TestCheckFilterSyntax(unittest.TestCase):
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_valid_dict_with_no_keys(self):
+        xml_string = '''
+                       <dict filter="all"></dict>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_dict_with_non_empty_content_and_none_filter_operation(self):
         xml_string = '''
@@ -559,6 +566,13 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                                <type-string/>
                            </type-named-value>
                        </type-named-value-collection>'''
+        element = ET.fromstring(xml_string)
+        result = checkTypeDeclarationFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+    def test_valid_type_named_value_collection_with_no_keys(self):
+        xml_string = '''
+                       <type-named-value-collection filter="all"></type-named-value-collection>'''
         element = ET.fromstring(xml_string)
         result = checkTypeDeclarationFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
