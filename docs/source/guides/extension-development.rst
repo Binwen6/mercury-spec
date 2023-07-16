@@ -41,106 +41,16 @@ The manifest file must follow a specific structure defined by the |project_name|
 The easiest way to write a such a manifest is to use a template and modify the fields according to the model for which you are developing the extension.
 An example template is provided below:
 
-**# TODO: write XML specification**
+.. literalinclude:: /res/manifest-template.xml
+    :language: xml
 
-.. code-block:: xml
-
-    <?xml version="1.0" encoding="UTF-8"?>
-    <dict>
-        <named-field name="specs">
-            <dict>
-                <named-field name="header">
-                    <dict>
-                        <named-field name="name">
-                            <string>the name of your model</string>
-                        </named-field>
-                        <named-field name="class">
-                            <string>the type of your model, e.g., chat-completion, image-classfication, etc.</string>
-                        </named-field>
-                        <named-field name="description">
-                            <string>a short description of your model</string>
-                        </named-field>
-                    </dict>
-                </named-field>
-                <named-field name="capabilities">
-                    <list>
-                        <!-- list the special capabilities of your models here, e.g., mathematics -->
-                        <string>first capability (if any)</string>
-                        <string>second capability (if any)</string>
-                        <string>...</string>
-                    </list>
-                </named-field>
-                <named-field name="callSpecs">
-                    <dict>
-                        <named-field name="callScheme">
-                            <string>the call scheme of your model. e.g., chat-completion, image-classfication</string>
-                        </named-field>
-                        <named-field name="input">
-                            <dict>
-                                <named-field name="type">
-                                    <type-declaration>
-                                        <!-- fill in the input type declaration here. -->
-                                        <!-- see |project_name| XML specification / user guide for type declaration syntax -->
-                                    </type-declaration>
-                                </named-field>
-                                <named-field name="description">
-                                    <string>describe the semantics of the input here.</string>
-                                </named-field>
-                            </dict>
-                        </named-field>
-                        <named-field name="output">
-                            <dict>
-                                <named-field name="type">
-                                    <type-declaration>
-                                        <!-- fill in the input type declaration here. -->
-                                        <!-- see |project_name| XML specification / user guide for type declaration syntax -->
-                                    </type-declaration>
-                                </named-field>
-                                <named-field name="description">
-                                    <string>describe the semantics of the output here.</string>
-                                </named-field>
-                            </dict>
-                        </named-field>
-                    </dict>
-                </named-field>
-                <named-field name="properties">
-                    <dict>
-                        <!-- fill in the applicable properties of your model here. some examples are included below. -->
-                        <!-- see |project_name| XML specification / user guide for a complete set of predefined properties. -->
-                        <named-field name="deploymentType">
-                            <string>Whether the model is deployed locally or on the cloud</string>
-                        </named-field>
-                        <named-field name="supportEncryption">
-                            <bool>Whether the model supports homomorphic encryption on input &amp; output data</bool>
-                        </named-field>
-                        <named-field name="latency">
-                            <time>The latency of each model invocation</time>
-                        </named-field>
-                        <named-field name="costPerToken">
-                            <money>The cost per token</money>
-                        </named-field>
-                    </dict>
-                </named-field>
-            </dict>
-        </named-field>
-        <named-field name="implementations">
-            <dict>
-                <!-- fill in the implementation for each language binding here. -->
-                <!-- for the specific rules for each language binding (other than Python), see the XML specification or user guide. -->
-                <!-- a Python example is given below. -->
-                <named-field name="Python">
-                    <dict>
-                        <named-field name="entryFile">
-                            <string>the Python script that contains the implementation class.</string>
-                        </named-field>
-                        <named-field name="entryClass">
-                            <string>The class that wraps the model in the entry file.</string>
-                        </named-field>
-                    </dict>
-                </named-field>
-            </dict>
-        </named-field>
-    </dict>
+Notice that the "capabilities" are specified as the keys of a `dict`, instead of a list.
+This is because the |project_name| specification specifies `list` elements to be **ordered** arrays,
+and as a result, the semantics of the capabilities would change as the order of the capabilities changes if we use a `list`.
+If we use a `dict`, however, the order doesn't matter.
+Additionally, a `dict` element requires each  child to be a `named-field` element representing a key-value pair which must have exactly one child representing the value.
+Even though we are only using keys here, we still must specify a child for each `named-field`.
+In the |project_name| specification, such a "dummy child" is **required** to be an empty string denoted by `<string/>`.
 
 Language-Specific Implementations
 #################################
@@ -173,34 +83,7 @@ must match those specified in the manifest file**.
 
 As an example, a possible Python implementation for ChatGPT could be:
 
-.. code-block:: python
-
-    # filename: model.py
-
-    from typing import Tuple, Sequence
-
-    import mercury as mc
-
-    import os
-    import openai
-
-    # in production environment you may want to inform the user
-    # to fill in the API key in a config file stored in the extension folder,
-    # then read the config file to get the API key.
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-
-
-    class Model(mc.Model):
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-
-
-        def call(self, inputs: Sequence[Tuple[str, bool]]) -> str:
-            messages = [{"role": "user" if user_sent else "assistant", "content": text}
-                        for text, user_sent in inputs]
-            response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=messages)
-            return response['choices'][0]['message']['content']
+.. literalinclude:: /../../sample-model-collection/openai/chatgpt/model.py
 
 The corresponding input / output type declaration in the manifest file is as follows:
 

@@ -1,8 +1,5 @@
 from typing import Tuple, Sequence
 
-import sys
-sys.path.append('../../../../..')
-
 import mercury_nn as mc
 
 import os

@@ -402,68 +402,8 @@ A base model filter defines the structure that **all** manifests must follow to 
 The base model filter is for |project_name| 0.0.1 is defined below
 (do not try to understand it now; just skim through it and get an idea what this is all about):
 
-.. code-block:: xml
-
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!-- The filter is considered to match if the root element matches. -->
-    <!-- Tag names are filters themselves, denoting that the respective element's type must be the same as the tag. -->
-    <!-- "all" means that all subfilters needs to match. -->
-    <!-- Things like "none", "all", etc. have different semantic meanings for different tags. -->
-    <dict filter="all">
-        <named-field name="specs">
-            <dict filter="all">
-                <named-field name="header">
-                    <dict filter="all">
-                        <named-field name="name">
-                            <string filter="none"/>
-                        </named-field>
-                        <named-field name="class">
-                            <string filter="none"/>
-                        </named-field>
-                        <named-field name="description">
-                            <string filter="none"/>
-                        </named-field>
-                    </dict>
-                </named-field>
-                <named-field name="capabilities">
-                    <list filter="none"/>
-                </named-field>
-                <named-field name="callSpecs">
-                    <dict filter="all">
-                        <named-field name="callScheme">
-                            <string filter="none"/>
-                        </named-field>
-                        <named-field name="input">
-                            <dict filter="all">
-                                <named-field name="type">
-                                    <type-declaration filter="none"/>
-                                </named-field>
-                                <named-field name="description">
-                                    <string filter="none"/>
-                                </named-field>
-                            </dict>
-                        </named-field>
-                        <named-field name="output">
-                            <dict filter="all">
-                                <named-field name="type">
-                                    <type-declaration filter="none"/>
-                                </named-field>
-                                <named-field name="description">
-                                    <string filter="none"/>
-                                </named-field>
-                            </dict>
-                        </named-field>
-                    </dict>
-                </named-field>
-                <named-field name="properties">
-                    <dict filter="none"/>
-                </named-field>
-            </dict>
-        </named-field>
-        <named-field name="implementations">
-            <dict filter="none"/>
-        </named-field>
-    </dict>
+.. literalinclude:: /../../mercury/spec/filters/base_model.xml
+    :language: xml
 
 Basically, the above XML form base model filter specifies that:
 
@@ -472,22 +412,26 @@ Basically, the above XML form base model filter specifies that:
 2. The "spec" section must further contain at least 4 sections:
    
    a. The "header" section specifies the model's identity, such as its name,
-   class (e.g., whether it is a language model or an image classification model),
-   and a brief description.
+      class (e.g., whether it is a language model or an image classification model),
+      and a brief description.
    b. The "capabilities" section specifies the abilities that the model has.
-   For example, if a language model is capable of solving mathematics problems
-   and is familiar with programming, this section may include "math" and "code".
+      For example, if a language model is capable of solving mathematics problems
+      and is familiar with programming, this section may include "math" and "code".
+      You may have noticed that the "capabilities" element is required to be a `dict`, instead of a `list`.
+      This is because the capabilities are unordered, i.e., a set of capabilities listed in any order should be considered the same.
+      If we use a `list`, changing the order of the capabilities would change the semantics.
+      However, if we specify the capabilities as the keys in a `dict`, the order doesn't matter.
    c. The "callSpecs" section specifies how to call the model.
-   The "input" field specifies the type of data that the model expects as input and a short description for semantics
-   (i.e., the "meaning" of each part of the data);
-   the "output" field denotes the type of data that the model will return as output, as well as a short semantics description.
-   There are some common schemes for input / output types, such as "string goes in, string comes out" for text continuation models like GPT-3,
-   or "image goes in, class goes out" for image classification models like AlexNet.
-   If your model uses one of these common schemes, specify that information in the "callScheme" field;
-   this would immediately tell the developer how to call your model without having to look at the input / output types.
-   Also, when filtering the models, developers would typically select models that implement a certain call scheme,
-   instead of specifying the input / output types directly.
-   As a result, specifying a call scheme for your model would increase its chance to be used by a developer.
+      The "input" field specifies the type of data that the model expects as input and a short description for semantics
+      (i.e., the "meaning" of each part of the data);
+      the "output" field denotes the type of data that the model will return as output, as well as a short semantics description.
+      There are some common schemes for input / output types, such as "string goes in, string comes out" for text continuation models like GPT-3,
+      or "image goes in, class goes out" for image classification models like AlexNet.
+      If your model uses one of these common schemes, specify that information in the "callScheme" field;
+      this would immediately tell the developer how to call your model without having to look at the input / output types.
+      Also, when filtering the models, developers would typically select models that implement a certain call scheme,
+      instead of specifying the input / output types directly.
+      As a result, specifying a call scheme for your model would increase its chance to be used by a developer.
 3. The "properties" section allows you to specify additional properties for your model,
    such as price per token, deployment type (local / cloud), and whether your model supports homomorphic encryption
    (a technology that allows a cloud-deployed model to process data in encrypted form,
