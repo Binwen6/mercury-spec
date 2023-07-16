@@ -197,7 +197,7 @@ class TestFilterMatch(unittest.TestCase):
 
         result = matchFilter(
             filterObject=Filter.fromXMLElement(filterElement),
-            dataElement=ET.parse(Config.modelCollectionRootPath.value.joinpath(Path('alexnet/manifest.xml'))).getroot()
+            dataElement=ET.parse(Config.modelCollectionRootPath.value.joinpath(Path('openai/chatgpt/manifest.xml'))).getroot()
         )
         
         self.assertEqual(result, FilterMatchResult.success())

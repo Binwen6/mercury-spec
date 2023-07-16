@@ -27,7 +27,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         </dict>
     </named-field>
     <named-field name="capabilities">
-        <list filter="none"/>
+        <dict filter="none"/>
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
@@ -81,7 +81,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         </dict>
     </named-field>
     <named-field name="capabilities">
-        <list filter="none"/>
+        <dict filter="none"/>
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
@@ -135,7 +135,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         </dict>
     </named-field>
     <named-field name="capabilities">
-        <list filter="all"><string filter="equals">question-answering</string><string filter="equals">math</string></list>
+        <dict filter="all"><named-field name="question-answering"><string filter="none"/></named-field><named-field name="math"><string filter="none"/></named-field></dict>
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">
@@ -189,7 +189,7 @@ class TestFilterXMLfromArgs(unittest.TestCase):
         </dict>
     </named-field>
     <named-field name="capabilities">
-        <list filter="all"><string filter="equals">question-answering</string><string filter="equals">math</string></list>
+        <dict filter="all"><named-field name="question-answering"><string filter="none"/></named-field><named-field name="math"><string filter="none"/></named-field></dict>
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">

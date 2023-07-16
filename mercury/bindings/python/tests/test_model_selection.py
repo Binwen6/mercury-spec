@@ -17,7 +17,7 @@ class TestEnumerateModels(unittest.TestCase):
     def test_enumerateModels(self):
         all_available_models = mc.enumerateAvailableModels()
         model_names = set(MetadataUtils.getModelName(entry.metadata) for entry in all_available_models)
-        self.assertEqual(model_names, {'AlexNet', 'ChatGPT-cloud'})
+        self.assertEqual(model_names, {'DALL E', 'ChatGPT-cloud'})
 
 
 class TestModelCollectionMethods(unittest.TestCase):
@@ -27,13 +27,13 @@ class TestModelCollectionMethods(unittest.TestCase):
     
     def test_model_entries_properties(self):
         model_names = set(MetadataUtils.getModelName(entry.metadata) for entry in self.all_available_models)
-        self.assertEqual(model_names, {'AlexNet', 'ChatGPT-cloud'})
+        self.assertEqual(model_names, {'DALL E', 'ChatGPT-cloud'})
         
     def test_select_all_match(self):
         filterElement = mc.Filter.fromArgs()
         
         model_names = set(MetadataUtils.getModelName(entry.metadata) for entry in self.all_available_models.select(filterElement))
-        self.assertEqual(model_names, {'AlexNet', 'ChatGPT-cloud'})
+        self.assertEqual(model_names, {'DALL E', 'ChatGPT-cloud'})
     
     def test_select_none_match(self):
         filterElement = mc.Filter.fromArgs(modelType='koala')
@@ -42,10 +42,10 @@ class TestModelCollectionMethods(unittest.TestCase):
         self.assertEqual(model_names, set())
     
     def test_select_some_match(self):
-        filterElement = mc.Filter.fromArgs(modelType='image-classification')
+        filterElement = mc.Filter.fromArgs(modelType='image-generation')
         
         model_names = set(MetadataUtils.getModelName(entry.metadata) for entry in self.all_available_models.select(filterElement))
-        self.assertEqual(model_names, {'AlexNet'})
+        self.assertEqual(model_names, {'DALL E'})
 
 
 if __name__ == '__main__':

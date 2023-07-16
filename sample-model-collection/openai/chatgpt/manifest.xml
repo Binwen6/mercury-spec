@@ -16,13 +16,13 @@
                 </dict>
             </named-field>
             <named-field name="capabilities">
-                <list>
-                    <string>instruction-comprehension</string>
-                    <string>question-answering</string>
-                    <string>world-knowledge</string>
-                    <string>question-asking</string>
-                    <string>task-breakdown</string>
-                </list>
+                <dict>
+                    <named-field name="question-answering"><string/></named-field>
+                    <named-field name="world-knowledge"><string/></named-field>
+                    <named-field name="question-asking"><string/></named-field>
+                    <named-field name="task-breakdown"><string/></named-field>
+                    <named-field name="instruction-comprehension"><string/></named-field>
+                </dict>
             </named-field>
             <named-field name="callSpecs">
                 <dict>

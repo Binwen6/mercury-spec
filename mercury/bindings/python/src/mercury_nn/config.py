@@ -7,7 +7,7 @@ class Config(Enum):
     # specRootPath = Path(__file__).resolve().parent.parent.parent.parent.parent.joinpath(Path("spec"))
     # Set the Mercury specification installation directory below in form of Path("<mercury-specification-installation-path>")
     # use ABSOLUTE path.
-    specRootPath = Path()
+    specRootPath = Path('')
     
     validUsageRootPath = specRootPath.joinpath(Path("valid-usage"))
     filterSyntaxValidUsageFile = validUsageRootPath.joinpath(Path("filter-syntax.xml"))
@@ -24,4 +24,4 @@ class Config(Enum):
     # modelCollectionRootPath = pythonBindingRootPath.parent.parent.joinpath(Path("tests/data/sample-model-collection"))
     # Set the model collection directory below in form of Path("<model-collection-directory>")
     # use ABSOLUTE path.
-    modelCollectionRootPath = Path()
+    modelCollectionRootPath = Path('')

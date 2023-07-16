@@ -151,7 +151,7 @@ f"""
         </dict>
     </named-field>
     <named-field name="capabilities">
-        {'<list filter="none"/>' if capabilities == None or len(capabilities) == 0 else f'<list filter="all">' + ''.join(f'<string filter="equals">{capability}</string>' for capability in capabilities) + '</list>'}
+        {'<dict filter="none"/>' if capabilities == None or len(capabilities) == 0 else f'<dict filter="all">' + ''.join(f'<named-field name="{capability}"><string filter="none"/></named-field>' for capability in capabilities) + '</dict>'}
     </named-field>
     <named-field name="callSpecs">
         <dict filter="all">

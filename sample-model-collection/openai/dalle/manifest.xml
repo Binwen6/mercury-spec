@@ -8,7 +8,7 @@
                         <string>DALL E</string>
                     </named-field>
                     <named-field name="class">
-                        <string>image-classification</string>
+                        <string>image-generation</string>
                     </named-field>
                     <named-field name="description">
                         <string>The Open AI DALL E API</string>
@@ -16,8 +16,8 @@
                 </dict>
             </named-field>
             <named-field name="capabilities">
-                <list>
-                </list>
+                <dict>
+                </dict>
             </named-field>
             <named-field name="callSpecs">
                 <dict>
