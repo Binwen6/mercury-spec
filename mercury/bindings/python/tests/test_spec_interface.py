@@ -5,7 +5,7 @@ import sys
 
 sys.path.append('..')
 
-from src.mercury_nn.interface import filterXMLfromArgs
+from src.mercury_nn.specification.interface import filterXMLfromArgs
 
 
 class TestFilterXMLfromArgs(unittest.TestCase):

@@ -7,7 +7,7 @@ from .model_creation import instantiateModel
 import sys
 import os
 
-from .interface import MetadataUtils
+from .specification.interface import MetadataUtils
 from .filtering import Filter
 
 from . import utils
@@ -17,7 +17,7 @@ from . import config
 from .config import Config
 
 
-if Config.specRootPath.value == Path():
+if Config.specRootPath == Path():
     print(
 f"""ERROR: The installation directory of Mercury specification is not specified!
 
@@ -30,7 +30,7 @@ You must install the Mercury specification AND the binding
 before using Mercury in a specific programming language.
 """)
 
-if Config.modelCollectionRootPath.value == Path():
+if Config.modelCollectionRootPath == Path():
     print(
 f"""ERROR: The model collection directory is not specified!
 Mercury will NOT be able to access the models you have on your platform!

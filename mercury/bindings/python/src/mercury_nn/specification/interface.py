@@ -1,4 +1,3 @@
-from enum import Enum
 from lxml import etree as ET
 from pathlib import Path
 from typing import Sequence
@@ -7,16 +6,16 @@ from dataclasses import dataclass
 
 # TODO: avoid duplication with definition in utils.py
 def dictElementToDict(dictElement: ET._Element):
-    assert dictElement.tag == TagNames.DICT.value
+    assert dictElement.tag == TagNames.DICT
     
-    return {item.attrib[AttributeNames.nameAttribute.value]: item[0] for item in dictElement}
+    return {item.attrib[AttributeNames.nameAttribute]: item[0] for item in dictElement}
 
 
-class FileNames(Enum):
+class FileNames:
     manifestFile = Path('manifest.xml')
 
 
-class KeyNames(Enum):
+class KeyNames:
     pythonImplementationIdentifier = 'Python'
     specs = 'specs'
     implementations = 'implementations'
@@ -26,7 +25,7 @@ class KeyNames(Enum):
     modelNameKeyName = 'name'
 
 
-class TagNames(Enum):
+class TagNames:
     DICT = 'dict'
     LIST = 'list'
     NAMED_FIELD = 'named-field'
@@ -37,12 +36,12 @@ class TagNames(Enum):
     TYPE_DECLARATION = 'type-declaration'
 
 
-class AttributeNames(Enum):
+class AttributeNames:
     filterOperationTypeAttribute = 'filter'
     nameAttribute = 'name'
 
 
-class FilterOperationTypes(Enum):
+class FilterOperationTypes:
     NONE = 'none'
     ALL = 'all'
     EQUALS = 'equals'
@@ -55,7 +54,7 @@ class FilterOperationTypes(Enum):
     GREATER_THAN_OR_EQUALS = 'ge'
 
 
-class TypeDeclarationFilterOperationTypes(Enum):
+class TypeDeclarationFilterOperationTypes:
     NONE = 'none'
     ALL = 'all'
     EQUALS = 'equals'
@@ -86,7 +85,7 @@ class MetadataUtils:
             ET._Element: The metadata element.
         """
         
-        return dictElementToDict(metadata)[KeyNames.specs.value]
+        return dictElementToDict(metadata)[KeyNames.specs]
     
     @staticmethod
     def supportPythonImplementation(metadata: ET._Element) -> bool:
@@ -100,26 +99,26 @@ class MetadataUtils:
         """
         
         supported_implementations = set(
-            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations.value]).keys())
+            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations]).keys())
 
-        return KeyNames.pythonImplementationIdentifier.value in supported_implementations
+        return KeyNames.pythonImplementationIdentifier in supported_implementations
     
     @staticmethod
     def getImplementationInfo(metadata: ET._Element):
         implementationDict = dictElementToDict(
-            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations.value])
-            [KeyNames.pythonImplementationIdentifier.value])
+            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations])
+            [KeyNames.pythonImplementationIdentifier])
         
         return ImplementationInfo(
-            sourceFile=Path(implementationDict[KeyNames.implementationEntryFile.value].text),
-            modelClassName=implementationDict[KeyNames.implementationEntryClass.value].text
+            sourceFile=Path(implementationDict[KeyNames.implementationEntryFile].text),
+            modelClassName=implementationDict[KeyNames.implementationEntryClass].text
         )
     
     @staticmethod
     def getModelName(metadata: ET._Element):
         return dictElementToDict(
             dictElementToDict(MetadataUtils.getModelSpecs(metadata))
-            [KeyNames.headerKeyName.value])[KeyNames.modelNameKeyName.value].text
+            [KeyNames.headerKeyName])[KeyNames.modelNameKeyName].text
 
 
 def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:
@@ -187,7 +186,7 @@ f"""
 """
 
 
-class TypeDeclarationTagNames(Enum):
+class TypeDeclarationTagNames:
     # primitives
     STRING = 'type-string'
     BOOL = 'type-bool'
@@ -207,11 +206,11 @@ class TypeDeclarationTagNames(Enum):
     DIM = 'dim'
 
 
-class TypeDeclarationAttributeNames(Enum):
+class TypeDeclarationAttributeNames:
     namedValueNameAttributeName = 'name'
 
 
-class FilterSyntaxInvalidityType(Enum):
+class FilterSyntaxInvalidityType:
     INVALID_TAG = 'INVALID_TAG'
     INVALID_FILTER_OPERATION_TYPE = 'INVALID_FILTER_OPERATION_TYPE'
     MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE = 'MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE'
@@ -246,7 +245,7 @@ class FilterSyntaxInvalidityType(Enum):
     TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT = 'TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT'
 
 
-class ManifestSyntaxInvalidityType(Enum):
+class ManifestSyntaxInvalidityType:
     INVALID_TAG = 'INVALID_TAG'
 
     DICT_INVALID_CHILD_TAG = 'DICT_INVALID_CHILD_TAG'
@@ -278,7 +277,7 @@ class ManifestSyntaxInvalidityType(Enum):
     TYPE_DECLARATION_DIM_ILLEGAL_CHILD = 'TYPE_DECLARATION_DIM_ILLEGAL_CHILD'
     TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL = 'TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL'
 
-class FilterMatchFailureType(Enum):
+class FilterMatchFailureType:
     TAG_MISMATCH = 'TAG_MISMATCH'
     # TODO: add more types
     

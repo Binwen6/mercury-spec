@@ -8,7 +8,7 @@ from .filtering import matchFilter, FilterMatchResult, Filter
 import sys
 import os
 
-from .interface import FileNames, MetadataUtils
+from .specification.interface import FileNames, MetadataUtils
 from .config import Config
 
 
@@ -61,14 +61,14 @@ def enumerateAvailableModels() -> ModelCollection:
         return ret
 
     def enumerateModels(directory: Path) -> List[ModelCollection.ModelEntry]:
-        if FileNames.manifestFile.value in set(Path(path.name) for path in directory.iterdir()):
+        if FileNames.manifestFile in set(Path(path.name) for path in directory.iterdir()):
             # we are at a leaf
             return [ModelCollection.ModelEntry(path=directory,
                                                metadata=ET.parse(
-                                                   directory.joinpath(FileNames.manifestFile.value)).getroot())]
+                                                   directory.joinpath(FileNames.manifestFile)).getroot())]
         else:
             return join_lists(enumerateModels(sub_dir) for sub_dir in directory.iterdir() if sub_dir.is_dir())
 
     return ModelCollection(
-        [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath.value))
+        [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath))
          if MetadataUtils.supportPythonImplementation(model_entry.metadata)])

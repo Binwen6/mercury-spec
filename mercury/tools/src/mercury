@@ -16,8 +16,8 @@ from mercury_nn.filter_validation import SyntaxValidationResult as FilterSyntaxV
 from mercury_nn import manifest_validation
 from mercury_nn.manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
 
-from mercury_nn.load_valid_usages import loadValidUsage
-from mercury_nn.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
+from mercury_nn.specification.load_valid_usages import loadValidUsage
+from mercury_nn.specification.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
 
 from mercury_nn.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
 from mercury_nn.config import Config
@@ -38,14 +38,14 @@ parser = argparse.ArgumentParser(description="Mercury Command-Line Utility")
 subparsers = parser.add_subparsers(dest='command')
 
 manifest_validation_subparser = subparsers.add_parser(
-    CommandTypes.VALIDATE_MANIFEST.value,
+    CommandTypes.VALIDATE_MANIFEST,
     help='Validates a manifest.'
 )
 
 manifest_validation_subparser.add_argument('manifest_file', type=str)
 
 filter_validation_subparser = subparsers.add_parser(
-    CommandTypes.VALIDATE_FILTER.value,
+    CommandTypes.VALIDATE_FILTER,
     help='Validates a filter.'
 )
 
@@ -55,23 +55,23 @@ args = parser.parse_args()
 
 
 # load valid usages
-filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile.value)
-manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile.value)
+filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile)
+manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile)
 
 # validation
-assert set(x.value for x in FilterSyntaxInvalidityType) == set(filter_syntax_valid_usages.keys())
-assert set(x.value for x in ManifestSyntaxInvalidityType) == set(manifest_syntax_valid_usages.keys())
+assert set(x for x in FilterSyntaxInvalidityType) == set(filter_syntax_valid_usages.keys())
+assert set(x for x in ManifestSyntaxInvalidityType) == set(manifest_syntax_valid_usages.keys())
 
 # load filter match failure specs
-filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile.value)
+filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile)
 
 # validation
-assert set(x.value for x in FilterMatchFailureType) == set(filter_match_failure_specs.keys())
+assert set(x for x in FilterMatchFailureType) == set(filter_match_failure_specs.keys())
 
 
 def main(args) -> int:
     match args.command:
-        case CommandTypes.VALIDATE_MANIFEST.value:
+        case CommandTypes.VALIDATE_MANIFEST:
             try:
                 with open(args.manifest_file, 'r') as f:
                     manifest_element = ET.parse(f)
@@ -86,18 +86,18 @@ def main(args) -> int:
             if not syntax_validation_result.isValid:
                 # syntax is invalid
                 invalidity_info = syntax_validation_result.invalidityInfo
-                print(f'Manifest syntax valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
-                print(f'Description of valid usage: {manifest_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
+                print(f'Manifest syntax valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}', file=sys.stderr)
+                print(f'Description of valid usage: {manifest_syntax_valid_usages[invalidity_info.invalidityType].description}', file=sys.stderr)
 
                 return 1
             
             # syntax is valid, match the manifest against base model
             try:
-                with open(Config.baseModelFilterPath.value, 'r') as f:
+                with open(Config.baseModelFilterPath, 'r') as f:
                     filter_element = ET.parse(f)
                     filter_element = filter_element.getroot()
             except FileNotFoundError:
-                print(f'File not found: {Config.baseModelFilterPath.value}', file=sys.stderr)
+                print(f'File not found: {Config.baseModelFilterPath}', file=sys.stderr)
                 
                 return 1
             
@@ -112,11 +112,11 @@ def main(args) -> int:
             else:
                 failure_info = match_result.failureInfo
 
-                print(f'Manifest failed to match the base model filter at line {failure_info.failurePosition.filtereeLine} (manifest), {failure_info.failurePosition.filtererLine} (base model filter): {failure_info.failureType.value}', file=sys.stderr)
-                print(f'Description of failure: {filter_match_failure_specs[failure_info.failureType.value].description}', file=sys.stderr)
+                print(f'Manifest failed to match the base model filter at line {failure_info.failurePosition.filtereeLine} (manifest), {failure_info.failurePosition.filtererLine} (base model filter): {failure_info.failureType}', file=sys.stderr)
+                print(f'Description of failure: {filter_match_failure_specs[failure_info.failureType].description}', file=sys.stderr)
 
 
-        case CommandTypes.VALIDATE_FILTER.value:
+        case CommandTypes.VALIDATE_FILTER:
             try:
                 with open(args.filter_file, 'r') as f:
                     xml_element = ET.parse(f)
@@ -135,8 +135,8 @@ def main(args) -> int:
             else:
                 invalidity_info = validation_result.invalidityInfo
                 
-                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType.value}', file=sys.stderr)
-                print(f'Description of valid usage: {filter_syntax_valid_usages[invalidity_info.invalidityType.value].description}', file=sys.stderr)
+                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}', file=sys.stderr)
+                print(f'Description of valid usage: {filter_syntax_valid_usages[invalidity_info.invalidityType].description}', file=sys.stderr)
 
                 return 1
                 

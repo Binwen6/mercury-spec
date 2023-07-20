@@ -7,7 +7,7 @@ from lxml import etree as ET
 import sys
 import os
 
-from .interface import (
+from .specification.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType
 )
@@ -97,10 +97,10 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
     invalidityPosition = _InvalidityPosition(element.sourceline)
 
     match element.tag:
-        case TagNames.DICT.value:
+        case TagNames.DICT:
             # all children must be of named-field type
             children_tags = {child.tag for child in element}
-            if not children_tags.issubset({TagNames.NAMED_FIELD.value}):
+            if not children_tags.issubset({TagNames.NAMED_FIELD}):
                 # invalid tag for a child of dict
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.DICT_INVALID_CHILD_TAG,
@@ -114,7 +114,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                 return _get_first_invalid_child_result(children_validity)
             
             # all children must have different names
-            children_names = {child.attrib[AttributeNames.nameAttribute.value] for child in element}
+            children_names = {child.attrib[AttributeNames.nameAttribute] for child in element}
 
             if len(children_names) != len(element):
                 # duplicated names detected
@@ -125,13 +125,13 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TagNames.LIST.value:
+        case TagNames.LIST:
             children_validity = [checkSyntax(child) for child in element]
             return _validation_result_from_children_results(children_validity)
 
-        case TagNames.NAMED_FIELD.value:
+        case TagNames.NAMED_FIELD:
             # element must have a "name" attribute
-            if AttributeNames.nameAttribute.value not in element.attrib.keys():
+            if AttributeNames.nameAttribute not in element.attrib.keys():
                 # element does not have a "name" attribute
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.NAMED_FIELD_MISSING_NAME_ATTRIBUTE,
@@ -148,7 +148,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return checkSyntax(element[0])
 
-        case TagNames.STRING.value:
+        case TagNames.STRING:
             if len(element) > 0:
                 # child element is detected on a string element
                 return SyntaxValidationResult.invalid(
@@ -158,7 +158,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TagNames.BOOL.value:
+        case TagNames.BOOL:
             if len(element) > 0:
                 # child element is detected on a bool element
                 return SyntaxValidationResult.invalid(
@@ -170,7 +170,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TagNames.INT.value:
+        case TagNames.INT:
             if len(element) > 0:
                 # child element is detected on a terminal element
                 return SyntaxValidationResult.invalid(
@@ -188,7 +188,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityPosition=invalidityPosition
                 )
         
-        case TagNames.FLOAT.value:
+        case TagNames.FLOAT:
             if len(element) > 0:
                 # child element is detected on a terminal element
                 return SyntaxValidationResult.invalid(
@@ -206,7 +206,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityPosition=invalidityPosition
                 )
 
-        case TagNames.TYPE_DECLARATION.value:
+        case TagNames.TYPE_DECLARATION:
             if len(element) != 1:
                 # type declaration elements must have exactly one child
                 return SyntaxValidationResult.invalid(
@@ -229,10 +229,10 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
     invalidityPosition = _InvalidityPosition(element.sourceline)
 
     match element.tag:
-        case TypeDeclarationTagNames.STRING.value | \
-                TypeDeclarationTagNames.BOOL.value | \
-                TypeDeclarationTagNames.INT.value | \
-                TypeDeclarationTagNames.FLOAT.value:
+        case TypeDeclarationTagNames.STRING | \
+                TypeDeclarationTagNames.BOOL | \
+                TypeDeclarationTagNames.INT | \
+                TypeDeclarationTagNames.FLOAT:
             if len(element) > 0 or element.text is not None:
                 # a terminal type declaration must have no children or enclosed content
                 return SyntaxValidationResult.invalid(
@@ -242,11 +242,11 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TypeDeclarationTagNames.TENSOR.value:
+        case TypeDeclarationTagNames.TENSOR:
             # all children must be of dim type
             children_tags = {child.tag for child in element}
 
-            if children_tags != {TypeDeclarationTagNames.DIM.value}:
+            if children_tags != {TypeDeclarationTagNames.DIM}:
                 # child tag is not dim
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG,
@@ -257,7 +257,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return _validation_result_from_children_results(children_validity)
         
-        case TypeDeclarationTagNames.LIST.value:
+        case TypeDeclarationTagNames.LIST:
             if len(element) != 1:
                 # a list type declaration must have exactly one child
                 return SyntaxValidationResult.invalid(
@@ -267,16 +267,16 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return checkTypeDeclarationSyntax(element[0])
         
-        case TypeDeclarationTagNames.TUPLE.value:
+        case TypeDeclarationTagNames.TUPLE:
             children_validity = [checkTypeDeclarationSyntax(child) for child in element]
             
             return _validation_result_from_children_results(children_validity)
         
-        case TypeDeclarationTagNames.NAMED_VALUE_COLLECTION.value:
+        case TypeDeclarationTagNames.NAMED_VALUE_COLLECTION:
             # all children must be of named-value type
             children_tags = {child.tag for child in element}
             
-            if not children_tags.issubset({TypeDeclarationTagNames.NAMED_VALUE.value}):
+            if not children_tags.issubset({TypeDeclarationTagNames.NAMED_VALUE}):
                 # invalid tag for a child of dict
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_INVALID_CHILD_TAG,
@@ -290,7 +290,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
                 return _get_first_invalid_child_result(children_validity)
             
             # all children must have different names
-            children_names = {child.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName.value] for child in element}
+            children_names = {child.attrib[TypeDeclarationAttributeNames.namedValueNameAttributeName] for child in element}
 
             if len(children_names) != len(element):
                 # duplicated names detected
@@ -301,8 +301,8 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return SyntaxValidationResult.valid()
         
-        case TypeDeclarationTagNames.NAMED_VALUE.value:
-            if TypeDeclarationAttributeNames.namedValueNameAttributeName.value not in element.keys():
+        case TypeDeclarationTagNames.NAMED_VALUE:
+            if TypeDeclarationAttributeNames.namedValueNameAttributeName not in element.keys():
                 # must have a name attribute
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE,
@@ -318,7 +318,7 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return checkTypeDeclarationSyntax(element[0])
         
-        case TypeDeclarationTagNames.DIM.value:
+        case TypeDeclarationTagNames.DIM:
             if len(element) > 0:
                 # dim elements can have no children
                 return SyntaxValidationResult.invalid(

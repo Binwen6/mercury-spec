@@ -9,7 +9,7 @@ import src.mercury_nn as mc
 import sys
 import os
 
-from src.mercury_nn.interface import MetadataUtils
+from src.mercury_nn.specification.interface import MetadataUtils
 
 
 class TestEnumerateModels(unittest.TestCase):

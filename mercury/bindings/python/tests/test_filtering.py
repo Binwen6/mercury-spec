@@ -11,7 +11,7 @@ from pathlib import Path
 from src.mercury_nn.filtering import matchFilter, FilterMatchResult, Filter, _matchTypeDeclarationFilter, InvalidTagException
 from src.mercury_nn.exceptions import InvalidFilterOperationTypeException
 
-from src.mercury_nn.interface import FilterMatchFailureType
+from src.mercury_nn.specification.interface import FilterMatchFailureType
 from src.mercury_nn.config import Config
 
 
@@ -192,12 +192,12 @@ class TestFilterMatch(unittest.TestCase):
         self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.success())
 
     def test_base_model_match(self):
-        with open(str(Config.baseModelFilterPath.value), 'r') as f:
+        with open(str(Config.baseModelFilterPath), 'r') as f:
             filterElement = ET.parse(f).getroot()
 
         result = matchFilter(
             filterObject=Filter.fromXMLElement(filterElement),
-            dataElement=ET.parse(Config.modelCollectionRootPath.value.joinpath(Path('openai/chatgpt/manifest.xml'))).getroot()
+            dataElement=ET.parse(Config.modelCollectionRootPath.joinpath(Path('openai/chatgpt/manifest.xml'))).getroot()
         )
         
         self.assertEqual(result, FilterMatchResult.success())

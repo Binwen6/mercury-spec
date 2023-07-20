@@ -9,7 +9,7 @@ from .core import Model
 
 import sys
 import os
-from .interface import MetadataUtils
+from .specification.interface import MetadataUtils
 
 
 # TODO: write tests

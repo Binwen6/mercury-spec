@@ -6,29 +6,29 @@ from pathlib import Path
 import sys
 import os
 
-from .config import Config
+from ..config import Config
 
 
 @dataclass
-class FilterMatchFailureSpec:
+class ValidUsage:
     name: str
     description: str
 
 
-def loadFilterMatchFailureSpecs(filepath: Path) -> Dict[str, FilterMatchFailureSpec]:
+def loadValidUsage(filepath: Path) -> Dict[str, ValidUsage]:
     
-    """Loads filter match failure specifications from a file.
+    """Loads valid usage specifications from a file.
     
     The file must be an XML with the following form:
     
     <?xml version="1.0" encoding="UTF-8"?>
     <array>
-        <match-failure>
+        <valid-usage>
             <name>...</name>
             <description>
                 ...
             </description>
-        </match-failure>
+        </valid-usage>
         
         ...
     </array>
@@ -44,17 +44,17 @@ def loadFilterMatchFailureSpecs(filepath: Path) -> Dict[str, FilterMatchFailureS
     with open(filepath, 'r') as f:
         root: ET._Element = ET.parse(f).getroot()
     
-    filter_match_failure_specs = {}
+    valid_usages = {}
 
     for child in root:
-        assert child.tag == 'match-failure'
+        assert child.tag == 'valid-usage'
 
         property_dict = {property.tag: property.text for property in child}
 
-        match_failure = FilterMatchFailureSpec(name=property_dict['name'], description=property_dict['description'])
+        vu = ValidUsage(name=property_dict['name'], description=property_dict['description'])
 
-        filter_match_failure_specs[match_failure.name] = match_failure
+        valid_usages[vu.name] = vu
     
-    assert len(filter_match_failure_specs) == len(root)
+    assert len(valid_usages) == len(root)
 
-    return filter_match_failure_specs
+    return valid_usages

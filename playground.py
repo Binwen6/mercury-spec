@@ -9,7 +9,7 @@ from lxml import etree as ET
 from mercury_nn import manifest_validation
 
 
-base_model_filter = mc.Filter.fromXMLElement(ET.parse(mc.config.Config.baseModelFilterPath.value).getroot())
+base_model_filter = mc.Filter.fromXMLElement(ET.parse(mc.config.Config.baseModelFilterPath).getroot())
 
 for entry in model_entries:
     assert manifest_validation.checkSyntax(entry.metadata).isValid
