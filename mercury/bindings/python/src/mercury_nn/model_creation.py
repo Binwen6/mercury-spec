@@ -9,13 +9,13 @@ from .core import Model
 
 import sys
 import os
-from .specification.interface import MetadataUtils
+from .specification.interface import ManifestUtils
 
 
 # TODO: write tests
 def instantiateModel(modelEntry: ModelCollection.ModelEntry) -> Model:
-    metadata = MetadataUtils.getModelSpecs(modelEntry.metadata)
-    implementation_info = MetadataUtils.getImplementationInfo(modelEntry.metadata)
+    metadata = ManifestUtils.getModelSpecs(modelEntry.metadata)
+    implementation_info = ManifestUtils.getImplementationInfo(modelEntry.metadata)
 
     # import module
     spec = importlib.util.spec_from_file_location("module", str(modelEntry.path.joinpath(implementation_info.sourceFile)))

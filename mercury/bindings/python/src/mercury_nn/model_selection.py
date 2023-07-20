@@ -8,7 +8,7 @@ from .filtering import matchFilter, FilterMatchResult, Filter
 import sys
 import os
 
-from .specification.interface import FileNames, MetadataUtils
+from .specification.interface import FileNames, ManifestUtils
 from .config import Config
 
 
@@ -35,7 +35,7 @@ class ModelCollection:
         return ModelCollection(list(
             entry for entry in self._entries
             if matchFilter(filterObject=filterObject,
-                           dataElement=MetadataUtils.getModelSpecs(entry.metadata))
+                           dataElement=ManifestUtils.getModelSpecs(entry.metadata))
                 .isSuccess))
 
 
@@ -71,4 +71,4 @@ def enumerateAvailableModels() -> ModelCollection:
 
     return ModelCollection(
         [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath))
-         if MetadataUtils.supportPythonImplementation(model_entry.metadata)])
+         if ManifestUtils.supportPythonImplementation(model_entry.metadata)])

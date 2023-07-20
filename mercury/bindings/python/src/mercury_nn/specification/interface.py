@@ -23,6 +23,8 @@ class KeyNames:
     implementationEntryClass = 'entryClass'
     headerKeyName = 'header'
     modelNameKeyName = 'name'
+    callSpecsKeyName = 'callSpecs'
+    callSchemeKeyName = 'callScheme'
 
 
 class TagNames:
@@ -72,41 +74,41 @@ class ImplementationInfo:
 
 
 # TODO: write tests
-class MetadataUtils:
+class ManifestUtils:
     
     @staticmethod
-    def getModelSpecs(metadata: ET._Element) -> ET._Element:
-        """Returns the metadata element of the model's manifest data.
+    def getModelSpecs(manifest: ET._Element) -> ET._Element:
+        """Returns the model specs element of the model's manifest data.
 
         Args:
-            metadata (ET._Element): The model's manifest data.
+            manifest (ET._Element): The model's manifest data.
 
         Returns:
-            ET._Element: The metadata element.
+            ET._Element: The model specs element.
         """
         
-        return dictElementToDict(metadata)[KeyNames.specs]
+        return dictElementToDict(manifest)[KeyNames.specs]
     
     @staticmethod
-    def supportPythonImplementation(metadata: ET._Element) -> bool:
+    def supportPythonImplementation(manifest: ET._Element) -> bool:
         """Returns True if manifest data indicates that model has a Python implementation, False otherwise.
 
         Args:
-            metadata (ET._Element): The model's manifest data.
+            manifest (ET._Element): The model's manifest data.
 
         Returns:
             bool: Whether the model has a Python implementation.
         """
         
         supported_implementations = set(
-            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations]).keys())
+            dictElementToDict(dictElementToDict(manifest)[KeyNames.implementations]).keys())
 
         return KeyNames.pythonImplementationIdentifier in supported_implementations
     
     @staticmethod
-    def getImplementationInfo(metadata: ET._Element):
+    def getImplementationInfo(manifest: ET._Element):
         implementationDict = dictElementToDict(
-            dictElementToDict(dictElementToDict(metadata)[KeyNames.implementations])
+            dictElementToDict(dictElementToDict(manifest)[KeyNames.implementations])
             [KeyNames.pythonImplementationIdentifier])
         
         return ImplementationInfo(
@@ -115,10 +117,16 @@ class MetadataUtils:
         )
     
     @staticmethod
-    def getModelName(metadata: ET._Element):
+    def getModelName(manifest: ET._Element):
         return dictElementToDict(
-            dictElementToDict(MetadataUtils.getModelSpecs(metadata))
+            dictElementToDict(ManifestUtils.getModelSpecs(manifest))
             [KeyNames.headerKeyName])[KeyNames.modelNameKeyName].text
+    
+    # TODO: write tests
+    @staticmethod
+    def getCallScheme(manifest: ET._Element):
+        return dictElementToDict(
+            dictElementToDict(ManifestUtils.getModelSpecs(manifest))[KeyNames.callSpecsKeyName])[KeyNames.callSchemeKeyName].text
 
 
 def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:
@@ -296,3 +304,5 @@ class FilterMatchFailureType:
     TYPE_DECLARATION_DIM_FAILED_COMPARISON = 'TYPE_DECLARATION_DIM_FAILED_COMPARISON'
     
     TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = 'TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS'
+
+CUSTOM_CALL_SCHEME_IDENTIFIER = 'custom'

@@ -7,7 +7,7 @@ from .model_creation import instantiateModel
 import sys
 import os
 
-from .specification.interface import MetadataUtils
+from .specification.interface import ManifestUtils
 from .filtering import Filter
 
 from . import utils

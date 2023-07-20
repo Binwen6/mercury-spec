@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Self, Iterable
+from typing import Self, Iterable, Union, Dict
 
 from lxml import etree as ET
 
@@ -9,8 +9,12 @@ import os
 
 from .specification.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
-    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType
+    TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType,
+    CUSTOM_CALL_SCHEME_IDENTIFIER, ManifestUtils
 )
+from .specification.load_call_schemes import loadCallSchemes
+from .config import Config
+from .filtering import Filter, matchFilter, FilterMatchResult
 
 
 @dataclass
@@ -344,3 +348,113 @@ def checkTypeDeclarationSyntax(element: ET._Element) -> SyntaxValidationResult:
                 invalidityPosition=invalidityPosition
             )
 
+
+@dataclass
+class ManifestValidationResult:
+    
+    class ResultType(Enum):
+        VALID = auto()
+        INVALID = auto()
+    
+    @dataclass
+    class InvalidityInfo():
+        
+        class InvalidityType(Enum):
+            INVALID_SYNTAX = auto()
+            FAILED_BASE_MODEL_FILTER_MATCH = auto()
+            UNKNOWN_CALL_SCHEME = auto()
+            UNMATCHED_CALL_SCHEME = auto()
+            INVALID_TAGS = auto()
+        
+        invalidityType: InvalidityType
+        info: Union[SyntaxValidationResult.InvalidityInfo, str, None]
+        
+        def __eq__(self, other: Self) -> bool:
+            return self.invalidityType == other.invalidityType and self.info == other.info
+    
+    resultType: ResultType
+    invalidityInfo: InvalidityInfo | None
+    
+    def isValid(self) -> bool:
+        return self.resultType == SyntaxValidationResult.ResultType.VALID
+    
+    def __eq__(self, __value: Self) -> bool:
+        return self.resultType == __value.resultType and self.invalidityInfo == __value.invalidityInfo
+    
+    @staticmethod
+    def valid() -> Self:
+        return ManifestValidationResult(
+            resultType=ManifestValidationResult.ResultType.VALID,
+            invalidityInfo=None
+        )
+    
+    @staticmethod
+    def invalid(invalidityType, invalidityInfo) -> Self:
+        """
+        NOTE: `invalidityType` and `invalidityInfo` must match those specified in `InvalidityInfo`.
+        """
+        
+        return ManifestValidationResult(
+            resultType=ManifestValidationResult.ResultType.INVALID,
+            invalidityInfo=ManifestValidationResult.InvalidityInfo(
+                invalidityType=invalidityType,
+                info=invalidityInfo
+            )
+        )
+
+
+# convenient classes
+_ManifestInvalidityTypes = ManifestValidationResult.InvalidityInfo.InvalidityType
+
+# TODO: write tests
+def validateManifest(manifest: ET._Element,
+                     base_model_filter: Filter | None=None,
+                     call_schemes: Dict[str, Filter] | None = None) \
+                    -> ManifestValidationResult:
+    # check syntax
+    syntax_check_result = checkSyntax(manifest)
+
+    if not syntax_check_result.isValid:
+        return ManifestValidationResult.invalid(
+            invalidityType=_ManifestInvalidityTypes.INVALID_SYNTAX,
+            invalidityInfo=syntax_check_result.invalidityInfo
+        )
+    
+    # check base model filter match
+    if base_model_filter is None:
+        base_model_filter = Filter.fromXMLElement(ET.parse(Config.baseModelFilterPath))
+    
+    base_model_match_result = matchFilter(base_model_filter, manifest)
+    
+    if not base_model_match_result.isSuccess:
+        return ManifestValidationResult.invalid(
+            invalidityType=_ManifestInvalidityTypes.FAILED_BASE_MODEL_FILTER_MATCH,
+            invalidityInfo=base_model_match_result.failureInfo
+        )
+    
+    # check for call scheme match result
+    if call_schemes is None:
+        call_schemes = loadCallSchemes()
+        
+    call_scheme = ManifestUtils.getCallScheme(manifest)
+    
+    if call_scheme != CUSTOM_CALL_SCHEME_IDENTIFIER:
+        # try to match call scheme
+        if call_scheme not in call_schemes.keys():
+            return ManifestValidationResult.invalid(
+                invalidityType=_ManifestInvalidityTypes.UNKNOWN_CALL_SCHEME,
+                invalidityInfo=call_scheme
+            )
+        
+        call_scheme_match_result = matchFilter(call_schemes[call_scheme], manifest)
+
+        if not call_scheme_match_result.isSuccess:
+            return ManifestValidationResult.invalid(
+                invalidityType=_ManifestInvalidityTypes.UNMATCHED_CALL_SCHEME,
+                invalidityInfo=call_scheme_match_result.failureInfo
+            )
+    
+    # TODO: add tag validation
+    
+    return ManifestValidationResult.valid()
+    
