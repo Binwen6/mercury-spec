@@ -5,8 +5,7 @@
             <named-field name="input">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-declaration filter="equals">
-                            <!-- The "all" filter type means that element type must be equal to child XML element in `type-list` context -->
+                        <type-declaration filter="type-match">
                             <type-list filter="all">
                                 <type-tuple filter="all">
                                     <type-string/>
@@ -15,26 +14,17 @@
                             </type-list>
                         </type-declaration>
                     </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
-                    </named-field>
                 </dict>
             </named-field>
             <named-field name="output">
                 <dict filter="all">
                     <named-field name="type">
-                        <type-declaration filter="equals">
+                        <type-declaration filter="type-match">
                             <type-string/>
                         </type-declaration>
-                    </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
         </dict>
-    </named-field>
-    <named-field name="properties">
-        <dict filter="none"/>
     </named-field>
 </dict>

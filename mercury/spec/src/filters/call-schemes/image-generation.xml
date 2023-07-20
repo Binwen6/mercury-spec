@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="callSpecs">
+        <dict filter="all">
+            <named-field name="input">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-declaration filter="type-match">
+                            <type-string/>
+                        </type-declaration>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="output">
+                <dict filter="all">
+                    <named-field name="type">
+                        <type-declaration filter="type-match">
+                            <type-tensor filter="all">
+                                <dim filter="none"/>
+                                <dim filter="none"/>
+                                <dim filter="none"/>
+                            </type-tensor>
+                        </type-declaration>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+    </named-field>
+</dict>

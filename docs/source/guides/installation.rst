@@ -28,12 +28,12 @@ Currently, to obtain the specification files, you need to clone the |project_nam
     git clone https://github.com/Trent-Fellbootman/mercury.git
 
 Then, locate the folder containing the specification in the cloned repo,
-which is `<path-to-cloned-repo>/mercury/spec`. Copy this folder to wherever you like and the installation is complete.
+which is `<path-to-cloned-repo>/mercury/spec/src`. Copy this folder to wherever you like and the installation is complete.
 For example:
 
 .. code-block:: bash
 
-    cp -r mercury/mercury/spec ~/mercury
+    cp -r mercury/mercury/spec/src ~/mercury
 
 Installing the Python Binding
 -----------------------------
