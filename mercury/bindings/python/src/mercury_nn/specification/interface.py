@@ -36,6 +36,7 @@ class TagNames:
     INT = 'int'
     FLOAT = 'float'
     TYPE_DECLARATION = 'type-declaration'
+    LOGICAL = 'logical'
 
 
 class AttributeNames:
@@ -54,7 +55,11 @@ class FilterOperationTypes:
     LESS_THAN_OR_EQUALS = 'le'
     GREATER_THAN = 'gt'
     GREATER_THAN_OR_EQUALS = 'ge'
-
+    
+    # logical operations
+    AND = 'and'
+    OR = 'or'
+    NOT = 'not'
 
 class TypeDeclarationFilterOperationTypes:
     NONE = 'none'
@@ -304,5 +309,8 @@ class FilterMatchFailureType:
     TYPE_DECLARATION_DIM_FAILED_COMPARISON = 'TYPE_DECLARATION_DIM_FAILED_COMPARISON'
     
     TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = 'TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS'
+
+    LOGICAL_OPERATION_MATCH_FAILURE = 'LOGICAL_OPERATION_MATCH_FAILURE'
+    
 
 CUSTOM_CALL_SCHEME_IDENTIFIER = 'custom'
