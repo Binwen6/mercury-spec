@@ -402,7 +402,7 @@ A base model filter defines the structure that **all** manifests must follow to 
 The base model filter is for |project_name| 0.0.1 is defined below
 (do not try to understand it now; just skim through it and get an idea what this is all about):
 
-.. literalinclude:: /../../mercury/spec/filters/base_model.xml
+.. literalinclude:: /../../mercury/spec/src/filters/base_model.xml
     :language: xml
 
 Basically, the above XML form base model filter specifies that:

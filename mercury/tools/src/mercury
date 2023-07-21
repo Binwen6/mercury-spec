@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from enum import Enum
+from typing import Dict, Any
 
 import sys
 import os
 
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent.parent.joinpath(Path('bindings/python'))))
+sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent.joinpath(Path('bindings/python/src'))))
 
 from lxml import etree as ET
 
@@ -19,7 +20,7 @@ from mercury_nn.manifest_validation import SyntaxValidationResult as ManifestSyn
 from mercury_nn.specification.load_valid_usages import loadValidUsage
 from mercury_nn.specification.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
 
-from mercury_nn.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
+from mercury_nn.specification.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
 from mercury_nn.config import Config
 
 from mercury_nn.filtering import Filter, matchFilter
@@ -58,15 +59,18 @@ args = parser.parse_args()
 filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile)
 manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile)
 
+def get_attributes(cls: type) -> Dict[str, Any]:
+    return {k: getattr(cls, k) for k in dir(cls) if not k.startswith('__') and not k.endswith('__')}
+
 # validation
-assert set(x for x in FilterSyntaxInvalidityType) == set(filter_syntax_valid_usages.keys())
-assert set(x for x in ManifestSyntaxInvalidityType) == set(manifest_syntax_valid_usages.keys())
+assert set(get_attributes(FilterSyntaxInvalidityType).values()) == set(filter_syntax_valid_usages.keys())
+assert set(get_attributes(ManifestSyntaxInvalidityType).values()) == set(manifest_syntax_valid_usages.keys())
 
 # load filter match failure specs
 filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile)
 
 # validation
-assert set(x for x in FilterMatchFailureType) == set(filter_match_failure_specs.keys())
+assert set(get_attributes(FilterMatchFailureType).values()) == set(filter_match_failure_specs.keys())
 
 
 def main(args) -> int:

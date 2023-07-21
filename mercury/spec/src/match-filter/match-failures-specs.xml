@@ -70,4 +70,13 @@
             but the keys of the collection are not the same as those in the corresponding filter element.
         </description>
     </match-failure>
+
+    <match-failure>
+        <name>LOGICAL_OPERATION_MATCH_FAILURE</name>
+        <description>
+            The element being compared is a `logical`, but the logical operation returns false.
+            This may happen when, for example, the filter operation is "not",
+            and the sub-filter matches successfully.
+        </description>
+    </match-failure>
 </array>

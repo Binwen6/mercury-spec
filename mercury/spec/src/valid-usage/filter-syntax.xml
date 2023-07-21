@@ -47,6 +47,13 @@
     </valid-usage>
 
     <valid-usage>
+        <name>LOGICAL_INCORRECT_CHILD_COUNT</name>
+        <description>
+            A `logical` element must have two or more children if the filter operation is `and` or `or`, or exactly one if it is `not`.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
         <name>NAMED_FIELD_MISSING_NAME_ATTRIBUTE</name>
         <description>
             A `named-field` must have a "name" attribute.

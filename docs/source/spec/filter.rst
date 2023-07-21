@@ -28,8 +28,9 @@ Except for "auxiliary elements" like `named-field` elements,
 every filter element **must** specify its filter operation type in the `filter` attribute.
 
 Next, we detail the types of elements and the available filter operations on each of them.
-Similar to manifests, the filter elements are also grouped into data elements, which specify requirements on concrete data,
-and type-declaration elements, which specify requirements on type declarations.
+Similar to manifests, the filter elements are grouped into data elements, which specify requirements on concrete data;
+type-declaration elements, which specify requirements on type declarations;
+and compositors, which combines several sub-filters into a composition.
 
 For brevity, the `none` filter operation is omitted.
 Filter operation `none` is always available in every element described below;
@@ -432,3 +433,45 @@ In contrast to `string`, `bool`, `int` and `float`,
 `type-string`, `type-bool`, `type-int` and `type-float` does not have filter operations like `equals`, `lt`, `le`, `gt`, and `ge`.
 This is because these elements are type declarations and define only **types**, instead of concrete values.
 As a result, filter operations which requires comparison of concrete values are not available.
+
+Compositors
+------------
+
+`logical`
+.........
+
+The `logical` element uses logical operations such as `and` and `or` to combine sub-filters into a composition.
+
+Notice that for `and` and `or` filter operations,
+there must be two or more children for the filter element to be valid;
+in case of `not`, there must be exactly one.
+
+Available Filter Operations
+###########################
+
+**and**
+
+The `and` operations means that the filter matches if and only if all sub-filters match.
+
+For example, if the filter element is:
+
+.. code-block:: xml
+
+    <logical filter="and">
+        <int filter="gt">10</int>
+        <int filter="lt">15</int>
+    </logical>
+
+Then the following manifest element matches only when `n` is an integer and :math:`10 < n < 15`.
+
+.. code-block:: xml
+
+    <int>n<int>
+
+**or**
+
+Similar to `and`, `or` means that the filter matches if and only if at least one sub-filter matches.
+
+**not**
+
+Similarly, `not` means that the filter matches if and only if the sub-filter does not match.
