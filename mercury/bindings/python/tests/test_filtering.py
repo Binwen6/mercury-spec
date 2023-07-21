@@ -1433,7 +1433,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).isSuccess)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
     
     def test_AND_ReturnsFailure(self):
         filter_xml = """
@@ -1470,7 +1470,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).isSuccess)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
     
     def test_OR_ReturnsFailure(self):
         filter_xml = """
@@ -1506,7 +1506,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).isSuccess)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
         
         filter_xml = """
             <logical filter="not">
@@ -1521,7 +1521,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).isSuccess)
+        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
     
     def test_NOT_ReturnsFailure(self):
         filter_xml = """
@@ -1563,7 +1563,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).isSuccess)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
     
     def test_NestedLogical_ReturnsFailure(self):
         filter_xml = """
@@ -1586,7 +1586,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element).failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.failure(
             failureType=_FailureTypes.LOGICAL_OPERATION_MATCH_FAILURE,
             failurePosition=_FailurePosition(7, 2)
         ))

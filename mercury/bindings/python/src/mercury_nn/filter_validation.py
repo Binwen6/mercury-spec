@@ -95,6 +95,7 @@ def _validation_result_from_children_results(children_validation_results: Iterab
 
 
 # TODO: add tests for int & float
+# TODO: write tests for int / float support
 def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
     filterOpAttribName: str = AttributeNames.filterOperationTypeAttribute
     
@@ -393,7 +394,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                             invalidityPosition=invalidityPosition
                         )
                     
-                    return checkTypeDeclarationFilterSyntax(element[0])
+                    return checkFilterSyntax(element[0])
                 
                 case FilterOperationTypes.NONE:
                     if len(element) > 0 or element.text is not None:
@@ -412,25 +413,44 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityPosition=invalidityPosition
                     )
         
-        case _:
-            # invalid tag
-            return SyntaxValidationResult.invalid(
-                invalidityType=_InvalidityTypes.INVALID_TAG,
-                invalidityPosition=invalidityPosition
-            )
+        case TagNames.LOGICAL:
+            if not hasFilterOpAttribute(element):
+                # must have a filter op attribute
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            match element.attrib[filterOpAttribName]:
+                case FilterOperationTypes.AND | FilterOperationTypes.OR:
+                    if len(element) <= 1:
+                        # AND / OR operations must have at least two children
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.LOGICAL_INCORRECT_CHILD_COUNT,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    children_validity = [checkFilterSyntax(child) for child in element]
+                    
+                    return _validation_result_from_children_results(children_validity)
+                
+                case FilterOperationTypes.NOT:
+                    if len(element) != 1:
+                        # NOT operation must have exactly one child
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.LOGICAL_INCORRECT_CHILD_COUNT,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return checkFilterSyntax(element[0])
+                
+                case _:
+                    # invalid filter operation type
+                    return SyntaxValidationResult.invalid(
+                        invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+                        invalidityPosition=invalidityPosition
+                    )
 
-
-# TODO: write tests for int / float support
-def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
-    filterOpAttribName: str = AttributeNames.filterOperationTypeAttribute
-
-    # convenient objects
-    invalidityPosition = _InvalidityPosition(element.sourceline)
-
-    def hasFilterOpAttribute(element: ET._Element) -> bool:
-        return filterOpAttribName in element.keys()
-    
-    match element.tag:
         case TypeDeclarationTagNames.STRING | \
                 TypeDeclarationTagNames.BOOL | \
                 TypeDeclarationTagNames.INT | \
@@ -456,14 +476,14 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
                 case TypeDeclarationFilterOperationTypes.ALL:
                     children_tags = {child.tag for child in element}
 
-                    if children_tags != {TypeDeclarationTagNames.DIM}:
+                    if not children_tags.issubset({TypeDeclarationTagNames.DIM, TagNames.LOGICAL}):
                         # invalid tag (s) found on children
                         return SyntaxValidationResult.invalid(
                             invalidityType=_InvalidityTypes.TYPE_DECLARATION_TENSOR_INVALID_CHILD_TAG,
                             invalidityPosition=invalidityPosition
                         )
                     
-                    children_validity = [checkTypeDeclarationFilterSyntax(child) for child in element]
+                    children_validity = [checkFilterSyntax(child) for child in element]
                     
                     return _validation_result_from_children_results(children_validity)
 
@@ -501,7 +521,7 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
                             invalidityPosition=invalidityPosition
                         )
                     
-                    return checkTypeDeclarationFilterSyntax(element[0])
+                    return checkFilterSyntax(element[0])
                 case TypeDeclarationFilterOperationTypes.NONE:
                     if len(element) > 0 or element.text is not None:
                         # if the filter operation is none, there cannot be children or enclosed content
@@ -528,7 +548,7 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
             
             match element.attrib[filterOpAttribName]:
                 case TypeDeclarationFilterOperationTypes.ALL:
-                    children_validity = [checkTypeDeclarationFilterSyntax(child) for child in element]
+                    children_validity = [checkFilterSyntax(child) for child in element]
                     
                     return _validation_result_from_children_results(children_validity)
                 
@@ -568,7 +588,7 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
                             invalidityPosition=invalidityPosition
                         )
                     
-                    children_validity = [checkTypeDeclarationFilterSyntax(child) for child in element]
+                    children_validity = [checkFilterSyntax(child) for child in element]
                     
                     if not _is_children_all_valid(children_validity):
                         # at least one of the children is invalid
@@ -619,7 +639,7 @@ def checkTypeDeclarationFilterSyntax(element: ET._Element) -> SyntaxValidationRe
                     invalidityPosition=invalidityPosition
                 )
             
-            return checkTypeDeclarationFilterSyntax(element[0])
+            return checkFilterSyntax(element[0])
             
         case TypeDeclarationTagNames.DIM:
             if not hasFilterOpAttribute(element):

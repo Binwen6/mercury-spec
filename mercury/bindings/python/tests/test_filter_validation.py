@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.mercury_nn.filter_validation import (
-    checkFilterSyntax, checkTypeDeclarationFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType
+    checkFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType
 )
 
 
@@ -418,19 +418,19 @@ class TestCheckFilterSyntax(unittest.TestCase):
         ))
 
 
-class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
+class TestcheckFilterSyntax(unittest.TestCase):
     def test_valid_type_string_with_no_filter_operation(self):
         xml_string = '''
                        <type-string></type-string>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_invalid_type_string_with_no_filter_operation(self):
         xml_string = '''
                        <type-string>test</type-string>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
@@ -440,14 +440,14 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-bool></type-bool>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_invalid_type_bool_with_illegal_content(self):
         xml_string = '''
                        <type-bool>test</type-bool>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
@@ -457,14 +457,14 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-int></type-int>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_invalid_type_int_with_illegal_content(self):
         xml_string = '''
                        <type-int>test</type-int>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
@@ -474,14 +474,14 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-float></type-float>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_invalid_type_float_with_illegal_content(self):
         xml_string = '''
                        <type-float>test</type-float>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_ILLEGAL_CONTENT_ON_TERMINAL_ELEMENT,
             invalidityPosition=_InvalidityPosition(2)
@@ -493,7 +493,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <dim filter="gt">10</dim>
                        </type-tensor>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_tensor_with_missing_filter_operation(self):
@@ -502,7 +502,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <dim filter="gt">10</dim>
                        </type-tensor>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
@@ -514,7 +514,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <dim filter="gt">10</dim>
                        </type-tensor>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(2)
@@ -527,7 +527,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-tuple>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_tuple_with_missing_filter_operation(self):
@@ -537,7 +537,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-tuple>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
@@ -550,7 +550,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-tuple>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(2)
@@ -567,14 +567,14 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            </type-named-value>
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_valid_type_named_value_collection_with_no_keys(self):
         xml_string = '''
                        <type-named-value-collection filter="all"></type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_invalid_type_named_value_collection_with_duplicate_names(self):
@@ -588,7 +588,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            </type-named-value>
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DUPLICATE_KEYS,
             invalidityPosition=_InvalidityPosition(2)
@@ -605,7 +605,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            </type-named-value>
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
@@ -622,7 +622,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            </type-named-value>
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(2)
@@ -634,7 +634,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-named-value>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_named_value_missing_name_attribute(self):
@@ -643,7 +643,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-named-value>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
@@ -656,7 +656,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-named-value>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT,
             invalidityPosition=_InvalidityPosition(2)
@@ -666,42 +666,42 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <dim filter="equals">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_valid_type_dim_with_greater_than_filter_operation(self):
         xml_string = '''
                        <dim filter="gt">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_valid_type_dim_with_greater_than_or_equals_filter_operation(self):
         xml_string = '''
                        <dim filter="ge">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_valid_type_dim_with_less_than_filter_operation(self):
         xml_string = '''
                        <dim filter="lt">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
     
     def test_valid_type_dim_with_less_than_or_equals_filter_operation(self):
         xml_string = '''
                        <dim filter="le">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_dim_with_missing_filter_operation(self):
         xml_string = '''
                        <dim></dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
@@ -711,7 +711,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <dim filter="invalid_operation">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(2)
@@ -721,7 +721,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <dim filter="gt">not_an_integer</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL,
             invalidityPosition=_InvalidityPosition(2)
@@ -731,7 +731,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-tensor filter="none"></type-tensor>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_tensor_with_non_empty_content_and_none_filter_operation(self):
@@ -740,7 +740,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <dim filter="gt">10</dim>
                        </type-tensor>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
@@ -750,7 +750,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-list filter="none"></type-list>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_list_with_non_empty_content_and_none_filter_operation(self):
@@ -759,7 +759,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-list>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
@@ -769,7 +769,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-tuple filter="none"></type-tuple>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_tuple_with_non_empty_content_and_none_filter_operation(self):
@@ -778,7 +778,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            <type-string/>
                        </type-tuple>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
@@ -788,7 +788,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <type-named-value-collection filter="none"></type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_named_value_collection_with_non_empty_content_and_none_filter_operation(self):
@@ -799,7 +799,7 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
                            </type-named-value>
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertTrue(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
@@ -809,17 +809,177 @@ class TestCheckTypeDeclarationFilterSyntax(unittest.TestCase):
         xml_string = '''
                        <dim filter="none"/>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
 
     def test_invalid_type_dim_with_non_empty_content_and_none_filter_operation(self):
         xml_string = '''
                        <dim filter="none">10</dim>'''
         element = ET.fromstring(xml_string)
-        result = checkTypeDeclarationFilterSyntax(element)
+        result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
+        ))
+
+
+class TestLogicalOperations(unittest.TestCase):
+    
+    def test_LogicalAnd_Valid(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="and">
+                                <dim filter="gt">10</dim>
+                                <dim filter="lt">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_Logical_InvalidFilterOperationType(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="all">
+                                <dim filter="gt">10</dim>
+                                <dim filter="lt">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_LogicalAnd_IncorrectChildCount(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="and">
+                                <dim filter="gt">10</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.LOGICAL_INCORRECT_CHILD_COUNT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_LogicalAnd_InvalidChild(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="and">
+                                <dim filter="gt">10</dim>
+                                <dim filter="invalid">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+            invalidityPosition=_InvalidityPosition(5)
+        ))
+    
+    def test_LogicalOr_Valid(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="or">
+                                <dim filter="gt">10</dim>
+                                <dim filter="lt">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_LogicalOr_IncorrectChildCount(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="or">
+                                <dim filter="gt">10</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.LOGICAL_INCORRECT_CHILD_COUNT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_LogicalOr_InvalidChild(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="or">
+                                <dim filter="gt">10</dim>
+                                <dim filter="invalid">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+            invalidityPosition=_InvalidityPosition(5)
+        ))
+    
+    def test_LogicalNot_Valid(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="not">
+                                <dim filter="gt">10</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_LogicalNot_IncorrectChildCount(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="not">
+                                <dim filter="gt">10</dim>
+                                <dim filter="gt">10</dim>
+                            </logical>
+                        </type-tensor>'''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.LOGICAL_INCORRECT_CHILD_COUNT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_LogicalNot_InvalidChild(self):
+        xml_string = '''
+                        <type-tensor filter="all">
+                            <logical filter="not">
+                                <dim filter="invalid">15</dim>
+                            </logical>
+                        </type-tensor>'''
+                       
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+            invalidityPosition=_InvalidityPosition(4)
         ))
 
 
