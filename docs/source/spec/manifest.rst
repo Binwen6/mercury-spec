@@ -362,6 +362,44 @@ a `dim` **must** have no child elements.
 
 The above declaration is equivalent to a `numpy.array` with its shape being `(3, 4, 5)`.
 
+Special Manifest Elements
+-------------------------
+
+Elements Related to Tag matching
+................................
+
+tag-collection
+##############
+
+A `tag-collection` specifies a set of tags applicable to your model.
+
+All children of a `tag-collection` must be `tag` elements.
+
+A `tag` element is a special "auxiliary" element which must have no children.
+However, it must have non-empty text content enclosed between the starting and closing tags, which specifies the tag name.
+
+For example, the following `tag` element represents a tag named "text-continuation":
+
+.. code-block:: xml
+
+    <tag>text-continuation</tag>
+
+Tag matching is itself an important feature of |project_name| which is not the focus of this document on general manifest syntax specification.
+For details on tag matching, refer to :doc:`this page </spec/tag-matching>`.
+
+**Example**
+
+.. code-block:: xml
+
+    <tag-collection>
+        <tag>text-continuation</tag>
+        <tag>image-generation</tag>
+    </tag-collection>
+
+The above XML element, when embedded in a manifest, specifies that the model satisfies both the "text-continuation" and the "image-generation" tags
+(e.g., the model is a chat-completion model that inputs & outputs both text and images).
+In this case, the model's manifest **must** match the filters that these tags point to, or the manifest is considered invalid.
+
 The Base Model Filter
 ---------------------
 
@@ -409,19 +447,19 @@ Basically, the above XML form base model filter specifies that:
 
 1. All manifests must include at least two sections at top level, "spec" and "implementations".
    "spec" defines the behavior of the model, and "implementations" specifies how to use the model from different programming languages.
-2. The "spec" section must further contain at least 4 sections:
+2. The "spec" section must further contain at least 5 sections:
    
-   a. The "header" section specifies the model's identity, such as its name,
+   a. The "**header**" section specifies the model's identity, such as its name,
       class (e.g., whether it is a language model or an image classification model),
       and a brief description.
-   b. The "capabilities" section specifies the abilities that the model has.
+   b. The "**capabilities**" section specifies the abilities that the model has.
       For example, if a language model is capable of solving mathematics problems
       and is familiar with programming, this section may include "math" and "code".
       You may have noticed that the "capabilities" element is required to be a `dict`, instead of a `list`.
       This is because the capabilities are unordered, i.e., a set of capabilities listed in any order should be considered the same.
       If we use a `list`, changing the order of the capabilities would change the semantics.
       However, if we specify the capabilities as the keys in a `dict`, the order doesn't matter.
-   c. The "callSpecs" section specifies how to call the model.
+   c. The "**callSpecs**" section specifies how to call the model.
       The "input" field specifies the type of data that the model expects as input and a short description for semantics
       (i.e., the "meaning" of each part of the data);
       the "output" field denotes the type of data that the model will return as output, as well as a short semantics description.
@@ -432,7 +470,9 @@ Basically, the above XML form base model filter specifies that:
       Also, when filtering the models, developers would typically select models that implement a certain call scheme,
       instead of specifying the input / output types directly.
       As a result, specifying a call scheme for your model would increase its chance to be used by a developer.
-3. The "properties" section allows you to specify additional properties for your model,
-   such as price per token, deployment type (local / cloud), and whether your model supports homomorphic encryption
-   (a technology that allows a cloud-deployed model to process data in encrypted form,
-   which makes a cloud-deployed model as safe as a locally deployed counterpart).
+   d. The "**tags**" section allows you to specify the tags applicable to your model.
+      E.g., you may specify that your model is a language model, it uses a certain pricing scheme, it is deployed on the cloud, etc.
+   e. The "**properties**" section allows you to specify additional properties for your model,
+      such as price per token, deployment type (local / cloud), and whether your model supports homomorphic encryption
+      (a technology that allows a cloud-deployed model to process data in encrypted form,
+      which makes a cloud-deployed model as safe as a locally deployed counterpart).

@@ -33,7 +33,7 @@ type-declaration elements, which specify requirements on type declarations;
 and compositors, which combines several sub-filters into a composition.
 
 For brevity, the `none` filter operation is omitted.
-Filter operation `none` is always available in every element described below;
+Except for an extremely few, explicitly documented cases, filter operation `none` is always available in all elements described below;
 if the filter operation is `none`, the filter element and the corresponding manifest element matches
 as long as they are the same type (i.e., they have the same tag).
 
@@ -446,6 +446,8 @@ Notice that for `and` and `or` filter operations,
 there must be two or more children for the filter element to be valid;
 in case of `not`, there must be exactly one.
 
+The `none` filter operation is **NOT** available in the `logical` element.
+
 Available Filter Operations
 ###########################
 
@@ -475,3 +477,114 @@ Similar to `and`, `or` means that the filter matches if and only if at least one
 **not**
 
 Similarly, `not` means that the filter matches if and only if the sub-filter does not match.
+
+Special Filter Elements
+-----------------------
+
+.. _tag-collection-filter-element-specification:
+
+`tag-collection`
+.................
+
+A `tag-collection` represents a collection of tags which can be either explicitly or implicitly matched against a manifest.
+
+All children of a `tag-collection` must be `tag` elements.
+
+A `tag` element is a special "auxiliary" element which must have no children.
+Neither can it have a `filter` attribute because the filter operation type is specified in its `tag-collection` parent instead.
+However, it must have non-empty text content enclosed between the starting and closing tags, which specifies the tag name.
+
+For example, the following `tag` element represents a tag named "text-continuation":
+
+.. code-block:: xml
+
+    <tag>text-continuation</tag>
+
+Tag matching is itself an important feature of |project_name| which is not the focus of this document on general filter syntax specification.
+For details on tag matching, refer to :doc:`this page </spec/tag-matching>`.
+
+This section will assume you are familiar with tag matching and will not explain related concepts.
+
+.. _tag-collection-filter-operations-specification:
+
+Available Filter Operations
+###########################
+
+**implicit-tag-match**
+
+The `implicit-tag-match` filter operation means that the filter matches if and only if
+for each tag in the tag collection, the XML-form filter it points to matches the manifest.
+Notice that, when matching a tag, the matching process does not start from the tag element and the corresponding element in the manifest;
+instead, |project_name| looks up the defined tags, finds the XML filter corresponding to that tag and matches that filter against the manifest from the root.
+
+For example, if the filter is:
+
+.. code-block:: xml
+
+    <dict filter="all">
+        <named-field name="data">
+            <int filter="gt">1</int>
+        </named-field>
+
+        <named-field name="tags">
+            <tag-collection filter="implicit-tag-match">
+                <tag>tag1</tag>
+            <tag-collection>
+        </named-field>
+    </dict>
+
+Where the tag named "tag1" points to such an XML filter:
+
+.. code-block:: xml
+
+    <dict filter="all">
+        <named-field name="data">
+            <int filter="lt">10</int>
+        </named-field>
+    </dict>
+
+Then the following manifest matches if and only if :math:`n` is an integer and :math:`1 < n < 10`:
+
+.. code-block:: xml
+
+    <dict>
+        <named-field name="data">
+            <int>n</int>
+        </named-field>
+
+        <named-field name="tags">
+            <tag-collection/>
+        </named-field>
+    </dict>
+
+In essence, the filter requires that the XML filter which "tag1" points to must also match for the filter to considered to match.
+
+**explicit-tag-match**
+
+The filter operation `explicit-tag-match` is provided to handle cases where the features of a model needs to be marked explicitly,
+typically because the matching system alone is not sufficient to determine whether a certain feature is present in the model.
+The most common examples are call schemes, where matching the input & output type declarations alone are not sufficient to determine
+whether the model follows a certain call scheme because two models may have inputs with the same type but different semantic meanings.
+
+In short, if the filter operation is `explicit-tag-match`,
+then the filter matches if and only if all tags present in the filter element are also present in the corresponding manifest element.
+
+For instance, with `explicit-tag-match` being the filter operation type, the example provided in the **implicit-tag-match** section
+would not match any more because even though :math:`n` matches the tag named "tag1" when :math:`1 < n < 10`,
+the manifest does not **explicitly** include that tag in its `tag-collection` element.
+
+However, the following manifest element does match because "tag1" is explicitly included:
+
+.. code-block:: xml
+
+    <dict>
+        <named-field name="data">
+            <int>n</int>
+        </named-field>
+
+        <named-field name="tags">
+            <tag-collection>
+                <tag>tag1</tag>
+            </tag-collection>
+        </named-field>
+    </dict>

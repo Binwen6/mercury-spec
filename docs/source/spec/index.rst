@@ -10,3 +10,4 @@ This section describes the details of the language-independent |project_name| sp
     overview.rst
     manifest.rst
     filter.rst
+    tag-matching.rst

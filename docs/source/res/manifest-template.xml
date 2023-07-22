@@ -25,9 +25,6 @@
             </named-field>
             <named-field name="callSpecs">
                 <dict>
-                    <named-field name="callScheme">
-                        <string>the call scheme of your model. e.g., chat-completion, image-classfication</string>
-                    </named-field>
                     <named-field name="input">
                         <dict>
                             <named-field name="type">
@@ -55,6 +52,13 @@
                         </dict>
                     </named-field>
                 </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection>
+                    <tag>tag 1</tag>
+                    <tag>tag 2</tag>
+                    ...
+                </tag-collection>
             </named-field>
             <named-field name="properties">
                 <dict>
