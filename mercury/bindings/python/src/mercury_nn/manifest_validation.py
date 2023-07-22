@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Self, Iterable, Union, Dict
+from typing import Self, Iterable, Union, Dict, List
 
 from lxml import etree as ET
 
@@ -10,9 +10,9 @@ import os
 from .specification.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType,
-    CUSTOM_CALL_SCHEME_IDENTIFIER, ManifestUtils
+    ManifestUtils
 )
-from .specification.load_call_schemes import loadCallSchemes
+from .specification.load_tags import loadTags
 from .config import Config
 from .filtering import Filter, matchFilter, FilterMatchResult
 
@@ -362,12 +362,11 @@ class ManifestValidationResult:
         class InvalidityType(Enum):
             INVALID_SYNTAX = auto()
             FAILED_BASE_MODEL_FILTER_MATCH = auto()
-            UNKNOWN_CALL_SCHEME = auto()
-            UNMATCHED_CALL_SCHEME = auto()
-            INVALID_TAGS = auto()
+            UNKNOWN_TAGS = auto()
+            UNMATCHED_TAG = auto()
         
         invalidityType: InvalidityType
-        info: Union[SyntaxValidationResult.InvalidityInfo, str, None]
+        info: Union[SyntaxValidationResult.InvalidityInfo, FilterMatchResult.FailureInfo, List[str], str] | None
         
         def __eq__(self, other: Self) -> bool:
             return self.invalidityType == other.invalidityType and self.info == other.info
@@ -409,8 +408,12 @@ _ManifestInvalidityTypes = ManifestValidationResult.InvalidityInfo.InvalidityTyp
 # TODO: write tests
 def validateManifest(manifest: ET._Element,
                      base_model_filter: Filter | None=None,
-                     call_schemes: Dict[str, Filter] | None = None) \
+                     loadedTags: Dict[str, ET._Element] | None = None) \
                     -> ManifestValidationResult:
+
+    if loadedTags is None:
+        loadedTags = loadTags()
+    
     # check syntax
     syntax_check_result = checkSyntax(manifest)
 
@@ -431,30 +434,26 @@ def validateManifest(manifest: ET._Element,
             invalidityType=_ManifestInvalidityTypes.FAILED_BASE_MODEL_FILTER_MATCH,
             invalidityInfo=base_model_match_result.failureInfo
         )
-    
-    # check for call scheme match result
-    if call_schemes is None:
-        call_schemes = loadCallSchemes()
         
-    call_scheme = ManifestUtils.getCallScheme(manifest)
-    
-    if call_scheme != CUSTOM_CALL_SCHEME_IDENTIFIER:
-        # try to match call scheme
-        if call_scheme not in call_schemes.keys():
-            return ManifestValidationResult.invalid(
-                invalidityType=_ManifestInvalidityTypes.UNKNOWN_CALL_SCHEME,
-                invalidityInfo=call_scheme
-            )
-        
-        call_scheme_match_result = matchFilter(call_schemes[call_scheme], manifest)
+    tags = ManifestUtils.getTags(manifest)
 
-        if not call_scheme_match_result.isSuccess:
-            return ManifestValidationResult.invalid(
-                invalidityType=_ManifestInvalidityTypes.UNMATCHED_CALL_SCHEME,
-                invalidityInfo=call_scheme_match_result.failureInfo
-            )
+    # check that there are no unknown tags
+    if not set(tags).issubset(set(loadedTags.keys())):
+        return ManifestValidationResult.invalid(
+            invalidityType=_ManifestInvalidityTypes.UNKNOWN_TAGS,
+            invalidityInfo=tags.difference(loadedTags)
+        )
     
-    # TODO: add tag validation
+    # check that each tag matches
+    for tag in tags:
+        # try to match tag
+        match_result = matchFilter(Filter.fromXMLElement(loadedTags[tag]), manifest, loadedTags)
+
+        if not match_result.isSuccess:
+            return ManifestValidationResult.invalid(
+                invalidityType=_ManifestInvalidityTypes.UNMATCHED_TAG,
+                invalidityInfo=match_result.failureInfo
+            )
     
     return ManifestValidationResult.valid()
     

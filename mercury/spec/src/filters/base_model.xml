@@ -24,9 +24,6 @@
             </named-field>
             <named-field name="callSpecs">
                 <dict filter="all">
-                    <named-field name="callScheme">
-                        <string filter="none"/>
-                    </named-field>
                     <named-field name="input">
                         <dict filter="all">
                             <named-field name="type">
@@ -48,6 +45,9 @@
                         </dict>
                     </named-field>
                 </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection filter="none"/>
             </named-field>
             <named-field name="properties">
                 <dict filter="none"/>

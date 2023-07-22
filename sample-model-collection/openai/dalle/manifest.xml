@@ -54,6 +54,11 @@
                     </named-field>
                 </dict>
             </named-field>
+            <named-field name="tags">
+                <tag-collection>
+                    <tag>call-scheme::image-generation</tag>
+                </tag-collection>
+            </named-field>
             <named-field name="properties">
                 <dict>
                     <named-field name="deploymentType">

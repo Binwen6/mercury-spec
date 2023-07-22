@@ -1,6 +1,6 @@
 from lxml import etree as ET
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, List
 from dataclasses import dataclass
 
 
@@ -24,7 +24,7 @@ class KeyNames:
     headerKeyName = 'header'
     modelNameKeyName = 'name'
     callSpecsKeyName = 'callSpecs'
-    callSchemeKeyName = 'callScheme'
+    tagsKeyName = 'tags'
 
 
 class TagNames:
@@ -37,6 +37,8 @@ class TagNames:
     FLOAT = 'float'
     TYPE_DECLARATION = 'type-declaration'
     LOGICAL = 'logical'
+    TAG_COLLECTION = 'tag-collection'
+    TAG = 'tag'
 
 
 class AttributeNames:
@@ -60,6 +62,10 @@ class FilterOperationTypes:
     AND = 'and'
     OR = 'or'
     NOT = 'not'
+    
+    # tag operations
+    IMPLICIT_TAG_MATCH = 'implicit-tag-match'
+    EXPLICIT_TAG_MATCH = 'explicit-tag-match'
 
 class TypeDeclarationFilterOperationTypes:
     NONE = 'none'
@@ -129,9 +135,10 @@ class ManifestUtils:
     
     # TODO: write tests
     @staticmethod
-    def getCallScheme(manifest: ET._Element):
-        return dictElementToDict(
-            dictElementToDict(ManifestUtils.getModelSpecs(manifest))[KeyNames.callSpecsKeyName])[KeyNames.callSchemeKeyName].text
+    def getTags(manifest: ET._Element) -> List[str]:
+        tags_element = dictElementToDict(ManifestUtils.getModelSpecs(manifest))[KeyNames.tagsKeyName]
+        
+        return [element.text for element in tags_element]
 
 
 def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:
@@ -259,6 +266,11 @@ class FilterSyntaxInvalidityType:
     TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE = 'TYPE_DECLARATION_NAMED_VALUE_MISSING_NAME_ATTRIBUTE'
     TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT = 'TYPE_DECLARATION_NAMED_VALUE_INCORRECT_CHILDREN_COUNT'
 
+    TAG_COLLECTION_INVALID_CHILD_TAG = 'TAG_COLLECTION_INVALID_CHILD_TAG'
+    TAG_ILLEGAL_FILTER_OPERATION_ATTRIBUTE = 'TAG_ILLEGAL_FILTER_OPERATION_ATTRIBUTE'
+    TAG_ILLEGAL_EMPTY_CONTENT = 'TAG_ILLEGAL_EMPTY_CONTENT'
+    TAG_ILLEGAL_CHILD = 'TAG_ILLEGAL_CHILD'
+
 
 class ManifestSyntaxInvalidityType:
     INVALID_TAG = 'INVALID_TAG'
@@ -313,6 +325,6 @@ class FilterMatchFailureType:
     TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS = 'TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS'
 
     LOGICAL_OPERATION_MATCH_FAILURE = 'LOGICAL_OPERATION_MATCH_FAILURE'
-    
 
-CUSTOM_CALL_SCHEME_IDENTIFIER = 'custom'
+    TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE = 'TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE'
+    

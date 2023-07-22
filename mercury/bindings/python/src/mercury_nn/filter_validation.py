@@ -190,6 +190,62 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
                         invalidityPosition=invalidityPosition
                     )
+        
+        case TagNames.TAG_COLLECTION:
+            match element.attrib[filterOpAttribName]:
+                case FilterOperationTypes.EXPLICIT_TAG_MATCH | FilterOperationTypes.IMPLICIT_TAG_MATCH:
+                    # make sure that all children are tagged `tag` and that each child is valid
+
+                    child_tags = {child.tag for child in element}
+
+                    if not child_tags.issubset({TagNames.TAG}):
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    children_validity = [checkFilterSyntax(child) for child in element]
+                    
+                    return _validation_result_from_children_results(children_validity)
+                
+                case FilterOperationTypes.NONE:
+                    if len(element) > 0 or element.text is not None:
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    return SyntaxValidationResult.valid()
+                
+                case _:
+                    return SyntaxValidationResult.invalid(
+                        invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+                        invalidityPosition=invalidityPosition
+                    )
+        
+        case TagNames.TAG:
+            # a `tag` must have no filter operation type attribute
+            if hasFilterOpAttribute(element):
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_FILTER_OPERATION_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            # a `tag` must have non-empty text content
+            if element.text is None or element.text == '':
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+                    invalidityPosition=invalidityPosition
+                )
+                
+            # a `tag` must have no children
+            if len(element) > 0:
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            return SyntaxValidationResult.valid()
                 
         case TagNames.NAMED_FIELD:
             if AttributeNames.nameAttribute not in element.keys():

@@ -17,8 +17,8 @@ class Config:
     filtersRootPath = specRootPath.joinpath('filters')
     baseModelFilterPath = filtersRootPath.joinpath('base_model.xml')
 
-    callSchemesRootPath = filtersRootPath.joinpath('call-schemes')
-    callSchemesMetadataPath = callSchemesRootPath.joinpath('metadata.yml')
+    tagsRootPath = filtersRootPath.joinpath('tags')
+    tagsMetadataPath = tagsRootPath.joinpath('metadata.yml')
 
     pythonBindingRootPath = Path(__file__).resolve().parent
     

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from lxml import etree as ET
 from enum import Enum, auto
-from typing import Self, Sequence, Tuple, Iterable
+from typing import Self, Sequence, Tuple, Iterable, Dict, List
 
 import sys
 import os
@@ -11,6 +11,8 @@ from .specification.interface import (
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
     FilterMatchFailureType
 )
+from .specification.load_tags import loadTags
+
 from .exceptions import InvalidTagException, InvalidFilterOperationTypeException
 from .utils import dictElementToDict
 
@@ -66,9 +68,12 @@ class FilterMatchResult:
         class FailurePosition:
             filtererLine: int
             filtereeLine: int
+
+            # TODO: write tests for this
+            tagStack: List[str]
             
             def __eq__(self, __value: Self) -> bool:
-                return self.filtererLine == __value.filtererLine and self.filtereeLine == __value.filtereeLine
+                return self.filtererLine == __value.filtererLine and self.filtereeLine == __value.filtereeLine and self.tagStack == __value.tagStack
         
         failureType: FilterMatchFailureType
         failurePosition: FailurePosition
@@ -126,11 +131,11 @@ _result_from_children_results = \
     lambda children_match_results: FilterMatchResult.success() \
         if _all_children_match_successful(children_match_results) \
         else _get_first_failured_child_match(children_match_results)
-    
 
-def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchResult:
+
+def matchFilter(filterObject: Filter, dataElement: ET._Element, loadedTags: Dict[str, ET._Element] | None=None) -> FilterMatchResult:
     """
-    Match model metadata against a filter.
+    Match model manifest against a filter.
     Typically, both `filter` and `element` are obtained by parsing an xml document.
     
     NOTE: The validity of arguments are NOT checked.
@@ -138,14 +143,27 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
     Args:
         filterElement (ET._Element): The filter to match against.
         dataElement (ET._Element): The element to match.
+        loadedTags (Dict[str, ET._Element] | None): The loaded tags.
+            Passing a cached obtained by `loadTags()` will improve the speed of this function by avoiding (re-)loading the tags.
     """
     
-    filterElement = filterObject.filterElement
+    if loadedTags is None:
+        loadedTags = loadTags()
+    
+    return _matchFilterElement(Filter.filterElement, dataElement, dataElement, [], loadedTags)
+    
+
+def _matchFilterElement(filterElement: ET._Element,
+                dataElement: ET._Element,
+                rootElement: ET._Element,
+                currentStack: List[str],
+                loadedTags: Dict[str, ET._Element]) -> FilterMatchResult:
     
     # convenient objects
     failurePosition = _FailurePosition(
         filtererLine=filterElement.sourceline,
-        filtereeLine=dataElement.sourceline
+        filtereeLine=dataElement.sourceline,
+        tagStack=currentStack
     )
 
 
@@ -171,7 +189,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
 
                     children_match_results = [
-                        matchFilter(Filter.fromXMLElement(filter_children_dict[key]), element_children_dict[key])
+                        _matchFilterElement(filter_children_dict[key], element_children_dict[key], rootElement, loadedTags)
                         for key in filter_children_dict.keys()
                     ]
                     
@@ -200,7 +218,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
                     
                     children_match_results = [
-                        matchFilter(Filter.fromXMLElement(sub_filter), sub_element)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
 
@@ -211,7 +229,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.LOGICAL:
-            sub_results = [matchFilter(Filter.fromXMLElement(sub_filter), dataElement) for sub_filter in filterElement]
+            sub_results = [_matchFilterElement(sub_filter, dataElement, rootElement, loadedTags) for sub_filter in filterElement]
 
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
                 case FilterOperationTypes.AND:
@@ -237,6 +255,37 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                     return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
+            
+        case TagNames.TAG_COLLECTION:
+            match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
+                case FilterOperationTypes.IMPLICIT_TAG_MATCH:
+                    # for implicit match, the tag is considered to match as long as the filter matches
+                    tags = [sub_element.text for sub_element in filterElement]
+
+                    children_match_results = [_matchFilterElement(loadedTags[tag], rootElement, rootElement, currentStack + [tag], loadedTags) for tag in tags]
+
+                    # TODO: add more information to indicate which tag is being matched when the error occurs,
+                    # and how we came to match that tag.
+                    return _result_from_children_results(children_match_results)
+
+                case FilterOperationTypes.EXPLICIT_TAG_MATCH:
+                    # for explicit match, the tag matches only if the tag explicitly appears in the tag collection
+                    filter_tags = {sub_element.text for sub_element in filterElement}
+                    data_tags = {sub_element.text for sub_element in dataElement}
+
+                    if not filter_tags.issubset(data_tags):
+                        return FilterMatchResult.failure(
+                            failureType=_FailureTypes.TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE,
+                            failurePosition=failurePosition
+                        )
+                    
+                    return FilterMatchResult.success()
+                
+                case FilterOperationTypes.NONE:
+                    return FilterMatchResult.success()
+                case _:
+                    raise InvalidFilterOperationTypeException()
+            
         case TagNames.NAMED_FIELD:
             if dataElement.tag != filterElement.tag:
                 return FilterMatchResult.failure(
@@ -277,7 +326,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                 case FilterOperationTypes.NONE:
                     return FilterMatchResult.success()
                 case FilterOperationTypes.TYPE_MATCH:
-                    return matchFilter(Filter.fromXMLElement(filterElement[0]), dataElement[0])
+                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, loadedTags)
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.BOOL:
@@ -396,7 +445,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
 
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
                 case TypeDeclarationFilterOperationTypes.ALL:
-                    return matchFilter(Filter.fromXMLElement(filterElement[0]), dataElement[0])
+                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, loadedTags)
                 case TypeDeclarationFilterOperationTypes.NONE:
                     return FilterMatchResult.success()
                 case _:
@@ -418,7 +467,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
                     
                     children_match_results = [
-                        matchFilter(Filter.fromXMLElement(sub_filter), sub_element)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
 
@@ -458,7 +507,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
                     
                     children_match_results = [
-                        matchFilter(Filter.fromXMLElement(sub_filter), sub_element)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
                     
@@ -534,7 +583,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element) -> FilterMatchRe
                         )
                     
                     children_match_results = [
-                        matchFilter(Filter.fromXMLElement(filter_children_dict[key]), data_children_dict[key])
+                        _matchFilterElement(filter_children_dict[key], data_children_dict[key], rootElement, loadedTags)
                         for key in filter_children_dict.keys()
                     ]
                     
