@@ -341,8 +341,7 @@ class TestCheckSyntax(unittest.TestCase):
             invalidityPosition=_InvalidityPosition(2)
         ))
 
-
-class TestCheckTypeDeclarationSyntax(unittest.TestCase):
+    # Test type declarations
     def test_checkTypeDeclarationSyntax_validString(self):
         xml_data = """
                     <type-string></type-string>"""
@@ -611,6 +610,90 @@ class TestCheckTypeDeclarationSyntax(unittest.TestCase):
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_TAG,
             invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    # Test tags
+    def test_TagCollection_ValidNonEmpty(self):
+        xml_data = """
+        <tag-collection>
+            <tag>test</tag>
+        </tag-collection>
+        """
+
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_TagCollection_ValidEmpty(self):
+        xml_data = """
+        <tag-collection/>
+        """
+
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+
+        xml_data = """
+        <tag-collection></tag-collection>
+        """
+
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_TagCollection_InvalidChildTag(self):
+        xml_data = """
+        <tag-collection>
+            <invalid-tag>int_tag</invalid-tag>
+        </tag-collection>
+        """
+
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_Tag_IllegalChild(self):
+        xml_data = """
+        <tag-collection>
+            <tag>int_tag<string>koala</string></tag>
+        </tag-collection>
+        """
+        
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_Tag_IllegalEmptyContent(self):
+        xml_data = """
+        <tag-collection>
+            <tag></tag>
+        </tag-collection>
+        """
+        
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+        
+        xml_data = """
+        <tag-collection>
+            <tag/>
+        </tag-collection>
+        """
+        
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityPosition=_InvalidityPosition(3)
         ))
 
 

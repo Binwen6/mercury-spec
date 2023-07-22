@@ -24,59 +24,76 @@ _FailurePosition = FilterMatchResult.FailureInfo.FailurePosition
 class TestFilterMatchResult(unittest.TestCase):
     
     def test_failure_position(self):
-        a = _FailurePosition(1, 2)
-        b = _FailurePosition(2, 1)
+        a = _FailurePosition(1, 2, tagStack=[])
+        b = _FailurePosition(2, 1, tagStack=[])
 
         self.assertNotEqual(a, b)
 
-        a = _FailurePosition(1, 2)
-        b = _FailurePosition(1, 2)
+        a = _FailurePosition(1, 2, tagStack=[])
+        b = _FailurePosition(1, 2, tagStack=[])
 
         self.assertEqual(a, b)
 
-        a = _FailurePosition(1, 2)
-        b = _FailurePosition(1, 1)
+        a = _FailurePosition(1, 2, tagStack=[])
+        b = _FailurePosition(1, 1, tagStack=[])
 
         self.assertNotEqual(a, b)
         
-        a = _FailurePosition(1, 2)
-        b = _FailurePosition(2, 2)
+        a = _FailurePosition(1, 2, tagStack=[])
+        b = _FailurePosition(2, 2, tagStack=[])
+
+        self.assertNotEqual(a, b)
+        
+        a = _FailurePosition(2, 2, tagStack=[])
+        b = _FailurePosition(2, 2, tagStack=['test'])
 
         self.assertNotEqual(a, b)
     
     def test_failure_info(self):
         a = _FailureInfo(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[]),
         )
 
         b = _FailureInfo(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[]),
         )
 
         self.assertEqual(a, b)
 
         a = _FailureInfo(
             failureType=_FailureTypes.LIST_INSUFFICIENT_CHILDREN,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[]),
         )
 
         b = _FailureInfo(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[]),
         )
 
         self.assertNotEqual(a, b)
         
         a = _FailureInfo(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[]),
         )
 
         b = _FailureInfo(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 1)
+            failurePosition=_FailurePosition(1, 1, tagStack=[]),
+        )
+
+        self.assertNotEqual(a, b)
+
+        a = _FailureInfo(
+            failureType=_FailureTypes.DICT_MISSING_KEY,
+            failurePosition=_FailurePosition(1, 1, tagStack=[]),
+        )
+
+        b = _FailureInfo(
+            failureType=_FailureTypes.DICT_MISSING_KEY,
+            failurePosition=_FailurePosition(1, 1, tagStack=['test']),
         )
 
         self.assertNotEqual(a, b)
@@ -88,12 +105,12 @@ class TestFilterMatchResult(unittest.TestCase):
 
         a = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
 
         b = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
         
         self.assertEqual(a, b)
@@ -101,31 +118,43 @@ class TestFilterMatchResult(unittest.TestCase):
         a = FilterMatchResult.success()
         b = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
         
         self.assertNotEqual(a, b)
 
         a = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
         
         b = FilterMatchResult.failure(
             failureType=_FailureTypes.LIST_INSUFFICIENT_CHILDREN,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
         
         self.assertNotEqual(a, b)
         
         a = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 2)
+            failurePosition=_FailurePosition(1, 2, tagStack=[])
         )
 
         b = FilterMatchResult.failure(
             failureType=_FailureTypes.DICT_MISSING_KEY,
-            failurePosition=_FailurePosition(1, 1)
+            failurePosition=_FailurePosition(1, 1, tagStack=[])
+        )
+        
+        self.assertNotEqual(a, b)
+        
+        a = FilterMatchResult.failure(
+            failureType=_FailureTypes.DICT_MISSING_KEY,
+            failurePosition=_FailurePosition(1, 1, tagStack=[])
+        )
+
+        b = FilterMatchResult.failure(
+            failureType=_FailureTypes.DICT_MISSING_KEY,
+            failurePosition=_FailurePosition(1, 1, tagStack=['test'])
         )
         
         self.assertNotEqual(a, b)
@@ -189,7 +218,7 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection), FilterMatchResult.success())
 
     def test_base_model_match(self):
         with open(str(Config.baseModelFilterPath), 'r') as f:
@@ -197,7 +226,8 @@ class TestFilterMatch(unittest.TestCase):
 
         result = matchFilter(
             filterObject=Filter.fromXMLElement(filterElement),
-            dataElement=ET.parse(Config.modelCollectionRootPath.joinpath(Path('openai/chatgpt/manifest.xml'))).getroot()
+            dataElement=ET.parse(Config.modelCollectionRootPath.joinpath(Path('openai/chatgpt/manifest.xml'))).getroot(),
+            loadedTags=None
         )
         
         self.assertEqual(result, FilterMatchResult.success())
@@ -245,10 +275,10 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.DICT_MISSING_KEY,
-                             failurePosition=_FailurePosition(2, 2)
+                             failurePosition=_FailurePosition(2, 2, tagStack=[])
                          ))
 
     def test_missing_item(self):
@@ -285,10 +315,10 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.LIST_INSUFFICIENT_CHILDREN,
-                             failurePosition=_FailurePosition(8, 4))
+                             failurePosition=_FailurePosition(8, 4, tagStack=[]))
                          )
 
     def test_incorrect_type(self):
@@ -307,10 +337,10 @@ class TestFilterMatch(unittest.TestCase):
     </named-field>
 </dict>
 """
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TAG_MISMATCH,
-                             failurePosition=_FailurePosition(4, 4)
+                             failurePosition=_FailurePosition(4, 4, tagStack=[])
                          ))
 
     def test_not_all_match_dict(self):
@@ -337,10 +367,10 @@ class TestFilterMatch(unittest.TestCase):
 </dict>
 """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TAG_MISMATCH,
-                             failurePosition=_FailurePosition(8, 4)
+                             failurePosition=_FailurePosition(8, 4, tagStack=[])
                          ))
 
     def test_not_all_match_list(self):
@@ -357,10 +387,10 @@ class TestFilterMatch(unittest.TestCase):
 </list>
 """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(data), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TAG_MISMATCH,
-                             failurePosition=_FailurePosition(4, 4)
+                             failurePosition=_FailurePosition(4, 4, tagStack=[])
                          ))
     
     def test_match_string_equal(self):
@@ -372,7 +402,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koala</string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
     
     def test_float_comparisons(self):
         filterElement = """
@@ -383,7 +413,7 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.0</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <float filter="equals">1.0</float>
@@ -393,9 +423,9 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.1</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
         filterElement = """
@@ -406,7 +436,7 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.1</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <float filter="gt">1.0</float>
@@ -416,9 +446,9 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.0</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -429,7 +459,7 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.0</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <float filter="ge">1.0</float>
@@ -439,14 +469,14 @@ class TestFilterMatch(unittest.TestCase):
         <float>0.9</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -457,7 +487,7 @@ class TestFilterMatch(unittest.TestCase):
         <float>0.9</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <float filter="lt">1.0</float>
@@ -467,14 +497,14 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.0</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -485,7 +515,7 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.0</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <float filter="le">1.0</float>
@@ -495,9 +525,9 @@ class TestFilterMatch(unittest.TestCase):
         <float>1.1</float>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
     def test_int_comparisons(self):
@@ -509,7 +539,7 @@ class TestFilterMatch(unittest.TestCase):
         <int>1</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <int filter="equals">1</int>
@@ -519,9 +549,9 @@ class TestFilterMatch(unittest.TestCase):
         <int>2</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
         filterElement = """
@@ -532,7 +562,7 @@ class TestFilterMatch(unittest.TestCase):
         <int>2</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <int filter="gt">1</int>
@@ -542,9 +572,9 @@ class TestFilterMatch(unittest.TestCase):
         <int>1</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -555,7 +585,7 @@ class TestFilterMatch(unittest.TestCase):
         <int>1</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <int filter="ge">1</int>
@@ -565,14 +595,14 @@ class TestFilterMatch(unittest.TestCase):
         <int>0</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -583,7 +613,7 @@ class TestFilterMatch(unittest.TestCase):
         <int>0</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <int filter="lt">1</int>
@@ -593,14 +623,14 @@ class TestFilterMatch(unittest.TestCase):
         <int>1</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
         
         filterElement = """
@@ -611,7 +641,7 @@ class TestFilterMatch(unittest.TestCase):
         <int>1</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
         filterElement = """
         <int filter="le">1</int>
@@ -621,9 +651,9 @@ class TestFilterMatch(unittest.TestCase):
         <int>2</int>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
 
@@ -631,7 +661,7 @@ class TestFilterMatch(unittest.TestCase):
         # convenient objects
         failure = FilterMatchResult.failure(
             failureType=_FailureTypes.STRING_VALUE_NOT_EQUAL,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         )
         
         filterElement = """
@@ -642,7 +672,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koalaa</string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), failure)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
         
         filterElement = """
         <string filter="equals">koala</string>
@@ -652,7 +682,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koal</string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), failure)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
         
         filterElement = """
         <string filter="equals">koala</string>
@@ -662,7 +692,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koale</string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), failure)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
         
         filterElement = """
         <string filter="equals">koala</string>
@@ -672,7 +702,7 @@ class TestFilterMatch(unittest.TestCase):
         <string>koala   </string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), failure)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
         
         filterElement = """
         <string filter="equals">koala</string>
@@ -684,7 +714,7 @@ class TestFilterMatch(unittest.TestCase):
         </string>
         """
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), failure)
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
 
     def test_type_Match(self):
         
@@ -706,7 +736,7 @@ class TestFilterMatch(unittest.TestCase):
         </type-declaration>
         """
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
     
     def test_type_NoMatch(self):
         filterElement = """
@@ -726,10 +756,10 @@ class TestFilterMatch(unittest.TestCase):
         </type-declaration>
         """
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TYPE_DECLARATION_TUPLE_INCORRECT_CHILDREN_COUNT,
-                             failurePosition=_FailurePosition(3, 3)
+                             failurePosition=_FailurePosition(3, 3, tagStack=[])
                          ))
     
     def test_type_MatchNone(self):
@@ -750,7 +780,7 @@ class TestFilterMatch(unittest.TestCase):
         </type-declaration>
         """
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
     
     def test_TypeAndOther_Match(self):
         filterElement = """
@@ -791,11 +821,9 @@ class TestFilterMatch(unittest.TestCase):
         </dict>
         """
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement)), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
-
-# The following code are authored by ChatGPT and finetuned by Trent Fellbootman.
-class TestMatchTypeDeclarationFilter(unittest.TestCase):
+    # Test type declarations
     def test_list_AllFilter_AllMatch_ReturnsSuccess(self):
         # Test scenario for 'type-list' tag with 'all' filter operation type and all elements matching
         filter_xml = """
@@ -811,7 +839,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_list_AllFilter_OneMismatch_ReturnsFailure(self):
@@ -829,10 +857,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TAG_MISMATCH,
-            failurePosition=_FailurePosition(3, 3)
+            failurePosition=_FailurePosition(3, 3, tagStack=[])
         ))
 
     def test_list_NoneFilter_ReturnsSuccess(self):
@@ -850,7 +878,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_list_InvalidFilterOpType_RaisesException(self):
@@ -869,7 +897,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         data_element = ET.fromstring(data_xml)
 
         with self.assertRaises(InvalidFilterOperationTypeException):
-            matchFilter(Filter.fromXMLElement(filter_element), data_element)
+            matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
 
     def test_tuple_AllFilter_AllMatch_ReturnsSuccess(self):
         # Test scenario for 'type-tuple' tag with 'all' filter operation type and all elements matching
@@ -888,7 +916,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tuple_AllFilter_OneMismatch_ReturnsFailure(self):
@@ -908,10 +936,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TAG_MISMATCH,
-            failurePosition=_FailurePosition(4, 4)
+            failurePosition=_FailurePosition(4, 4, tagStack=[])
         ))
     
     def test_tuple_AllFilter_WrongOrder_ReturnsFailure(self):
@@ -931,10 +959,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TAG_MISMATCH,
-            failurePosition=_FailurePosition(3, 3)
+            failurePosition=_FailurePosition(3, 3, tagStack=[])
         ))
 
     def test_tuple_NoneFilter_ReturnsSuccess(self):
@@ -954,7 +982,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tuple_InvalidFilterOpType_RaisesException(self):
@@ -975,7 +1003,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         data_element = ET.fromstring(data_xml)
 
         with self.assertRaises(InvalidFilterOperationTypeException):
-            matchFilter(Filter.fromXMLElement(filter_element), data_element)
+            matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
 
     def test_string_ReturnsSuccess(self):
         # Test scenario for 'type-string' tag
@@ -990,7 +1018,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_bool_ReturnsSuccess(self):
@@ -1006,7 +1034,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tensor_NdimEquals_NDimMatch_ReturnsSuccess(self):
@@ -1030,7 +1058,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tensor_NdimEquals_OneDimMismatch_ReturnsFailure(self):
@@ -1051,10 +1079,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
     def test_tensor_ShapeEquals_AllDimsMatch_ReturnsSuccess(self):
@@ -1078,7 +1106,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tensor_ShapeEquals_OneDimMismatch_ReturnsFailure(self):
@@ -1102,10 +1130,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(5, 5)
+            failurePosition=_FailurePosition(5, 5, tagStack=[])
         ))
     
     def test_tensor_ShapeEquals_WrongOrder_ReturnsFailure(self):
@@ -1129,10 +1157,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-            failurePosition=_FailurePosition(4, 4)
+            failurePosition=_FailurePosition(4, 4, tagStack=[])
         ))
     
     def test_tensor_ShapeEquals_WrongDimNumber_ReturnsFailure(self):
@@ -1155,10 +1183,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TYPE_DECLARATION_TENSOR_DIFFERENT_DIM_NUMBER,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
     def test_tensor_NoneFilter_ReturnsSuccess(self):
@@ -1178,7 +1206,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_tensor_InvalidFilterOpType_RaisesException(self):
@@ -1199,7 +1227,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         data_element = ET.fromstring(data_xml)
 
         with self.assertRaises(InvalidFilterOperationTypeException):
-            matchFilter(Filter.fromXMLElement(filter_element), data_element)
+            matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
      
     def test_tensor_MixedRequirementsAllMatch_ReturnSuccess(self):
         # Test scenario for 'type-tensor' tag with invalid filter operation type
@@ -1226,7 +1254,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
     
     def test_tensor_FailedDimRequirementMatches(self):
         filter_xml = """
@@ -1244,10 +1272,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-                             failurePosition=_FailurePosition(3, 3)
+                             failurePosition=_FailurePosition(3, 3, tagStack=[])
                          ))
 
         filter_xml = """
@@ -1265,10 +1293,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-                             failurePosition=_FailurePosition(3, 3)
+                             failurePosition=_FailurePosition(3, 3, tagStack=[])
                          ))
 
         filter_xml = """
@@ -1286,10 +1314,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-                             failurePosition=_FailurePosition(3, 3)
+                             failurePosition=_FailurePosition(3, 3, tagStack=[])
                          ))
 
         filter_xml = """
@@ -1307,10 +1335,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element),
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection),
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TYPE_DECLARATION_DIM_FAILED_COMPARISON,
-                             failurePosition=_FailurePosition(3, 3)
+                             failurePosition=_FailurePosition(3, 3, tagStack=[])
                          ))
 
     def test_namedValueCollection_AllFilter_AllKeysMatch_ReturnsSuccess(self):
@@ -1332,7 +1360,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_namedValueCollection_AllFilter_OneKeyMismatch_ReturnsFailure(self):
@@ -1354,10 +1382,10 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.failure(
             failureType=_FailureTypes.TYPE_DECLARATION_NAMED_VALUE_COLLECTION_DIFFERENT_KEYS,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
 
     def test_namedValueCollection_NoneFilter_ReturnsSuccess(self):
@@ -1378,7 +1406,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
 
-        result = matchFilter(Filter.fromXMLElement(filter_element), data_element)
+        result = matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
         self.assertEqual(result, FilterMatchResult.success())
 
     def test_namedValueCollection_InvalidFilterOpType_RaisesException(self):
@@ -1399,7 +1427,7 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         data_element = ET.fromstring(data_xml)
 
         with self.assertRaises(InvalidFilterOperationTypeException):
-            matchFilter(Filter.fromXMLElement(filter_element), data_element)
+            matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
 
     def test_invalidTag_RaisesException(self):
         # Test scenario for an invalid tag
@@ -1413,10 +1441,9 @@ class TestMatchTypeDeclarationFilter(unittest.TestCase):
         data_element = ET.fromstring(data_xml)
 
         with self.assertRaises(InvalidTagException):
-            matchFilter(Filter.fromXMLElement(filter_element), data_element)
-
-
-class TestLogicalOperations(unittest.TestCase):
+            matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection)
+    
+    # Test logical operations
     
     def test_AND_ReturnsSuccess(self):
         filter_xml = """
@@ -1433,7 +1460,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
     
     def test_AND_ReturnsFailure(self):
         filter_xml = """
@@ -1450,9 +1477,9 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.STRING_VALUE_NOT_EQUAL,
-            failurePosition=_FailurePosition(4, 2)
+            failurePosition=_FailurePosition(4, 2, tagStack=[])
         ))
     
     def test_OR_ReturnsSuccess(self):
@@ -1470,7 +1497,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
     
     def test_OR_ReturnsFailure(self):
         filter_xml = """
@@ -1487,9 +1514,9 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.LOGICAL_OPERATION_MATCH_FAILURE,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
     
     def test_NOT_ReturnsSuccess(self):
@@ -1506,7 +1533,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
         
         filter_xml = """
             <logical filter="not">
@@ -1521,7 +1548,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertTrue(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
     
     def test_NOT_ReturnsFailure(self):
         filter_xml = """
@@ -1537,9 +1564,9 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.LOGICAL_OPERATION_MATCH_FAILURE,
-            failurePosition=_FailurePosition(2, 2)
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
     
     def test_NestedLogical_ReturnsSuccess(self):
@@ -1563,7 +1590,7 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.success())
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.success())
     
     def test_NestedLogical_ReturnsFailure(self):
         filter_xml = """
@@ -1586,10 +1613,200 @@ class TestLogicalOperations(unittest.TestCase):
         filter_element = ET.fromstring(filter_xml)
         data_element = ET.fromstring(data_xml)
         
-        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element), FilterMatchResult.failure(
+        self.assertEqual(matchFilter(Filter.fromXMLElement(filter_element), data_element, self.tag_collection), FilterMatchResult.failure(
             failureType=_FailureTypes.LOGICAL_OPERATION_MATCH_FAILURE,
-            failurePosition=_FailurePosition(7, 2)
+            failurePosition=_FailurePosition(7, 2, tagStack=[])
         ))
+    
+    # Test tags
+    def test_TagCollection_ImplicitMatch_ReturnsSuccess(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="equals">koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <tag>string_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <string>koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection), FilterMatchResult.success())
+    
+    def test_TagCollection_ImplicitMatch_ReturnsFailure_NonTagError(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="equals">koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <tag>string_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <string>kangaroo</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.STRING_VALUE_NOT_EQUAL,
+                             failurePosition=_FailurePosition(4, 4, tagStack=[])
+                         ))
+    
+    def test_TagCollection_ImplicitMatch_TagMismatch(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="equals">koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <tag>int_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <string>koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             _FailureTypes.TAG_MISMATCH,
+                             failurePosition=_FailurePosition(4, 4, tagStack=['int_tag'])
+                         ))
+    
+    def test_TagCollection_ExplicitMatch_ReturnsSuccess(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="equals">koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <tag>string_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <string>koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <tag>string_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection), FilterMatchResult.success())
+
+    def test_TagCollection_ExplicitMatch_ReturnsFailure(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="equals">koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <tag>string_tag</tag>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <string>koala</string>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE,
+                             failurePosition=_FailurePosition(8, 8, tagStack=[])
+                         ))
+    
+    def setUp(self):
+        int_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="none"/>
+            </named-field>
+        </dict>
+        """)
+        
+        float_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <float filter="none"/>
+            </named-field>
+        </dict>
+        """)
+
+        string_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="none"/>
+            </named-field>
+        </dict>
+        """)
+        
+        self.tag_collection = {'int_tag': int_tag, 'float_tag': float_tag, 'string_tag': string_tag}
 
 
 if __name__ == '__main__':

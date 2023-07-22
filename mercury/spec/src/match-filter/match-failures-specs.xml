@@ -79,4 +79,12 @@
             and the sub-filter matches successfully.
         </description>
     </match-failure>
+
+    <match-failure>
+        <name>TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE</name>
+        <description>
+            The element being compared is a tag collection with its filter operation type being `explicit-tag-match`,
+            but some of the tags present in the filter element are not present in the manifest element.
+        </description>
+    </match-failure>
 </array>

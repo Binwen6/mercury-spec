@@ -161,4 +161,32 @@
             A `type-named-value` must have exactly one child element.
         </description>
     </valid-usage>
+
+    <valid-usage>
+        <name>TAG_COLLECTION_INVALID_CHILD_TAG</name>
+        <description>
+            All children of a `tag-collection` must be `tag`s.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TAG_ILLEGAL_CHILD</name>
+        <description>
+            A `tag` must have no children.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TAG_ILLEGAL_EMPTY_CONTENT</name>
+        <description>
+            The name of the tag represented as the text content between the starting and closing tags of a `tag` must not be empty.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>TAG_ILLEGAL_FILTER_OPERATION_ATTRIBUTE</name>
+        <description>
+            A `tag` must NOT have a "filter" attribute.
+        </description>
+    </valid-usage>
 </array>

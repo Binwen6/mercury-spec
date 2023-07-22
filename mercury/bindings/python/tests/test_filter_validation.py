@@ -417,8 +417,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
             invalidityPosition=_InvalidityPosition(2)
         ))
 
-
-class TestcheckFilterSyntax(unittest.TestCase):
+    # Test type declarations
     def test_valid_type_string_with_no_filter_operation(self):
         xml_string = '''
                        <type-string></type-string>'''
@@ -822,9 +821,7 @@ class TestcheckFilterSyntax(unittest.TestCase):
             invalidityPosition=_InvalidityPosition(2)
         ))
 
-
-class TestLogicalOperations(unittest.TestCase):
-    
+    # Test logical operations
     def test_LogicalAnd_Valid(self):
         xml_string = '''
                         <type-tensor filter="all">
@@ -981,6 +978,193 @@ class TestLogicalOperations(unittest.TestCase):
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(4)
         ))
+    
+    # Test tags
+    def test_TagCollection_ExplicitMatch_ValidNonEmpty(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match">
+            <tag>int_tag</tag>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+    def test_TagCollection_ExplicitMatch_ValidEmpty(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match"/>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_TagCollection_ImplicitMatch_ValidNonEmpty(self):
+        xml_string = '''
+        <tag-collection filter="implicit-tag-match">
+            <tag>int_tag</tag>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+    def test_TagCollection_ImplicitMatch_ValidEmpty(self):
+        xml_string = '''
+        <tag-collection filter="implicit-tag-match"/>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_TagCollection_InvalidFilterOperation(self):
+        xml_string = '''
+        <tag-collection filter="all"/>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_TagCollection_ValidNone(self):
+        xml_string = '''
+        <tag-collection filter="none"/>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_TagCollection_InvalidNone(self):
+        xml_string = '''
+        <tag-collection filter="none">
+            <tag>int_tag</tag>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_TagCollection_ExplicitMatch_InvalidChildTag(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match">
+            <named-field>int_tag</named-field>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_TagCollection_ImplicitMatch_InvalidChildTag(self):
+        xml_string = '''
+        <tag-collection filter="implicit-tag-match">
+            <named-field>int_tag</named-field>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_Tag_IllegalEmptyContent(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match">
+            <tag></tag>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+        
+        xml_string = '''
+        <tag-collection filter="implicit-tag-match">
+            <tag/>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_Tag_IllegalChild(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match">
+            <tag>int_tag<string>koala</string></tag>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def setUp(self):
+        int_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="none"/>
+            </named-field>
+        </dict>
+        """)
+        
+        float_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <float filter="none"/>
+            </named-field>
+        </dict>
+        """)
+
+        string_tag = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <string filter="none"/>
+            </named-field>
+        </dict>
+        """)
+        
+        self.tag_collection = {'int_tag': int_tag, 'float_tag': float_tag, 'string_tag': string_tag}
 
 
 if __name__ == '__main__':

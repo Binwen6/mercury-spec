@@ -150,7 +150,7 @@ def matchFilter(filterObject: Filter, dataElement: ET._Element, loadedTags: Dict
     if loadedTags is None:
         loadedTags = loadTags()
     
-    return _matchFilterElement(Filter.filterElement, dataElement, dataElement, [], loadedTags)
+    return _matchFilterElement(filterObject.filterElement, dataElement, dataElement, [], loadedTags)
     
 
 def _matchFilterElement(filterElement: ET._Element,
@@ -189,7 +189,7 @@ def _matchFilterElement(filterElement: ET._Element,
                         )
 
                     children_match_results = [
-                        _matchFilterElement(filter_children_dict[key], element_children_dict[key], rootElement, loadedTags)
+                        _matchFilterElement(filter_children_dict[key], element_children_dict[key], rootElement, currentStack, loadedTags)
                         for key in filter_children_dict.keys()
                     ]
                     
@@ -218,7 +218,7 @@ def _matchFilterElement(filterElement: ET._Element,
                         )
                     
                     children_match_results = [
-                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, currentStack, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
 
@@ -229,7 +229,7 @@ def _matchFilterElement(filterElement: ET._Element,
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.LOGICAL:
-            sub_results = [_matchFilterElement(sub_filter, dataElement, rootElement, loadedTags) for sub_filter in filterElement]
+            sub_results = [_matchFilterElement(sub_filter, dataElement, rootElement, currentStack, loadedTags) for sub_filter in filterElement]
 
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
                 case FilterOperationTypes.AND:
@@ -326,7 +326,7 @@ def _matchFilterElement(filterElement: ET._Element,
                 case FilterOperationTypes.NONE:
                     return FilterMatchResult.success()
                 case FilterOperationTypes.TYPE_MATCH:
-                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, loadedTags)
+                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, currentStack, loadedTags)
                 case _:
                     raise InvalidFilterOperationTypeException()
         case TagNames.BOOL:
@@ -445,7 +445,7 @@ def _matchFilterElement(filterElement: ET._Element,
 
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
                 case TypeDeclarationFilterOperationTypes.ALL:
-                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, loadedTags)
+                    return _matchFilterElement(filterElement[0], dataElement[0], rootElement, currentStack, loadedTags)
                 case TypeDeclarationFilterOperationTypes.NONE:
                     return FilterMatchResult.success()
                 case _:
@@ -467,7 +467,7 @@ def _matchFilterElement(filterElement: ET._Element,
                         )
                     
                     children_match_results = [
-                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, currentStack, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
 
@@ -507,7 +507,7 @@ def _matchFilterElement(filterElement: ET._Element,
                         )
                     
                     children_match_results = [
-                        _matchFilterElement(sub_filter, sub_element, rootElement, loadedTags)
+                        _matchFilterElement(sub_filter, sub_element, rootElement, currentStack, loadedTags)
                         for sub_filter, sub_element in zip(filterElement, dataElement)
                     ]
                     
@@ -583,7 +583,7 @@ def _matchFilterElement(filterElement: ET._Element,
                         )
                     
                     children_match_results = [
-                        _matchFilterElement(filter_children_dict[key], data_children_dict[key], rootElement, loadedTags)
+                        _matchFilterElement(filter_children_dict[key], data_children_dict[key], rootElement, currentStack, loadedTags)
                         for key in filter_children_dict.keys()
                     ]
                     

@@ -1,11 +1,38 @@
 import unittest
+from typing import Any, Set
 
 import os
 import sys
 
 sys.path.append('..')
 
-from src.mercury_nn.specification.interface import filterXMLfromArgs
+from src.mercury_nn.specification.interface import (
+    filterXMLfromArgs, FilterMatchFailureType, FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType
+)
+from src.mercury_nn.specification.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
+from src.mercury_nn.specification.load_valid_usages import loadValidUsage
+from src.mercury_nn.config import Config
+
+
+class TestSpecificationConsistency(unittest.TestCase):
+    @staticmethod
+    def _get_attributes(cls: type) -> Set[Any]:
+        return {getattr(cls, key) for key in dir(cls) if not (key.startswith('__') and key.endswith('__'))}
+
+    def test_MatchFailuresConsistency(self):
+        failure_specs = loadFilterMatchFailureSpecs(Config.filterMatchFailureSpecsFile)
+        self.assertEqual({value.name for value in failure_specs.values()},
+                         self._get_attributes(FilterMatchFailureType))
+
+    def test_FilterValidUsageConsistency(self):
+        valid_usages = loadValidUsage(Config.filterSyntaxValidUsageFile)
+        self.assertEqual({value.name for value in valid_usages.values()},
+                         self._get_attributes(FilterSyntaxInvalidityType))
+    
+    def test_ManifestValidUsageConsistency(self):
+        valid_usages = loadValidUsage(Config.manifestSyntaxValidUsageFile)
+        self.assertEqual({value.name for value in valid_usages.values()},
+                         self._get_attributes(ManifestSyntaxInvalidityType))
 
 
 class TestFilterXMLfromArgs(unittest.TestCase):
