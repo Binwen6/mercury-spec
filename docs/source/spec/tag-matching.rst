@@ -105,3 +105,59 @@ In this case, one tag actually represents a tree of tags;
 when |project_name| matches this tag against a model, the "top-level" tag is compared first,
 a `tag-collection` element is found, and the tags contained in that element are also compared.
 Such a process happens recursively, and the model matches the tag only if it matches all tags in this "tag tree".
+
+Tag Hierarchy, Naming Rules and Condensed Tags Representation
+-------------------------------------------------------------
+
+Tags are not independent of each other; also, the meaning of a tag may be different in different contexts.
+
+For example, a tag named `cloud`, which specifies that a model is deployed on the cloud,
+may require the manifest to specify the cost incurred per image in case of an image-generation model,
+or the cost per token in case of a language model like GPT-3.5-turbo.
+In this case, the meaning of `cloud`, and correspondingly, the XML filter that the tag should point to, is different in different contexts.
+
+Additionally, certain tags may be applicable to a model only if the model has certain features.
+For example, a tag named `question-answering` typically applies to language models only,
+and a tag named `photo-realism` may apply to image-generation models only.
+
+Namespaces are introduced for these occasions to avoid ambiguity.
+The names of most tags contains a namespace prefix to restrict the scope in which it is applicable.
+
+For example, the tag for specifying cloud-deployment on a language model might be `language-model::cloud`,
+while its counterpart defined for image-generation models might be `image-generation::cloud`.
+In this case, `language-model::` and `image-generation::` are namespace prefixes,
+specifying the contexts in which each tag is applicable.
+
+Namespaces can be nested. For example, you make see tag names in the form of `root-namespace::child-namespace::another-namespace::tag-name`.
+The string `::` is the C++ style namespace delimiter used to separate different components of a name.
+
+When developers wants to pick out the models that they can use in their applications,
+they would typically want to specify a set of tags which a model must match,
+instead of a single tag, because a tag typically makes sense only in a specific context (namespace).
+For example, when a developer wants to select all the image-generation models that are cloud deployed,
+two tags, namely `image-generation` and `image-generation::cloud` must be specified;
+it is insufficient to specify just `image-generation::cloud` because the tag makes sense only on image-generation models.
+
+However, specifying all tags one by one can be quite verbose.
+For this, |project_name| allows **condensed tags representation** to specify multiple tags in a consise way.
+As an example, `image-generation` and `image-generation::cloud` can be specified as `image-generation.cloud`.
+
+The syntax of the condensed tags representation is as follows:
+
+- `.` is the `concatenation delimiter`. `<a>.<b>` means both `<a>` and `<a>::<b>`, where `<a>` and `<b>` are two tags.
+  
+  You can chain multiple name components in this way.
+  For example, `a.b.c` represents 3 tags: `a`, `a::b`, and `a::b::c`.
+
+- `::` is the `namespace delimiter`. `<a>::<b>` means `<a>::<b>` only.
+
+- You can mix `.` and `::` to achieve the effect you desire.
+  For example, `a::b.c::d.e` represents 4 tags: `a::b`, `a::b::c`, `a::b::c::d` and `a::b::c::d::e`.
+
+- You can also use brackets to add multiple "branches" after a namespace.
+  
+  For example, `a.b.{c, d, e}` represents 5 tags: `a`, `a::b`, `a::b::c`, `a::b::d` and `a::b::e`.
+
+For a practical example, a developer may use condensed tags representation `text-continuation.{cloud, transformer}` to pick out
+all text-continuation models deployed on the cloud which uses the transformer architecture.
+Such a representation expands to 3 tags: `text-continuation`, `text-continuation::cloud` and `text-continuation::transformer`.
