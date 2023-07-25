@@ -1628,7 +1628,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection filter="implicit-tag-match">
-                    <tag>string_tag</tag>
+                    <condensed-tags>string_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1657,7 +1657,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection filter="implicit-tag-match">
-                    <tag>string_tag</tag>
+                    <condensed-tags>string_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1690,7 +1690,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection filter="implicit-tag-match">
-                    <tag>int_tag</tag>
+                    <condensed-tags>int_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1723,7 +1723,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection filter="explicit-tag-match">
-                    <tag>string_tag</tag>
+                    <condensed-tags>string_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1737,7 +1737,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection>
-                    <tag>string_tag</tag>
+                    <condensed-tags>string_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1754,7 +1754,7 @@ class TestFilterMatch(unittest.TestCase):
             
             <named-field name="tags">
                 <tag-collection filter="explicit-tag-match">
-                    <tag>string_tag</tag>
+                    <condensed-tags>string_tag</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>
@@ -1776,6 +1776,284 @@ class TestFilterMatch(unittest.TestCase):
                          FilterMatchResult.failure(
                              failureType=_FailureTypes.TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE,
                              failurePosition=_FailurePosition(8, 8, tagStack=[])
+                         ))
+    
+    def test_CondensedTags_ExplicitMatch(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>5</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1</condensed-tags>
+                    <condensed-tags>gt2</condensed-tags>
+                    <condensed-tags>gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.TAG_COLLECTION_EXPLICIT_TAG_MATCH_FAILURE,
+                             failurePosition=_FailurePosition(4, 8, tagStack=[])
+                         ))
+
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>5</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1</condensed-tags>
+                    <condensed-tags>gt1::gt2</condensed-tags>
+                    <condensed-tags>gt1::gt2::gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>5</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+        
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>gt1.gt2::gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>5</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1</condensed-tags>
+                    <condensed-tags>gt1::gt2::gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+    
+    def test_CondensedTags_ImplicitMatch(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>3</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                             failurePosition=_FailurePosition(4, 4, tagStack=['gt1::gt2::gt3'])
+                         ))
+        
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1::gt2::gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>3</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                             failurePosition=_FailurePosition(4, 4, tagStack=['gt1::gt2::gt3'])
+                         ))
+        
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>4</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+        
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1::gt2::gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>4</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+    
+    def test_nested_tags(self):
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>big</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>4</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.success())
+        
+        filter_xml = """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>big</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """
+        
+        data_xml = """
+        <dict>
+            <named-field name="data">
+                <int>3</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+        </dict>
+        """
+        
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filter_xml)), ET.fromstring(data_xml), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+                             failurePosition=_FailurePosition(4, 4, tagStack=['big', 'gt1::gt2::gt3'])
                          ))
     
     def setUp(self):
@@ -1805,8 +2083,48 @@ class TestFilterMatch(unittest.TestCase):
             </named-field>
         </dict>
         """)
+
+        tag_gt1 = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">1</int>
+            </named-field>
+        </dict>
+        """)
+
+        tag_gt1_gt2 = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">2</int>
+            </named-field>
+        </dict>
+        """)
         
-        self.tag_collection = {'int_tag': int_tag, 'float_tag': float_tag, 'string_tag': string_tag}
+        tag_gt1_gt2_gt3 = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">3</int>
+            </named-field>
+        </dict>
+        """)
+        
+        tag_big = ET.fromstring(
+        """
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """)
+        
+        self.tag_collection = {'int_tag': int_tag, 'float_tag': float_tag, 'string_tag': string_tag,
+                               'gt1': tag_gt1, 'gt1::gt2': tag_gt1_gt2, 'gt1::gt2::gt3': tag_gt1_gt2_gt3,
+                               'big': tag_big}
 
 
 if __name__ == '__main__':

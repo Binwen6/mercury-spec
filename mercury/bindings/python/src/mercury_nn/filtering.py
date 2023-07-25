@@ -12,6 +12,7 @@ from .specification.interface import (
     FilterMatchFailureType
 )
 from .specification.load_tags import loadTags
+from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 from .exceptions import InvalidTagException, InvalidFilterOperationTypeException
 from .utils import dictElementToDict
@@ -260,7 +261,11 @@ def _matchFilterElement(filterElement: ET._Element,
             match filterElement.attrib[AttributeNames.filterOperationTypeAttribute]:
                 case FilterOperationTypes.IMPLICIT_TAG_MATCH:
                     # for implicit match, the tag is considered to match as long as the filter matches
-                    tags = [sub_element.text for sub_element in filterElement]
+                    tag_sets = [parseCondensedTags(sub_element.text) for sub_element in filterElement]
+                    tags = set()
+
+                    for tag_set in tag_sets:
+                        tags.update(tag_set)
 
                     children_match_results = [_matchFilterElement(loadedTags[tag], rootElement, rootElement, currentStack + [tag], loadedTags) for tag in tags]
 
@@ -270,8 +275,16 @@ def _matchFilterElement(filterElement: ET._Element,
 
                 case FilterOperationTypes.EXPLICIT_TAG_MATCH:
                     # for explicit match, the tag matches only if the tag explicitly appears in the tag collection
-                    filter_tags = {sub_element.text for sub_element in filterElement}
-                    data_tags = {sub_element.text for sub_element in dataElement}
+                    # first we need to parse the condensed tags
+                    filter_tag_sets = [parseCondensedTags(sub_element.text) for sub_element in filterElement]
+                    data_tag_sets = [parseCondensedTags(sub_element.text) for sub_element in dataElement]
+
+                    filter_tags, data_tags = set(), set()
+                    for tag_set in filter_tag_sets:
+                        filter_tags.update(tag_set)
+                    
+                    for tag_set in data_tag_sets:
+                        data_tags.update(tag_set)
 
                     if not filter_tags.issubset(data_tags):
                         return FilterMatchResult.failure(

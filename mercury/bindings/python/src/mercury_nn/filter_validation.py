@@ -12,6 +12,7 @@ from .specification.interface import (
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
     FilterSyntaxInvalidityType
 )
+from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 
 @dataclass
@@ -198,7 +199,7 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
 
                     child_tags = {child.tag for child in element}
 
-                    if not child_tags.issubset({TagNames.TAG}):
+                    if not child_tags.issubset({TagNames.CONDENSED_TAGS}):
                         return SyntaxValidationResult.invalid(
                             invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
                             invalidityPosition=invalidityPosition
@@ -223,25 +224,34 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                         invalidityPosition=invalidityPosition
                     )
         
-        case TagNames.TAG:
+        case TagNames.CONDENSED_TAGS:
             # a `tag` must have no filter operation type attribute
             if hasFilterOpAttribute(element):
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_FILTER_OPERATION_ATTRIBUTE,
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_FILTER_OPERATION_ATTRIBUTE,
                     invalidityPosition=invalidityPosition
                 )
             
             # a `tag` must have non-empty text content
             if element.text is None or element.text == '':
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
                     invalidityPosition=invalidityPosition
                 )
                 
             # a `tag` must have no children
             if len(element) > 0:
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            # the syntax of a tag must be valid
+            try:
+                parseCondensedTags(element.text)
+            except InvalidCondensedTagsException as e:
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_INVALID_SYNTAX,
                     invalidityPosition=invalidityPosition
                 )
             

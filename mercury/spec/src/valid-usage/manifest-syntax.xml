@@ -139,16 +139,24 @@
     </valid-usage>
     
     <valid-usage>
-        <name>TAG_ILLEGAL_CHILD</name>
+        <name>CONDENSED_TAGS_ILLEGAL_CHILD</name>
         <description>
             A `tag` must have no children.
         </description>
     </valid-usage>
     
     <valid-usage>
-        <name>TAG_ILLEGAL_EMPTY_CONTENT</name>
+        <name>CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT</name>
         <description>
             The name of the tag represented as the text content between the starting and closing tags of a `tag` must not be empty.
+        </description>
+    </valid-usage>
+
+    <valid-usage>
+        <name>CONDENSED_TAGS_INVALID_SYNTAX</name>
+        <description>
+            The condensed tags representation enclosed between the starting and ending tags of a `condensed-tags` element must be valid.
+            For syntax rules of condensed tags representation, see the Mercury specification.
         </description>
     </valid-usage>
 </array>

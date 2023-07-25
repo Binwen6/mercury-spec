@@ -616,7 +616,7 @@ class TestCheckSyntax(unittest.TestCase):
     def test_TagCollection_ValidNonEmpty(self):
         xml_data = """
         <tag-collection>
-            <tag>test</tag>
+            <condensed-tags>test</condensed-tags>
         </tag-collection>
         """
 
@@ -658,41 +658,41 @@ class TestCheckSyntax(unittest.TestCase):
     def test_Tag_IllegalChild(self):
         xml_data = """
         <tag-collection>
-            <tag>int_tag<string>koala</string></tag>
+            <condensed-tags>int_tag<string>koala</string></condensed-tags>
         </tag-collection>
         """
         
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_CHILD,
             invalidityPosition=_InvalidityPosition(3)
         ))
     
     def test_Tag_IllegalEmptyContent(self):
         xml_data = """
         <tag-collection>
-            <tag></tag>
+            <condensed-tags></condensed-tags>
         </tag-collection>
         """
         
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
             invalidityPosition=_InvalidityPosition(3)
         ))
         
         xml_data = """
         <tag-collection>
-            <tag/>
+            <condensed-tags/>
         </tag-collection>
         """
         
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
             invalidityPosition=_InvalidityPosition(3)
         ))
 

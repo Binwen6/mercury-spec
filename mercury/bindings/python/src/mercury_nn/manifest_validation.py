@@ -15,6 +15,7 @@ from .specification.interface import (
 from .specification.load_tags import loadTags
 from .config import Config
 from .filtering import Filter, matchFilter, FilterMatchResult
+from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 
 @dataclass
@@ -223,7 +224,7 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
         case TagNames.TAG_COLLECTION:
             children_tags = {child.tag for child in element}
 
-            if not children_tags.issubset({TagNames.TAG}):
+            if not children_tags.issubset({TagNames.CONDENSED_TAGS}):
                 # invalid child tag
                 return SyntaxValidationResult.invalid(
                     invalidityType=_InvalidityTypes.TAG_COLLECTION_INVALID_CHILD_TAG,
@@ -234,18 +235,26 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             return _validation_result_from_children_results(children_validity)
 
-        case TagNames.TAG:
+        case TagNames.CONDENSED_TAGS:
             if len(element) > 0:
                 # illegal child
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_CHILD,
                     invalidityPosition=invalidityPosition
                 )
             
             if element.text is None or element.text == '':
                 # illegal empty content
                 return SyntaxValidationResult.invalid(
-                    invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
+                    invalidityPosition=invalidityPosition
+                )
+            
+            try:
+                parseCondensedTags(element.text)
+            except InvalidCondensedTagsException as e:
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.CONDENSED_TAGS_INVALID_SYNTAX,
                     invalidityPosition=invalidityPosition
                 )
             

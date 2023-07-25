@@ -8,7 +8,7 @@ from .specification.constants import (
     CONDENSED_TAGS_NESTED_FIELD_DELIMITER_END,
     CONDENSED_TAGS_NESTED_FIELD_DELIMITER_START,
     CONDENSED_TAGS_PARALLEL_SEPARATOR,
-    TAG_COMPONENT_NAME_RE
+    TAG_COMPONENT_NAME_REGULAR_EXPRESSION
 )
 
 
@@ -217,7 +217,7 @@ def parseCondensedTagsNoIgnoredCharacters(condensedTags: str) -> Set[str]:
             else:
                 # something like text-continuation
                 # check for validity
-                if re.search(TAG_COMPONENT_NAME_RE, token) is None:
+                if re.search(TAG_COMPONENT_NAME_REGULAR_EXPRESSION, token) is None:
                     # invalid tag component
                     raise InvalidCondensedTagsException()
                 

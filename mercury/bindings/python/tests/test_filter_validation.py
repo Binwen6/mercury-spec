@@ -983,7 +983,16 @@ class TestCheckFilterSyntax(unittest.TestCase):
     def test_TagCollection_ExplicitMatch_ValidNonEmpty(self):
         xml_string = '''
         <tag-collection filter="explicit-tag-match">
-            <tag>int_tag</tag>
+            <condensed-tags>
+                koala::{
+                    kangaroo,
+                    monkey.bird,
+                    cat::{
+                        dog,
+                        reptile
+                    },
+                },
+            </condensed-tags>
         </tag-collection>
         '''
         
@@ -1005,7 +1014,16 @@ class TestCheckFilterSyntax(unittest.TestCase):
     def test_TagCollection_ImplicitMatch_ValidNonEmpty(self):
         xml_string = '''
         <tag-collection filter="implicit-tag-match">
-            <tag>int_tag</tag>
+            <condensed-tags>
+                koala::{
+                    kangaroo,
+                    monkey.bird,
+                    cat::{
+                        dog,
+                        reptile
+                    },
+                },
+            </condensed-tags>
         </tag-collection>
         '''
         
@@ -1050,7 +1068,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
     def test_TagCollection_InvalidNone(self):
         xml_string = '''
         <tag-collection filter="none">
-            <tag>int_tag</tag>
+            <condensed-tags>int_tag</condensed-tags>
         </tag-collection>
         '''
         
@@ -1095,7 +1113,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
     def test_Tag_IllegalEmptyContent(self):
         xml_string = '''
         <tag-collection filter="explicit-tag-match">
-            <tag></tag>
+            <condensed-tags></condensed-tags>
         </tag-collection>
         '''
         
@@ -1103,13 +1121,13 @@ class TestCheckFilterSyntax(unittest.TestCase):
         result = checkFilterSyntax(element)
         
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
             invalidityPosition=_InvalidityPosition(3)
         ))
         
         xml_string = '''
         <tag-collection filter="implicit-tag-match">
-            <tag/>
+            <condensed-tags/>
         </tag-collection>
         '''
         
@@ -1117,14 +1135,14 @@ class TestCheckFilterSyntax(unittest.TestCase):
         result = checkFilterSyntax(element)
         
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_EMPTY_CONTENT,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
             invalidityPosition=_InvalidityPosition(3)
         ))
     
     def test_Tag_IllegalChild(self):
         xml_string = '''
         <tag-collection filter="explicit-tag-match">
-            <tag>int_tag<string>koala</string></tag>
+            <condensed-tags>int_tag<string>koala</string></condensed-tags>
         </tag-collection>
         '''
         
@@ -1132,7 +1150,22 @@ class TestCheckFilterSyntax(unittest.TestCase):
         result = checkFilterSyntax(element)
         
         self.assertEqual(result, SyntaxValidationResult.invalid(
-            invalidityType=_InvalidityTypes.TAG_ILLEGAL_CHILD,
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_CHILD,
+            invalidityPosition=_InvalidityPosition(3)
+        ))
+    
+    def test_CondensedTags_InvalidSyntax(self):
+        xml_string = '''
+        <tag-collection filter="explicit-tag-match">
+            <condensed-tags>int:tag</condensed-tags>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.CONDENSED_TAGS_INVALID_SYNTAX,
             invalidityPosition=_InvalidityPosition(3)
         ))
     
