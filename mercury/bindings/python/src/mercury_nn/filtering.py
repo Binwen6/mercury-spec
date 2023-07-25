@@ -399,6 +399,8 @@ def _matchFilterElement(filterElement: ET._Element,
                             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
                             failurePosition=failurePosition
                         )
+                case FilterOperationTypes.NONE:
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
                 
@@ -445,6 +447,8 @@ def _matchFilterElement(filterElement: ET._Element,
                             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
                             failurePosition=failurePosition
                         )
+                case FilterOperationTypes.NONE:
+                    return FilterMatchResult.success()
                 case _:
                     raise InvalidFilterOperationTypeException()
         

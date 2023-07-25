@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Self, Iterable, Union, Dict, List
+from typing import Self, Iterable, Union, Dict, List, Set, Tuple
 
 from lxml import etree as ET
 
@@ -406,7 +406,7 @@ class ManifestValidationResult:
             UNMATCHED_TAG = auto()
         
         invalidityType: InvalidityType
-        info: Union[SyntaxValidationResult.InvalidityInfo, FilterMatchResult.FailureInfo, List[str], str] | None
+        info: Union[SyntaxValidationResult.InvalidityInfo, FilterMatchResult.FailureInfo, Set[str], Tuple[str, FilterMatchResult.FailureInfo]] | None
         
         def __eq__(self, other: Self) -> bool:
             return self.invalidityType == other.invalidityType and self.info == other.info
@@ -414,8 +414,9 @@ class ManifestValidationResult:
     resultType: ResultType
     invalidityInfo: InvalidityInfo | None
     
+    @property
     def isValid(self) -> bool:
-        return self.resultType == SyntaxValidationResult.ResultType.VALID
+        return self.resultType == ManifestValidationResult.ResultType.VALID
     
     def __eq__(self, __value: Self) -> bool:
         return self.resultType == __value.resultType and self.invalidityInfo == __value.invalidityInfo
@@ -445,6 +446,19 @@ class ManifestValidationResult:
 # convenient classes
 _ManifestInvalidityTypes = ManifestValidationResult.InvalidityInfo.InvalidityType
 
+# override ManifestUtil methods for toy data
+from src.mercury_nn.utils import dictElementToDict
+def _getTags(manifest: ET._Element):
+    tag_sets = [parseCondensedTags(child.text) for child in dictElementToDict(manifest)['tags']]
+    tags = set()
+
+    for tag_set in tag_sets:
+        tags.update(tag_set)
+
+    return tags
+
+ManifestUtils.getTags = _getTags
+
 # TODO: write tests
 def validateManifest(manifest: ET._Element,
                      base_model_filter: Filter | None=None,
@@ -454,6 +468,9 @@ def validateManifest(manifest: ET._Element,
     if loadedTags is None:
         loadedTags = loadTags()
     
+    if base_model_filter is None:
+        base_model_filter = Filter.fromXMLElement(ET.parse(Config.baseModelFilterPath))
+
     # check syntax
     syntax_check_result = checkSyntax(manifest)
 
@@ -464,9 +481,6 @@ def validateManifest(manifest: ET._Element,
         )
     
     # check base model filter match
-    if base_model_filter is None:
-        base_model_filter = Filter.fromXMLElement(ET.parse(Config.baseModelFilterPath))
-    
     base_model_match_result = matchFilter(base_model_filter, manifest)
     
     if not base_model_match_result.isSuccess:
@@ -478,7 +492,7 @@ def validateManifest(manifest: ET._Element,
     tags = ManifestUtils.getTags(manifest)
 
     # check that there are no unknown tags
-    if not set(tags).issubset(set(loadedTags.keys())):
+    if not tags.issubset(set(loadedTags.keys())):
         return ManifestValidationResult.invalid(
             invalidityType=_ManifestInvalidityTypes.UNKNOWN_TAGS,
             invalidityInfo=tags.difference(loadedTags)
@@ -486,13 +500,14 @@ def validateManifest(manifest: ET._Element,
     
     # check that each tag matches
     for tag in tags:
-        # try to match tag
+        # try to match tag implicitly
         match_result = matchFilter(Filter.fromXMLElement(loadedTags[tag]), manifest, loadedTags)
 
         if not match_result.isSuccess:
+            # TODO: indicate which tag mismatched
             return ManifestValidationResult.invalid(
                 invalidityType=_ManifestInvalidityTypes.UNMATCHED_TAG,
-                invalidityInfo=match_result.failureInfo
+                invalidityInfo=(tag, match_result.failureInfo)
             )
     
     return ManifestValidationResult.valid()

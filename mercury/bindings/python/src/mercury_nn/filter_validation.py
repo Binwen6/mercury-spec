@@ -193,6 +193,13 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                     )
         
         case TagNames.TAG_COLLECTION:
+            if not hasFilterOpAttribute(element):
+                # must have a filter op attribute
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=invalidityPosition
+                )
+            
             match element.attrib[filterOpAttribName]:
                 case FilterOperationTypes.EXPLICIT_TAG_MATCH | FilterOperationTypes.IMPLICIT_TAG_MATCH:
                     # make sure that all children are tagged `tag` and that each child is valid

@@ -1,7 +1,9 @@
 from lxml import etree as ET
 from pathlib import Path
-from typing import Sequence, List
+from typing import Sequence, List, Set
 from dataclasses import dataclass
+
+from ..tag_matching import parseCondensedTags
 
 
 # TODO: avoid duplication with definition in utils.py
@@ -84,9 +86,9 @@ class ImplementationInfo:
     modelClassName: str
 
 
-# TODO: write tests
 class ManifestUtils:
     
+    # TODO: write tests
     @staticmethod
     def getModelSpecs(manifest: ET._Element) -> ET._Element:
         """Returns the model specs element of the model's manifest data.
@@ -100,6 +102,7 @@ class ManifestUtils:
         
         return dictElementToDict(manifest)[KeyNames.specs]
     
+    # TODO: write tests
     @staticmethod
     def supportPythonImplementation(manifest: ET._Element) -> bool:
         """Returns True if manifest data indicates that model has a Python implementation, False otherwise.
@@ -116,6 +119,7 @@ class ManifestUtils:
 
         return KeyNames.pythonImplementationIdentifier in supported_implementations
     
+    # TODO: write tests
     @staticmethod
     def getImplementationInfo(manifest: ET._Element):
         implementationDict = dictElementToDict(
@@ -127,18 +131,29 @@ class ManifestUtils:
             modelClassName=implementationDict[KeyNames.implementationEntryClass].text
         )
     
+    # TODO: write tests
     @staticmethod
     def getModelName(manifest: ET._Element):
         return dictElementToDict(
             dictElementToDict(ManifestUtils.getModelSpecs(manifest))
             [KeyNames.headerKeyName])[KeyNames.modelNameKeyName].text
     
-    # TODO: write tests
     @staticmethod
-    def getTags(manifest: ET._Element) -> List[str]:
+    def getCondensedTags(manifest: ET._Element) -> Set[str]:
         tags_element = dictElementToDict(ManifestUtils.getModelSpecs(manifest))[KeyNames.tagsKeyName]
         
-        return [element.text for element in tags_element]
+        return {element.text for element in tags_element}
+    
+    @staticmethod
+    def getTags(manifest: ET._Element) -> Set[str]:
+        condensed_tags = ManifestUtils.getCondensedTags(manifest)
+        tag_sets = [parseCondensedTags(item) for item in condensed_tags]
+
+        tags = set()
+        for tag_set in tag_sets:
+            tags.update(tag_set)
+        
+        return tags
 
 
 def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:

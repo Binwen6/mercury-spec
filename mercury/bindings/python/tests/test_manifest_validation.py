@@ -9,8 +9,12 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.mercury_nn.manifest_validation import (
-    checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult, ManifestSyntaxInvalidityType
+    checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult, ManifestSyntaxInvalidityType,
+    ManifestValidationResult, validateManifest
 )
+
+from src.mercury_nn.filtering import Filter, FilterMatchResult
+from src.mercury_nn.specification.interface import FilterMatchFailureType
 
 
 # convenient classes
@@ -695,6 +699,237 @@ class TestCheckSyntax(unittest.TestCase):
             invalidityType=_InvalidityTypes.CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT,
             invalidityPosition=_InvalidityPosition(3)
         ))
+
+
+class TestManifestValidationResult(unittest.TestCase):
+    
+    def test_InvalidityInfo(self):
+        self.assertTrue(
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                info={'a', 'b'}
+            ) ==
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                info={'a', 'b'}
+            )
+        )
+        
+        self.assertFalse(
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                info={'a', 'b'}
+            ) ==
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                info={'a', 'c'}
+            )
+        )
+        
+        self.assertFalse(
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                info={'a', 'b'}
+            ) ==
+            ManifestValidationResult.InvalidityInfo(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                info={'a', 'b'}
+            )
+        )
+
+    def test_ManifestValidationResult(self):
+        self.assertTrue(
+            ManifestValidationResult.valid() ==
+            ManifestValidationResult.valid()
+        )
+
+        self.assertTrue(
+            ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            ) ==
+            ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            )
+        )
+        
+        self.assertFalse(
+            ManifestValidationResult.valid() ==
+            ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            )
+        )
+        
+        self.assertFalse(
+            ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            ) ==
+            ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'c'}
+            )
+        )
+        
+        self.assertTrue(ManifestValidationResult.valid().isValid)
+        self.assertFalse(ManifestValidationResult.invalid(
+                invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            ).isValid)
+
+
+class TestValidateManifest(unittest.TestCase):
+    
+    def test_Valid_Tags(self):
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>4</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                    <condensed-tags>explicit</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """)
+        
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection), ManifestValidationResult.valid())
+    
+    def test_Invalid_syntax(self):
+        manifest = ET.fromstring("""
+        <tag-collection>
+            <named-field><string/></named-field>
+        </tag-collection>
+        """)
+
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                             invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                                 invalidityType=ManifestSyntaxInvalidityType.TAG_COLLECTION_INVALID_CHILD_TAG,
+                                 invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(2)
+                             )
+                         ))
+    
+    def test_Invalid_BaseModelFilterMismatch(self):
+        manifest = ET.fromstring("""
+        <string/>
+        """)
+
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.FAILED_BASE_MODEL_FILTER_MATCH,
+                             invalidityInfo=FilterMatchResult.FailureInfo(
+                                 failureType=FilterMatchFailureType.TAG_MISMATCH,
+                                 failurePosition=FilterMatchResult.FailureInfo.FailurePosition(2, 2, [])
+                             )
+                         ))
+    
+    def test_Invalid_UnknownTags(self):
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>1</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>test.test</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """)
+
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                             invalidityInfo={'test', 'test::test'}
+                         ))
+    
+    def test_invalid_TagMatchFailure(self):
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>3</int>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection>
+                    <condensed-tags>gt1.gt2</condensed-tags>
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """)
+        
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection), ManifestValidationResult.invalid(
+            invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNMATCHED_TAG,
+            invalidityInfo=('gt1::gt2::gt3', FilterMatchResult.FailureInfo(
+                failureType=FilterMatchFailureType.NUMERIC_FAILED_COMPARISON,
+                failurePosition=FilterMatchResult.FailureInfo.FailurePosition(4, 4, [])
+            ))
+        ))
+    
+    def setUp(self):
+        base_model_filter = ET.fromstring("""
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="none"/>
+            </named-field>
+            
+            <named-field name="tags">
+                <tag-collection filter="none"/>
+            </named-field>
+        </dict>
+        """)
+        
+        tag_gt1 = ET.fromstring("""
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">1</int>
+            </named-field>
+        </dict>
+        """)
+
+        tag_gt1_gt2 = ET.fromstring("""
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">2</int>
+            </named-field>
+        </dict>
+        """)
+
+        tag_gt1_gt2_gt3 = ET.fromstring("""
+        <dict filter="all">
+            <named-field name="data">
+                <int filter="gt">3</int>
+            </named-field>
+        </dict>
+        """)
+        
+        tag_explicit = ET.fromstring("""
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>explicit</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+        """)
+        
+        self.base_model_filter = Filter.fromXMLElement(base_model_filter)
+
+        self.tag_collection = {
+            'gt1': tag_gt1,
+            'gt1::gt2': tag_gt1_gt2,
+            'gt1::gt2::gt3': tag_gt1_gt2_gt3,
+            'explicit': tag_explicit
+        }
 
 
 if __name__ == '__main__':

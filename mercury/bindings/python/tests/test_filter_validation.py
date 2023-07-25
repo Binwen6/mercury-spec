@@ -980,6 +980,30 @@ class TestCheckFilterSyntax(unittest.TestCase):
         ))
     
     # Test tags
+    def test_TagCollection_MissingFilterOperationType(self):
+        xml_string = '''
+        <tag-collection>
+            <condensed-tags>
+                koala::{
+                    kangaroo,
+                    monkey.bird,
+                    cat::{
+                        dog,
+                        reptile
+                    },
+                },
+            </condensed-tags>
+        </tag-collection>
+        '''
+        
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+        
     def test_TagCollection_ExplicitMatch_ValidNonEmpty(self):
         xml_string = '''
         <tag-collection filter="explicit-tag-match">

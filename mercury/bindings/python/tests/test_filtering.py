@@ -715,6 +715,27 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), failure)
+    
+    def test_none_terminal_types(self):
+        filterElement = '<string filter="none"/>'
+        dataElement = '<string>test</string>'
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = '<bool filter="none"/>'
+        dataElement = '<bool>true</bool>'
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = '<int filter="none"/>'
+        dataElement = '<int>1</int>'
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = '<float filter="none"/>'
+        dataElement = '<float>1.0</float>'
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
     def test_type_Match(self):
         
