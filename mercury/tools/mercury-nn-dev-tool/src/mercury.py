@@ -28,7 +28,7 @@ from mercury_nn.filtering import Filter, matchFilter, FilterMatchResult
 import argparse
 
 
-class CommandTypes(Enum):
+class CommandTypes:
     VALIDATE_MANIFEST = "validate-manifest"
     VALIDATE_FILTER = "validate-filter"
 
@@ -102,7 +102,7 @@ def main(args) -> int:
                     vu_name = vu_entry.name
                     vu_description = vu_entry.description
                     
-                    print(f'Syntactical valid usage violation detected at {line_pos}: {vu_name}', file=sys.stderr)
+                    print(f'Syntactical valid usage violation detected at line {line_pos}: {vu_name}', file=sys.stderr)
                     print(f'Description of valid usage:\n\n{vu_description}', file=sys.stderr)
                     
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.FAILED_BASE_MODEL_FILTER_MATCH:

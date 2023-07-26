@@ -62,7 +62,7 @@
             </named-field>
             <named-field name="tags">
                 <tag-collection>
-                    <tag>call-scheme::chat-completion</tag>
+                    <condensed-tags>call-scheme::chat-completion</condensed-tags>
                 </tag-collection>
             </named-field>
             <named-field name="properties">

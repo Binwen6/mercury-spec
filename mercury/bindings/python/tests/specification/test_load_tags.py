@@ -4,8 +4,9 @@ import yaml
 
 import sys
 import os
+from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent))
 
 from src.mercury_nn.specification.load_tags import loadTags
 from src.mercury_nn.config import Config

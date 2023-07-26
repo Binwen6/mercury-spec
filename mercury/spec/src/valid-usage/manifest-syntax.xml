@@ -134,21 +134,21 @@
     <valid-usage>
         <name>TAG_COLLECTION_INVALID_CHILD_TAG</name>
         <description>
-            All children of a `tag-collection` must be `tag`s.
+            All children of a `tag-collection` must be `condensed-tags`s.
         </description>
     </valid-usage>
     
     <valid-usage>
         <name>CONDENSED_TAGS_ILLEGAL_CHILD</name>
         <description>
-            A `tag` must have no children.
+            A `condensed-tags` must have no children.
         </description>
     </valid-usage>
     
     <valid-usage>
         <name>CONDENSED_TAGS_ILLEGAL_EMPTY_CONTENT</name>
         <description>
-            The name of the tag represented as the text content between the starting and closing tags of a `tag` must not be empty.
+            The condensed tags representation denoted as the text content between the starting and closing tags of a `condensed-tags` must not be empty.
         </description>
     </valid-usage>
 

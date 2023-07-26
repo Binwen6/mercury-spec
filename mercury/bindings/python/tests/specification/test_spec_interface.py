@@ -1,12 +1,13 @@
 import unittest
 from typing import Any, Set
 
-import os
 import sys
 
 from lxml import etree as ET
 
-sys.path.append('..')
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent))
 
 from src.mercury_nn.specification.interface import (
     filterXMLfromArgs, FilterMatchFailureType, FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType,

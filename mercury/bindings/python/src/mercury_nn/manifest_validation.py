@@ -13,6 +13,7 @@ from .specification.interface import (
     ManifestUtils
 )
 from .specification.load_tags import loadTags
+from .specification.load_base_model_filter import loadBaseModelFilter
 from .config import Config
 from .filtering import Filter, matchFilter, FilterMatchResult
 from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
@@ -456,7 +457,7 @@ def validateManifest(manifest: ET._Element,
         loadedTags = loadTags()
     
     if base_model_filter is None:
-        base_model_filter = Filter.fromXMLElement(ET.parse(Config.baseModelFilterPath))
+        base_model_filter = Filter.fromXMLElement(loadBaseModelFilter())
 
     # check syntax
     syntax_check_result = checkSyntax(manifest)
