@@ -5,6 +5,7 @@ from typing import Dict, Any, Set, Tuple
 
 import sys
 import os
+import re
 
 from pathlib import Path
 
@@ -73,7 +74,51 @@ filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterM
 assert set(get_attributes(FilterMatchFailureType).values()) == set(filter_match_failure_specs.keys())
 
 
+def _transform_text(text: str) -> str:
+    """Removes leading & trailing whitespaces & line breaks.
+    Also removes indentation.
+    Adjacent lines not separated by empty lines are joined into a single line,
+    where the line break is replaced by a whitespace character.
+
+    Multiple consecutive empty lines are collapsed to a single empty line.
+
+    Args:
+        text (str): The text to transform.
+
+    Returns:
+        str: Transformed text.
+    """
+    
+    # remove leading & trailing whitespaces & line breaks
+    text = re.sub(r'^\s+', '', text)
+    text = re.sub(r'\s+$', '', text)
+
+    # remove indentation
+    lines = text.split(os.linesep)
+    for i, line in enumerate(lines):
+        lines[i] = re.sub(r'^\s+', '', line)
+    
+    # collapse empty lines & line breaks
+    current_line = ''
+    new_lines = []
+    for line in lines:
+        if line == '':
+            if current_line != '':
+                new_lines.append(current_line)
+            current_line = ''
+        else:
+            current_line += ' ' + line
+    
+    if current_line != '':
+        new_lines.append(current_line)
+    
+    return (os.linesep * 2).join(new_lines)
+    
+
 def main(args) -> int:
+    def _transform(text: str) -> str:
+        return os.linesep.join(' ' * 4 + line for line in _transform_text(text).split(os.linesep))
+    
     match args.command:
         case CommandTypes.VALIDATE_MANIFEST:
             # load manifest
@@ -83,6 +128,9 @@ def main(args) -> int:
                     manifest_element = manifest_element.getroot()
             except FileNotFoundError:
                 print(f'File not found: {args.manifest_file}', file=sys.stderr)
+                return 1
+            except ET.ParseError:
+                print(f'Manifest is not a valid XML document!', file=sys.stderr)
                 return 1
 
             # validate manifest
@@ -103,7 +151,7 @@ def main(args) -> int:
                     vu_description = vu_entry.description
                     
                     print(f'Syntactical valid usage violation detected at line {line_pos}: {vu_name}', file=sys.stderr)
-                    print(f'Description of valid usage:\n\n{vu_description}', file=sys.stderr)
+                    print(f'Description of valid usage:\n\n{_transform(vu_description)}', file=sys.stderr)
                     
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.FAILED_BASE_MODEL_FILTER_MATCH:
                     info: FilterMatchResult.FailureInfo = result.invalidityInfo.info
@@ -114,7 +162,7 @@ def main(args) -> int:
                     failure_description = failure_entry.description
 
                     print(f'Match failure detected when matching the manifest against the base model filter, at line {filterer_line} (base model filter), {filteree_line} (manifest): {failure_name}', file=sys.stderr)
-                    print(f'Description of match failure:\n\n{failure_description}', file=sys.stderr)
+                    print(f'Description of match failure:\n\n{_transform(failure_description)}', file=sys.stderr)
 
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS:
                     info: Set[str] = result.invalidityInfo.info
@@ -128,14 +176,16 @@ def main(args) -> int:
                     failure_entry = filter_match_failure_specs[info.failureType]
                     failure_name = failure_entry.name
                     failure_description = failure_entry.description
+                    
+                    final_tag = tag if len(stack) == 0 else stack[-1]
 
                     print(f'Match failure detected when matching a tag present in the manifest (named "{tag}") against the manifest.', file=sys.stderr)
-                    print(f'The match failure named "{failure_name}" occurred at line {filterer_line} ({tag}), {filteree_line} (manifest).', file=sys.stderr)
+                    print(f'The match failure named "{failure_name}" occurred at line {filterer_line} ("{final_tag}"), {filteree_line} (manifest).', file=sys.stderr)
                     if len(stack) > 0:
-                        print(f'The tag named {tag} was matched because the following tag-inclusion relationship exists ("<a> -> <b>" means "tag <a> includes tag <b>"):', file=sys.stderr)
-                        print(' ' * 4 + ' -> '.join('(manifest)' + stack), file=sys.stderr)
+                        print(f'The tag named "{final_tag}" was being matched because the following tag-inclusion relationship exists ("<a> -> <b>" means "tag <a> includes tag <b>"):', file=sys.stderr)
+                        print(' ' * 4 + ' -> '.join(['(manifest)', tag] + stack), file=sys.stderr)
                     
-                    print(f'The specific match failure is {failure_name}.\nDescription:\n\n{failure_description}', file=sys.stderr)
+                    print(f'Description of the match failure "{failure_name}":\n\n{_transform(failure_description)}', file=sys.stderr)
             
             return 1
 
@@ -147,6 +197,9 @@ def main(args) -> int:
             except FileNotFoundError:
                 print(f'File not found: {args.filter_file}', file=sys.stderr)
                 
+                return 1
+            except ET.ParseError:
+                print(f'Filter is not a valid XML document!', file=sys.stderr)
                 return 1
                     
             validation_result = filter_validation.checkFilterSyntax(xml_element)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="specs">
+        <dict filter="all">
+            <named-field name="tags">
+                <tag-collection filter="implicit-tag-match">
+                    <condensed-tags>gt1.gt2.gt3</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+    </named-field>
+</dict>

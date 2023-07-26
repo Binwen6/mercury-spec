@@ -1,0 +1,7 @@
+call-scheme::chat-completion: call-scheme_chat-completion.xml
+call-scheme::image-generation: call-scheme_image-generation.xml
+gt1: gt1.xml
+gt1::gt2: gt2.xml
+gt1::gt2::gt3: gt3.xml
+data-large: data-large.xml
+large: large.xml
