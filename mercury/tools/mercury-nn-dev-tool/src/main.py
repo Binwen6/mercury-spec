@@ -99,18 +99,18 @@ def _transform_text(text: str) -> str:
         lines[i] = re.sub(r'^\s+', '', line)
     
     # collapse empty lines & line breaks
-    current_line = ''
+    current_line = []
     new_lines = []
     for line in lines:
         if line == '':
-            if current_line != '':
-                new_lines.append(current_line)
-            current_line = ''
+            if len(current_line) > 0:
+                new_lines.append(' '.join(current_line))
+            current_line = []
         else:
-            current_line += ' ' + line
+            current_line.append(line)
     
-    if current_line != '':
-        new_lines.append(current_line)
+    if len(current_line) > 0:
+        new_lines.append(' '.join(current_line))
     
     return (os.linesep * 2).join(new_lines)
     
@@ -151,7 +151,8 @@ def main(args) -> int:
                     vu_description = vu_entry.description
                     
                     print(f'Syntactical valid usage violation detected at line {line_pos}: {vu_name}', file=sys.stderr)
-                    print(f'Description of valid usage:\n\n{_transform(vu_description)}', file=sys.stderr)
+                    print(file=sys.stderr)
+                    print(f'Description of valid usage:{os.linesep * 2}{_transform(vu_description)}', file=sys.stderr)
                     
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.FAILED_BASE_MODEL_FILTER_MATCH:
                     info: FilterMatchResult.FailureInfo = result.invalidityInfo.info
@@ -162,13 +163,14 @@ def main(args) -> int:
                     failure_description = failure_entry.description
 
                     print(f'Match failure detected when matching the manifest against the base model filter, at line {filterer_line} (base model filter), {filteree_line} (manifest): {failure_name}', file=sys.stderr)
-                    print(f'Description of match failure:\n\n{_transform(failure_description)}', file=sys.stderr)
+                    print(file=sys.stderr)
+                    print(f'Description of match failure:{os.linesep * 2}{_transform(failure_description)}', file=sys.stderr)
 
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS:
                     info: Set[str] = result.invalidityInfo.info
                     
-                    print(f'The following tags referenced in the manifest are unknown:\n', file=sys.stderr)
-                    print('\n'.join(' ' * 4 + name for name in info))
+                    print(f'The following tags referenced in the manifest are unknown:{os.linesep}', file=sys.stderr)
+                    print(os.linesep.join(' ' * 4 + name for name in info), file=sys.stderr)
                     
                 case ManifestValidationResult.InvalidityInfo.InvalidityType.UNMATCHED_TAG:
                     tag, info = result.invalidityInfo.info
@@ -179,13 +181,13 @@ def main(args) -> int:
                     
                     final_tag = tag if len(stack) == 0 else stack[-1]
 
-                    print(f'Match failure detected when matching a tag present in the manifest (named "{tag}") against the manifest.', file=sys.stderr)
-                    print(f'The match failure named "{failure_name}" occurred at line {filterer_line} ("{final_tag}"), {filteree_line} (manifest).', file=sys.stderr)
+                    print(f'Match failure detected when matching a tag present in the manifest (named "{tag}") against the manifest.{os.linesep}', file=sys.stderr)
+                    print(f'The match failure named "{failure_name}" occurred at line {filterer_line} ("{final_tag}"), {filteree_line} (manifest).{os.linesep}', file=sys.stderr)
                     if len(stack) > 0:
-                        print(f'The tag named "{final_tag}" was being matched because the following tag-inclusion relationship exists ("<a> -> <b>" means "tag <a> includes tag <b>"):', file=sys.stderr)
-                        print(' ' * 4 + ' -> '.join(['(manifest)', tag] + stack), file=sys.stderr)
+                        print(f'The tag named "{final_tag}" was being matched because the following tag-inclusion relationship exists ("<a> -> <b>" means "tag <a> includes tag <b>"):{os.linesep}', file=sys.stderr)
+                        print(' ' * 4 + ' -> '.join(['(manifest)', tag] + stack) + os.linesep, file=sys.stderr)
                     
-                    print(f'Description of the match failure "{failure_name}":\n\n{_transform(failure_description)}', file=sys.stderr)
+                    print(f'Description of the match failure "{failure_name}":{os.linesep * 2}{_transform(failure_description)}', file=sys.stderr)
             
             return 1
 
@@ -211,8 +213,8 @@ def main(args) -> int:
             else:
                 invalidity_info = validation_result.invalidityInfo
                 
-                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}', file=sys.stderr)
-                print(f'Description of valid usage: {filter_syntax_valid_usages[invalidity_info.invalidityType].description}', file=sys.stderr)
+                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}{os.linesep}', file=sys.stderr)
+                print(f'Description of valid usage:{os.linesep * 2}{_transform(filter_syntax_valid_usages[invalidity_info.invalidityType].description)}', file=sys.stderr)
 
                 return 1
                 
