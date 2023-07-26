@@ -23,6 +23,24 @@ _InvalidityTypes = ManifestSyntaxInvalidityType
 _InvalidityPosition = SyntaxValidationResult.InvalidityInfo.InvalidityPosition
 
 
+# override ManifestUtil methods for toy data
+from src.mercury_nn.utils import dictElementToDict
+from src.mercury_nn.tag_matching import parseCondensedTags
+from src.mercury_nn.specification.interface import ManifestUtils
+
+
+def _getTags(manifest: ET._Element):
+    tag_sets = [parseCondensedTags(child.text) for child in dictElementToDict(manifest)['tags']]
+    tags = set()
+
+    for tag_set in tag_sets:
+        tags.update(tag_set)
+
+    return tags
+
+ManifestUtils.getTags = _getTags
+
+
 class TestSyntaxValidationResult(unittest.TestCase):
     
     def test_InvalidityPosition(self):

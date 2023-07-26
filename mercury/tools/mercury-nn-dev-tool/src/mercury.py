@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from enum import Enum
-from typing import Dict, Any
+from typing import Dict, Any, Set, Tuple
 
 import sys
 import os
@@ -13,9 +13,9 @@ sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent.joi
 from lxml import etree as ET
 
 from mercury_nn import filter_validation
-from mercury_nn.filter_validation import SyntaxValidationResult as FilterSyntaxValidationResult
 from mercury_nn import manifest_validation
-from mercury_nn.manifest_validation import SyntaxValidationResult as ManifestSyntaxValidationResult
+
+from mercury_nn.manifest_validation import validateManifest, ManifestValidationResult
 
 from mercury_nn.specification.load_valid_usages import loadValidUsage
 from mercury_nn.specification.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
@@ -23,7 +23,7 @@ from mercury_nn.specification.load_filter_match_failure_specs import loadFilterM
 from mercury_nn.specification.interface import FilterSyntaxInvalidityType, ManifestSyntaxInvalidityType, FilterMatchFailureType
 from mercury_nn.config import Config
 
-from mercury_nn.filtering import Filter, matchFilter
+from mercury_nn.filtering import Filter, matchFilter, FilterMatchResult
 
 import argparse
 
@@ -76,6 +76,7 @@ assert set(get_attributes(FilterMatchFailureType).values()) == set(filter_match_
 def main(args) -> int:
     match args.command:
         case CommandTypes.VALIDATE_MANIFEST:
+            # load manifest
             try:
                 with open(args.manifest_file, 'r') as f:
                     manifest_element = ET.parse(f)
@@ -84,41 +85,59 @@ def main(args) -> int:
                 print(f'File not found: {args.manifest_file}', file=sys.stderr)
                 return 1
 
-            # syntax validation
-            syntax_validation_result = manifest_validation.checkSyntax(manifest_element)
+            # validate manifest
+            result = validateManifest(manifest_element)
 
-            if not syntax_validation_result.isValid:
-                # syntax is invalid
-                invalidity_info = syntax_validation_result.invalidityInfo
-                print(f'Manifest syntax valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}', file=sys.stderr)
-                print(f'Description of valid usage: {manifest_syntax_valid_usages[invalidity_info.invalidityType].description}', file=sys.stderr)
-
-                return 1
-            
-            # syntax is valid, match the manifest against base model
-            try:
-                with open(Config.baseModelFilterPath, 'r') as f:
-                    filter_element = ET.parse(f)
-                    filter_element = filter_element.getroot()
-            except FileNotFoundError:
-                print(f'File not found: {Config.baseModelFilterPath}', file=sys.stderr)
-                
-                return 1
-            
-            base_model_filter = Filter.fromXMLElement(filter_element)
-            
-            match_result = matchFilter(filterObject=base_model_filter, dataElement=manifest_element)
-
-            if match_result.isSuccess:
+            if result.isValid:
                 print('Manifest is valid.')
-
+                
                 return 0
-            else:
-                failure_info = match_result.failureInfo
+            
+            match result.invalidityInfo.invalidityType:
+                case ManifestValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX:
+                    info: manifest_validation.SyntaxValidationResult.InvalidityInfo = result.invalidityInfo.info
+                    line_pos = info.invalidityPosition.line
+                    invalidity_type = info.invalidityType
+                    vu_entry = manifest_syntax_valid_usages[invalidity_type]
+                    vu_name = vu_entry.name
+                    vu_description = vu_entry.description
+                    
+                    print(f'Syntactical valid usage violation detected at {line_pos}: {vu_name}', file=sys.stderr)
+                    print(f'Description of valid usage:\n\n{vu_description}', file=sys.stderr)
+                    
+                case ManifestValidationResult.InvalidityInfo.InvalidityType.FAILED_BASE_MODEL_FILTER_MATCH:
+                    info: FilterMatchResult.FailureInfo = result.invalidityInfo.info
+                    # we know that the base model filter does not have tags
+                    filterer_line, filteree_line, _ = info.failurePosition.filtererLine, info.failurePosition.filtereeLine, info.failurePosition.tagStack
+                    failure_entry = filter_match_failure_specs[info.failureType]
+                    failure_name = failure_entry.name
+                    failure_description = failure_entry.description
 
-                print(f'Manifest failed to match the base model filter at line {failure_info.failurePosition.filtereeLine} (manifest), {failure_info.failurePosition.filtererLine} (base model filter): {failure_info.failureType}', file=sys.stderr)
-                print(f'Description of failure: {filter_match_failure_specs[failure_info.failureType].description}', file=sys.stderr)
+                    print(f'Match failure detected when matching the manifest against the base model filter, at line {filterer_line} (base model filter), {filteree_line} (manifest): {failure_name}', file=sys.stderr)
+                    print(f'Description of match failure:\n\n{failure_description}', file=sys.stderr)
 
+                case ManifestValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS:
+                    info: Set[str] = result.invalidityInfo.info
+                    
+                    print(f'The following tags referenced in the manifest are unknown:\n', file=sys.stderr)
+                    print('\n'.join(' ' * 4 + name for name in info))
+                    
+                case ManifestValidationResult.InvalidityInfo.InvalidityType.UNMATCHED_TAG:
+                    tag, info = result.invalidityInfo.info
+                    filterer_line, filteree_line, stack = info.failurePosition.filtererLine, info.failurePosition.filtereeLine, info.failurePosition.tagStack
+                    failure_entry = filter_match_failure_specs[info.failureType]
+                    failure_name = failure_entry.name
+                    failure_description = failure_entry.description
+
+                    print(f'Match failure detected when matching a tag present in the manifest (named "{tag}") against the manifest.', file=sys.stderr)
+                    print(f'The match failure named "{failure_name}" occurred at line {filterer_line} ({tag}), {filteree_line} (manifest).', file=sys.stderr)
+                    if len(stack) > 0:
+                        print(f'The tag named {tag} was matched because the following tag-inclusion relationship exists ("<a> -> <b>" means "tag <a> includes tag <b>"):', file=sys.stderr)
+                        print(' ' * 4 + ' -> '.join('(manifest)' + stack), file=sys.stderr)
+                    
+                    print(f'The specific match failure is {failure_name}.\nDescription:\n\n{failure_description}', file=sys.stderr)
+            
+            return 1
 
         case CommandTypes.VALIDATE_FILTER:
             try:

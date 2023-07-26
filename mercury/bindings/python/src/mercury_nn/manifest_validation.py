@@ -446,19 +446,6 @@ class ManifestValidationResult:
 # convenient classes
 _ManifestInvalidityTypes = ManifestValidationResult.InvalidityInfo.InvalidityType
 
-# override ManifestUtil methods for toy data
-from src.mercury_nn.utils import dictElementToDict
-def _getTags(manifest: ET._Element):
-    tag_sets = [parseCondensedTags(child.text) for child in dictElementToDict(manifest)['tags']]
-    tags = set()
-
-    for tag_set in tag_sets:
-        tags.update(tag_set)
-
-    return tags
-
-ManifestUtils.getTags = _getTags
-
 # TODO: write tests
 def validateManifest(manifest: ET._Element,
                      base_model_filter: Filter | None=None,
