@@ -178,11 +178,56 @@ Description of valid usage:
     Tags used in filter XML must be valid, e.g., dict, list, etc.
 """)
     
-    def test_unknown_tags(self):
-        stdout, stderr = self.get_outputs('unknown_tags_test1_test2')
+    def test_UnknownTags_OrdinaryFilter_Failure(self):
+        stdout, stderr = self.get_outputs('unknown_tag_explicit_test_new')
         
-        # self.assertEqual(stdout, '')
-        # self.assertTrue(stderr ==
+        self.assertEqual(stdout, '')
+        self.assertTrue(stderr ==
+"""The following tags present in the filter are unknown:
+
+    test
+    new
+""" or
+            stderr ==
+"""The following tags present in the filter are unknown:
+
+    new
+    test
+""")
+        
+    def test_UnknownTags_TagFilter_Success(self):
+        result = sp.run([
+            'python',
+            str(Config.mainPyExecutable),
+            'validate-filter',
+            '--tag_name',
+            'test',
+            str(Config.filterCasesRootDir.joinpath(f'filter_unknown_tag_explicit_test.xml'))
+        ], capture_output=True)
+
+        stdout, stderr = result.stdout.decode(), result.stderr.decode()
+        
+        self.assertEqual(stderr, '')
+        self.assertEqual(stdout, f'Filter is valid.{os.linesep}')
+    
+    def test_UnknownTags_TagFilter_Failure(self):
+        result = sp.run([
+            'python',
+            str(Config.mainPyExecutable),
+            'validate-filter',
+            '--tag_name',
+            'test',
+            str(Config.filterCasesRootDir.joinpath(f'filter_unknown_tag_explicit_test_new.xml'))
+        ], capture_output=True)
+
+        stdout, stderr = result.stdout.decode(), result.stderr.decode()
+        
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr,
+"""The following tags present in the filter are unknown:
+
+    new
+""")
 
 
 if __name__ == '__main__':

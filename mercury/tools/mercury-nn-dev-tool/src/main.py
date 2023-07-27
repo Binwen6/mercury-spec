@@ -206,7 +206,7 @@ def main(args) -> int:
                 print(f'Filter is not a valid XML document!', file=sys.stderr)
                 return 1
                     
-            validation_result = validateFilter(xml_element)
+            validation_result = validateFilter(xml_element, tagName=args.tag_name)
 
             if validation_result.isValid:
                 print('Filter is valid.')
@@ -225,7 +225,7 @@ def main(args) -> int:
                     case FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS:
                         invalidity_info: Set[str] = info.invalidityInfo
                         
-                        print(f'The following tags present in the filter are unknown:{os.linesep * 2}', file=sys.stderr)
+                        print(f'The following tags present in the filter are unknown:{os.linesep}', file=sys.stderr)
                         print(os.linesep.join(' ' * 4 + name for name in invalidity_info), file=sys.stderr)
 
                 return 1
