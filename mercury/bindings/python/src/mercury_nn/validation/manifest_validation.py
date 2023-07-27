@@ -7,16 +7,16 @@ from lxml import etree as ET
 import sys
 import os
 
-from .specification.interface import (
+from ..specification.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames, ManifestSyntaxInvalidityType,
     ManifestUtils
 )
-from .specification.load_tags import loadTags
-from .specification.load_base_model_filter import loadBaseModelFilter
-from .config import Config
-from .filtering import Filter, matchFilter, FilterMatchResult
-from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
+from ..specification.load_tags import loadTags
+from ..specification.load_base_model_filter import loadBaseModelFilter
+from ..config import Config
+from ..filtering import Filter, matchFilter, FilterMatchResult
+from ..tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 
 @dataclass

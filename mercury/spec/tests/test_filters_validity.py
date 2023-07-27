@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.joinpath('bindings/python')))
 
 from config import Config
-from src.mercury_nn import filter_validation
+from src.mercury_nn.validation import filter_validation
 
 import unittest
 from lxml import etree as ET

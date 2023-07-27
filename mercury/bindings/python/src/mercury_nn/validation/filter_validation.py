@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Self, Iterable
+from typing import Self, Iterable, Dict, Union, Tuple, Set, List, Any
 
 from lxml import etree as ET
 
 import sys
 import os
 
-from .specification.interface import (
+from ..specification.interface import (
     TagNames, AttributeNames, FilterOperationTypes, filterXMLfromArgs,
     TypeDeclarationTagNames, TypeDeclarationFilterOperationTypes, TypeDeclarationAttributeNames,
     FilterSyntaxInvalidityType
 )
-from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
+from ..specification.load_tags import loadTags
+from ..tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 
 @dataclass
@@ -768,3 +769,108 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
                 invalidityType=_InvalidityTypes.INVALID_TAG,
                 invalidityPosition=invalidityPosition
             )
+
+
+@dataclass
+class FilterValidationResult:
+    
+    class ResultType:
+        VALID = auto()
+        INVALID = auto()
+
+    @dataclass
+    class InvalidityInfo:
+        
+        class InvalidityType(Enum):
+            INVALID_SYNTAX = auto()
+            UNKNOWN_TAGS = auto()
+    
+        invalidityType: InvalidityType
+        invalidityInfo: Union[SyntaxValidationResult.InvalidityInfo, Set[str]]
+        
+        def __eq__(self, other: Self) -> bool:
+            return self.invalidityType == other.invalidityType and self.invalidityInfo == other.invalidityInfo
+    
+    resultType: ResultType
+    invalidityInfo: InvalidityInfo | None
+    
+    @property
+    def isValid(self) -> bool:
+        return self.resultType == FilterValidationResult.resultType.VALID
+    
+    def __eq__(self, other: Self) -> bool:
+        return self.resultType == other.resultType and self.invalidityInfo == other.invalidityInfo
+    
+    @staticmethod
+    def valid() -> Self:
+        return FilterValidationResult(
+            resultType=FilterValidationResult.ResultType.VALID,
+            invalidityInfo=None
+        )
+    
+    @staticmethod
+    def invalid(invalidityType, invalidityInfo) -> Self:
+        """NOTE:
+        
+        `invalidityType` and `invalidityInfo` must match the types specified in `InvalidityInfo`.
+        """
+
+        return FilterValidationResult(
+            resultType=FilterValidationResult.ResultType.INVALID,
+            invalidityInfo=FilterValidationResult.InvalidityInfo(
+                invalidityType=invalidityType,
+                invalidityInfo=invalidityInfo
+            )
+        )
+    
+        
+def validateFilter(filterElement: ET._Element, tagName: str | None=None, loadedTags: Dict[str, ET._Element] | None=None) -> FilterValidationResult:
+    """Checks that a filter element is valid.
+    This function can check the validity of both regular filters and tags.
+    
+    For an ordinary filter that is not a tag, pass `tagName` as `None`.
+    For a tag, pass the name of the tag in `tagName`.
+
+    Args:
+        filterElement (ET._Element): The filter to check.
+        tagName (str | None, optional): The name of the tag (if applicable). Defaults to None.
+        loadedTags (Dict[str, ET._Element] | None, optional): Loaded tags. Defaults to None.
+
+    Returns:
+        FilterValidationResult: The result of the validation.
+    """
+    if loadedTags is None:
+        loadedTags = loadTags()
+    
+    # check syntax
+    syntax_check_result = checkFilterSyntax(filterElement)
+    
+    if not syntax_check_result.isValid:
+        return FilterValidationResult.invalid(
+            invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+            invalidityInfo=syntax_check_result.invalidityInfo
+        )
+    
+    # check tags
+    def find_unmatched_tags_for_tag_collection(tag_collection: ET._Element) -> Set[str]:
+        tags = set().union(*[parseCondensedTags(child.text) for child in tag_collection])
+        undefined_tags = tags.difference(loadedTags.keys())
+
+        # if this is an explicit match, referencing self is allowed;
+        # if this is an implicit match, referencing self is not allowed, as that would result in an infinite recursion
+        return undefined_tags.difference({tagName}) \
+                if (tagName is not None and 
+                    tag_collection.attrib[AttributeNames.filterOperationTypeAttribute] == FilterOperationTypes.EXPLICIT_TAG_MATCH) \
+            else undefined_tags
+        
+        
+    tag_collections = filterElement.findall(r'.//' + TagNames.TAG_COLLECTION)
+    unknown_tags = set().union(*[find_unmatched_tags_for_tag_collection(tag_collection) for tag_collection in tag_collections])
+    
+    if len(unknown_tags) > 0:
+        return FilterValidationResult.invalid(
+            invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+            invalidityInfo=unknown_tags
+        )
+    
+    return FilterValidationResult.valid()

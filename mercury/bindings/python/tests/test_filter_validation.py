@@ -8,8 +8,8 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.mercury_nn.filter_validation import (
-    checkFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType
+from src.mercury_nn.validation.filter_validation import (
+    checkFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType, FilterValidationResult, validateFilter
 )
 
 
@@ -1222,6 +1222,420 @@ class TestCheckFilterSyntax(unittest.TestCase):
         """)
         
         self.tag_collection = {'int_tag': int_tag, 'float_tag': float_tag, 'string_tag': string_tag}
+
+
+class TestFilterValidationResult(unittest.TestCase):
+    
+    def test_InvalidityInfo(self):
+        self.assertEqual(
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            ),
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            )
+        )
+        
+        self.assertNotEqual(
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(2)
+                )
+            ),
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            )
+        )
+        
+        self.assertNotEqual(
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            ),
+            FilterValidationResult.InvalidityInfo(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            )
+        )
+    
+    def test_FilterValidationResult(self):
+        self.assertEqual(
+            FilterValidationResult.valid(),
+            FilterValidationResult.valid()
+        )
+
+        self.assertEqual(
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            )
+        )
+        
+        self.assertNotEqual(
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a'}
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'b'}
+            )
+        )
+        
+        self.assertNotEqual(
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            )
+        )
+        
+        self.assertNotEqual(
+            FilterValidationResult.valid(),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a'}
+            ),
+        )
+
+
+class TestValidateFilter(unittest.TestCase):
+    
+    def setUp(self):
+        self.tag_collection = {
+            'int_tag': ET.fromstring(
+            """
+            <dict filter="all">
+                <named-field name="data">
+                    <int filter="none"/>
+                </named-field>
+            </dict>
+            """),
+            'float_tag': ET.fromstring(
+            """
+            <dict filter="all">
+                <named-field name="data">
+                    <float filter="none"/>
+                </named-field>
+            </dict>
+            """)
+        }
+    
+    def test_Syntax(self):
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="data">
+                        <int filter="none"/>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.valid()
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="data">
+                        <int/>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(4)
+                )
+            )
+        )
+    
+    def test_ExplicitMatch(self):
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.valid()
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>a.b</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'a::b'}
+            )
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'test'}
+            )
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                tagName='test',
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.valid()
+        )
+        
+    def test_ImplicitMatch(self):
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.valid()
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>a.b</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'a', 'a::b'}
+            )
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'test'}
+            )
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                tagName='test',
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'test'}
+            )
+        )
+    
+    def test_MixedExplicitImplicit(self):
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags1">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                    
+                    <named-field name="tags2">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'test'}
+            )
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags1">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                    
+                    <named-field name="tags2">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                tagName='test',
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.valid()
+        )
+        
+        self.assertEqual(
+            validateFilter(
+                filterElement=ET.fromstring(
+                """
+                <dict filter="all">
+                    <named-field name="tags1">
+                        <tag-collection filter="implicit-tag-match">
+                            <condensed-tags>int_tag</condensed-tags>
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                    
+                    <named-field name="tags2">
+                        <tag-collection filter="explicit-tag-match">
+                            <condensed-tags>test</condensed-tags>
+                        </tag-collection>
+                    </named-field>
+                </dict>
+                """),
+                tagName='test',
+                loadedTags=self.tag_collection
+            ),
+            FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo={'test'}
+            )
+        )
 
 
 if __name__ == '__main__':
