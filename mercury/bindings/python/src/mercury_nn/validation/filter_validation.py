@@ -796,7 +796,7 @@ class FilterValidationResult:
     
     @property
     def isValid(self) -> bool:
-        return self.resultType == FilterValidationResult.resultType.VALID
+        return self.resultType == FilterValidationResult.ResultType.VALID
     
     def __eq__(self, other: Self) -> bool:
         return self.resultType == other.resultType and self.invalidityInfo == other.invalidityInfo

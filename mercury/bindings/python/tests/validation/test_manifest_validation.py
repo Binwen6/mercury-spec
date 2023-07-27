@@ -4,9 +4,9 @@ from lxml import etree as ET
 from enum import Enum
 
 import sys
-import os
+from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent))
 
 from src.mercury_nn.validation.manifest_validation import (
     checkSyntax, checkTypeDeclarationSyntax, SyntaxValidationResult, ManifestSyntaxInvalidityType,

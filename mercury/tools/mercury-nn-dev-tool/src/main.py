@@ -13,10 +13,11 @@ sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent.joi
 
 from lxml import etree as ET
 
-from mercury_nn import filter_validation
-from mercury_nn import manifest_validation
+from mercury_nn.validation import filter_validation
+from mercury_nn.validation import manifest_validation
 
-from mercury_nn.manifest_validation import validateManifest, ManifestValidationResult
+from mercury_nn.validation.manifest_validation import validateManifest, ManifestValidationResult
+from mercury_nn.validation.filter_validation import validateFilter, FilterValidationResult
 
 from mercury_nn.specification.load_valid_usages import loadValidUsage
 from mercury_nn.specification.load_filter_match_failure_specs import loadFilterMatchFailureSpecs
@@ -44,14 +45,15 @@ manifest_validation_subparser = subparsers.add_parser(
     help='Validates a manifest.'
 )
 
-manifest_validation_subparser.add_argument('manifest_file', type=str)
+manifest_validation_subparser.add_argument('manifest_file', type=str, help='The manifest XML file.')
 
 filter_validation_subparser = subparsers.add_parser(
     CommandTypes.VALIDATE_FILTER,
     help='Validates a filter.'
 )
 
-filter_validation_subparser.add_argument('filter_file', type=str)
+filter_validation_subparser.add_argument('filter_file', type=str, help='The filter XML file.')
+filter_validation_subparser.add_argument('--tag_name', type=str, help='The name of the tag, if you are validating a tag filter. Otherwise, do not pass anything to this option.')
 
 args = parser.parse_args()
 
@@ -204,17 +206,27 @@ def main(args) -> int:
                 print(f'Filter is not a valid XML document!', file=sys.stderr)
                 return 1
                     
-            validation_result = filter_validation.checkFilterSyntax(xml_element)
+            validation_result = validateFilter(xml_element)
 
             if validation_result.isValid:
                 print('Filter is valid.')
                 
                 return 0
             else:
-                invalidity_info = validation_result.invalidityInfo
-                
-                print(f'Valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}{os.linesep}', file=sys.stderr)
-                print(f'Description of valid usage:{os.linesep * 2}{_transform(filter_syntax_valid_usages[invalidity_info.invalidityType].description)}', file=sys.stderr)
+                info: FilterValidationResult.InvalidityInfo = validation_result.invalidityInfo
+
+                match info.invalidityType:
+                    case FilterValidationResult.InvalidityInfo.InvalidityType.INVALID_SYNTAX:
+                        invalidity_info: filter_validation.SyntaxValidationResult.InvalidityInfo = info.invalidityInfo
+                        
+                        print(f'Syntactical valid usage violation detected at line {invalidity_info.invalidityPosition.line}: {invalidity_info.invalidityType}{os.linesep}', file=sys.stderr)
+                        print(f'Description of valid usage:{os.linesep * 2}{_transform(filter_syntax_valid_usages[invalidity_info.invalidityType].description)}', file=sys.stderr)
+                    
+                    case FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS:
+                        invalidity_info: Set[str] = info.invalidityInfo
+                        
+                        print(f'The following tags present in the filter are unknown:{os.linesep * 2}', file=sys.stderr)
+                        print(os.linesep.join(' ' * 4 + name for name in invalidity_info), file=sys.stderr)
 
                 return 1
                 

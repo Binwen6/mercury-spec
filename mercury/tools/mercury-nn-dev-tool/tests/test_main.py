@@ -171,12 +171,18 @@ class TestValidateFilter(unittest.TestCase):
         
         self.assertEqual(stdout, '')
         self.assertEqual(stderr,
-"""Valid usage violation detected at line 10: INVALID_TAG
+"""Syntactical valid usage violation detected at line 10: INVALID_TAG
 
 Description of valid usage:
 
     Tags used in filter XML must be valid, e.g., dict, list, etc.
 """)
+    
+    def test_unknown_tags(self):
+        stdout, stderr = self.get_outputs('unknown_tags_test1_test2')
+        
+        # self.assertEqual(stdout, '')
+        # self.assertTrue(stderr ==
 
 
 if __name__ == '__main__':

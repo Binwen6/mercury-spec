@@ -4,9 +4,9 @@ from lxml import etree as ET
 from enum import Enum
 
 import sys
-import os
+from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(str(Path(__file__).absolute().resolve().parent.parent.parent))
 
 from src.mercury_nn.validation.filter_validation import (
     checkFilterSyntax, SyntaxValidationResult, FilterSyntaxInvalidityType, FilterValidationResult, validateFilter
@@ -1334,7 +1334,17 @@ class TestFilterValidationResult(unittest.TestCase):
             FilterValidationResult.invalid(
                 invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
                 invalidityInfo={'a'}
-            ),
+            )
+        )
+        
+        self.assertTrue(FilterValidationResult.valid().isValid)
+        self.assertFalse(FilterValidationResult.invalid(
+                invalidityType=FilterValidationResult.InvalidityInfo.InvalidityType.UNKNOWN_TAGS,
+                invalidityInfo=SyntaxValidationResult.InvalidityInfo(
+                    invalidityType=FilterSyntaxInvalidityType.CONDENSED_TAGS_ILLEGAL_CHILD,
+                    invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(3)
+                )
+            ).isValid
         )
 
 
