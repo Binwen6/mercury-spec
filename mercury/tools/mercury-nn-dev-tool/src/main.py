@@ -35,89 +35,87 @@ class CommandTypes:
     VALIDATE_FILTER = "validate-filter"
 
 
-# argparse
-parser = argparse.ArgumentParser(description="Mercury Command-Line Utility")
+def main() -> int:
+    # argparse
+    parser = argparse.ArgumentParser(description="Mercury Command-Line Utility")
 
-subparsers = parser.add_subparsers(dest='command')
+    subparsers = parser.add_subparsers(dest='command')
 
-manifest_validation_subparser = subparsers.add_parser(
-    CommandTypes.VALIDATE_MANIFEST,
-    help='Validates a manifest.'
-)
+    manifest_validation_subparser = subparsers.add_parser(
+        CommandTypes.VALIDATE_MANIFEST,
+        help='Validates a manifest.'
+    )
 
-manifest_validation_subparser.add_argument('manifest_file', type=str, help='The manifest XML file.')
+    manifest_validation_subparser.add_argument('manifest_file', type=str, help='The manifest XML file.')
 
-filter_validation_subparser = subparsers.add_parser(
-    CommandTypes.VALIDATE_FILTER,
-    help='Validates a filter.'
-)
+    filter_validation_subparser = subparsers.add_parser(
+        CommandTypes.VALIDATE_FILTER,
+        help='Validates a filter.'
+    )
 
-filter_validation_subparser.add_argument('filter_file', type=str, help='The filter XML file.')
-filter_validation_subparser.add_argument('--tag_name', type=str, help='The name of the tag, if you are validating a tag filter. Otherwise, do not pass anything to this option.')
+    filter_validation_subparser.add_argument('filter_file', type=str, help='The filter XML file.')
+    filter_validation_subparser.add_argument('--tag_name', type=str, help='The name of the tag, if you are validating a tag filter. Otherwise, do not pass anything to this option.')
 
-args = parser.parse_args()
+    args = parser.parse_args()
+
+    # load valid usages
+    filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile)
+    manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile)
+
+    def get_attributes(cls: type) -> Dict[str, Any]:
+        return {k: getattr(cls, k) for k in dir(cls) if not k.startswith('__') and not k.endswith('__')}
+
+    # validation
+    assert set(get_attributes(FilterSyntaxInvalidityType).values()) == set(filter_syntax_valid_usages.keys())
+    assert set(get_attributes(ManifestSyntaxInvalidityType).values()) == set(manifest_syntax_valid_usages.keys())
+
+    # load filter match failure specs
+    filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile)
+
+    # validation
+    assert set(get_attributes(FilterMatchFailureType).values()) == set(filter_match_failure_specs.keys())
 
 
-# load valid usages
-filter_syntax_valid_usages = loadValidUsage(filepath=Config.filterSyntaxValidUsageFile)
-manifest_syntax_valid_usages = loadValidUsage(filepath=Config.manifestSyntaxValidUsageFile)
+    def _transform_text(text: str) -> str:
+        """Removes leading & trailing whitespaces & line breaks.
+        Also removes indentation.
+        Adjacent lines not separated by empty lines are joined into a single line,
+        where the line break is replaced by a whitespace character.
 
-def get_attributes(cls: type) -> Dict[str, Any]:
-    return {k: getattr(cls, k) for k in dir(cls) if not k.startswith('__') and not k.endswith('__')}
+        Multiple consecutive empty lines are collapsed to a single empty line.
 
-# validation
-assert set(get_attributes(FilterSyntaxInvalidityType).values()) == set(filter_syntax_valid_usages.keys())
-assert set(get_attributes(ManifestSyntaxInvalidityType).values()) == set(manifest_syntax_valid_usages.keys())
+        Args:
+            text (str): The text to transform.
 
-# load filter match failure specs
-filter_match_failure_specs = loadFilterMatchFailureSpecs(filepath=Config.filterMatchFailureSpecsFile)
+        Returns:
+            str: Transformed text.
+        """
+        
+        # remove leading & trailing whitespaces & line breaks
+        text = re.sub(r'^\s+', '', text)
+        text = re.sub(r'\s+$', '', text)
 
-# validation
-assert set(get_attributes(FilterMatchFailureType).values()) == set(filter_match_failure_specs.keys())
-
-
-def _transform_text(text: str) -> str:
-    """Removes leading & trailing whitespaces & line breaks.
-    Also removes indentation.
-    Adjacent lines not separated by empty lines are joined into a single line,
-    where the line break is replaced by a whitespace character.
-
-    Multiple consecutive empty lines are collapsed to a single empty line.
-
-    Args:
-        text (str): The text to transform.
-
-    Returns:
-        str: Transformed text.
-    """
+        # remove indentation
+        lines = text.split(os.linesep)
+        for i, line in enumerate(lines):
+            lines[i] = re.sub(r'^\s+', '', line)
+        
+        # collapse empty lines & line breaks
+        current_line = []
+        new_lines = []
+        for line in lines:
+            if line == '':
+                if len(current_line) > 0:
+                    new_lines.append(' '.join(current_line))
+                current_line = []
+            else:
+                current_line.append(line)
+        
+        if len(current_line) > 0:
+            new_lines.append(' '.join(current_line))
+        
+        return (os.linesep * 2).join(new_lines)
     
-    # remove leading & trailing whitespaces & line breaks
-    text = re.sub(r'^\s+', '', text)
-    text = re.sub(r'\s+$', '', text)
-
-    # remove indentation
-    lines = text.split(os.linesep)
-    for i, line in enumerate(lines):
-        lines[i] = re.sub(r'^\s+', '', line)
-    
-    # collapse empty lines & line breaks
-    current_line = []
-    new_lines = []
-    for line in lines:
-        if line == '':
-            if len(current_line) > 0:
-                new_lines.append(' '.join(current_line))
-            current_line = []
-        else:
-            current_line.append(line)
-    
-    if len(current_line) > 0:
-        new_lines.append(' '.join(current_line))
-    
-    return (os.linesep * 2).join(new_lines)
-    
-
-def main(args) -> int:
     def _transform(text: str) -> str:
         return os.linesep.join(' ' * 4 + line for line in _transform_text(text).split(os.linesep))
     
@@ -237,5 +235,5 @@ def main(args) -> int:
 
 
 if __name__ == '__main__':
-    return_code = main(args)
+    return_code = main()
     exit(return_code)
