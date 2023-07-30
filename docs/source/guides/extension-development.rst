@@ -48,9 +48,12 @@ Notice that the "capabilities" are specified as the keys of a `dict`, instead of
 This is because the |project_name| specification specifies `list` elements to be **ordered** arrays,
 and as a result, the semantics of the capabilities would change as the order of the capabilities changes if we use a `list`.
 If we use a `dict`, however, the order doesn't matter.
-Additionally, a `dict` element requires each  child to be a `named-field` element representing a key-value pair which must have exactly one child representing the value.
+Additionally, a `dict` element requires each child to be a `named-field` element representing a key-value pair which must have exactly one child representing the value.
 Even though we are only using keys here, we still must specify a child for each `named-field`.
 In the |project_name| specification, such a "dummy child" is **required** to be an empty string denoted by `<string/>`.
+
+It is recommended that you make sure the manifest is valid before publishing your |project_name| model extension.
+For example, you can use a developer tool like :ref:`mercury-dev-tool <mercury-dev-tool-reference>`.
 
 Language-Specific Implementations
 #################################

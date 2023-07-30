@@ -7,6 +7,7 @@ Mercury User Guide
 
     introduction.rst
     installation.rst
+    tools.rst
     getting-started.rst
     extension-development.rst
     diving-deeper.rst
