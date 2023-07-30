@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dict filter="all">
-    <named-field name="test-data">
-        <int filter="gt">2</int>
-    </named-field>
-</dict>
