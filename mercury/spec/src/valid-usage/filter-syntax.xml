@@ -89,6 +89,13 @@
     </valid-usage>
 
     <valid-usage>
+        <name>BOOL_INVALID_BOOL_LITERAL</name>
+        <description>
+            The text content of a `bool` element must be a valid bool literal, i.e., "true" / "True" / "TRUE" / "1" / "false" / "False" / "FALSE" / "0".
+        </description>
+    </valid-usage>
+
+    <valid-usage>
         <name>TYPE_DECLARATION_INCORRECT_CHILD_COUNT</name>
         <description>
             A `type-declaration` **must** have exactly one child element.

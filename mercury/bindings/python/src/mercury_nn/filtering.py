@@ -12,6 +12,7 @@ from .specification.interface import (
     FilterMatchFailureType
 )
 from .specification.load_tags import loadTags
+from .specification.constants import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
 from .tag_matching import parseCondensedTags, InvalidCondensedTagsException
 
 from .exceptions import InvalidTagException, InvalidFilterOperationTypeException
@@ -353,6 +354,17 @@ def _matchFilterElement(filterElement: ET._Element,
                 # TODO: add more filter types for bool, e.g., regular expressions
                 case FilterOperationTypes.NONE:
                     return FilterMatchResult.success()
+                
+                case FilterOperationTypes.EQUALS:
+                    filter_value = True if filterElement.text.strip() in BOOLEAN_TRUE_VALUES else False
+                    data_value = True if dataElement.text.strip() in BOOLEAN_TRUE_VALUES else False
+                    
+                    return FilterMatchResult.success() if filter_value == data_value \
+                        else FilterMatchResult.failure(
+                            failureType=_FailureTypes.BOOL_VALUE_NOT_EQUAL,
+                            failurePosition=failurePosition
+                        )
+                        
                 case _:
                     raise InvalidFilterOperationTypeException()
         

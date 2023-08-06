@@ -32,6 +32,14 @@
     </match-failure>
 
     <match-failure>
+        <name>BOOL_VALUE_NOT_EQUAL</name>
+        <description>
+            The element being compared is a `bool`,
+            and its value is not the same as that of the corresponding filter element.
+        </description>
+    </match-failure>
+
+    <match-failure>
         <name>NUMERIC_FAILED_COMPARISON</name>
         <description>
             The element being compared is a numeric type (e.g., int, float, etc.),

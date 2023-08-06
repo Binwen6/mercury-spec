@@ -655,7 +655,120 @@ class TestFilterMatch(unittest.TestCase):
             failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
             failurePosition=_FailurePosition(2, 2, tagStack=[])
         ))
+    
+    def test_bool_comparisons(self):
+        filterElement = """
+        <bool filter="equals">true</bool>
+        """
 
+        dataElement = """
+        <bool>true</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+        
+        filterElement = """
+        <bool filter="equals">TRUE</bool>
+        """
+
+        dataElement = """
+        <bool>true</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = """
+        <bool filter="equals">true</bool>
+        """
+
+        dataElement = """
+        <bool>1</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = """
+        <bool filter="equals">false</bool>
+        """
+
+        dataElement = """
+        <bool>false</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+        
+        filterElement = """
+        <bool filter="equals">FALSE</bool>
+        """
+
+        dataElement = """
+        <bool>false</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = """
+        <bool filter="equals">false</bool>
+        """
+
+        dataElement = """
+        <bool>0</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
+
+        filterElement = """
+        <bool filter="equals">true</bool>
+        """
+
+        dataElement = """
+        <bool>false</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.BOOL_VALUE_NOT_EQUAL,
+                             failurePosition=_FailurePosition(2, 2, tagStack=[])
+                         ))
+        
+        filterElement = """
+        <bool filter="equals">FALSE</bool>
+        """
+
+        dataElement = """
+        <bool>true</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.BOOL_VALUE_NOT_EQUAL,
+                             failurePosition=_FailurePosition(2, 2, tagStack=[])
+                         ))
+        
+        filterElement = """
+        <bool filter="equals">true</bool>
+        """
+
+        dataElement = """
+        <bool>0</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.BOOL_VALUE_NOT_EQUAL,
+                             failurePosition=_FailurePosition(2, 2, tagStack=[])
+                         ))
+    
+    def test_bool_none(self):
+        filterElement = """
+        <bool filter="none"></bool>
+        """
+
+        dataElement = """
+        <bool>true</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.success())
 
     def test_match_string_not_equal(self):
         # convenient objects

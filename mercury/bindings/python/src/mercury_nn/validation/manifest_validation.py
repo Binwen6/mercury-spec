@@ -17,6 +17,11 @@ from ..specification.load_base_model_filter import loadBaseModelFilter
 from ..config import Config
 from ..filtering import Filter, matchFilter, FilterMatchResult
 from ..tag_matching import parseCondensedTags, InvalidCondensedTagsException
+from ..specification.constants import (
+    BOOLEAN_TRUE_VALUES,
+    BOOLEAN_FALSE_VALUES,
+    UNFILLED_VALUE_PLACEHOLDER
+)
 
 
 @dataclass
@@ -172,7 +177,11 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityPosition=invalidityPosition
                 )
             
-            # TODO: check validity of bool literal
+            if element.text not in set.union(BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES, {UNFILLED_VALUE_PLACEHOLDER}):
+                return SyntaxValidationResult.invalid(
+                    invalidityType=_InvalidityTypes.BOOL_INVALID_BOOL_LITERAL,
+                    invalidityPosition=invalidityPosition
+                )
             
             return SyntaxValidationResult.valid()
         
@@ -183,6 +192,9 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
                     invalidityPosition=invalidityPosition
                 )
+            
+            if element.text == UNFILLED_VALUE_PLACEHOLDER:
+                return SyntaxValidationResult.valid()
             
             try:
                 number = int(element.text.strip())
@@ -201,6 +213,9 @@ def checkSyntax(element: ET._Element) -> SyntaxValidationResult:
                     invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
                     invalidityPosition=invalidityPosition
                 )
+
+            if element.text == UNFILLED_VALUE_PLACEHOLDER:
+                return SyntaxValidationResult.valid()
             
             try:
                 number = float(element.text.strip())
@@ -401,13 +416,19 @@ class ManifestValidationResult:
     class InvalidityInfo():
         
         class InvalidityType(Enum):
+            # info type: SyntaxValidationResult.InvalidityInfo
             INVALID_SYNTAX = auto()
+            # info type: int (line number at which unfilled value occurs)
+            UNFILLED_VALUE = auto()
+            # info type: FilterMatchResult.FailureInfo
             FAILED_BASE_MODEL_FILTER_MATCH = auto()
+            # info type: Set[str]
             UNKNOWN_TAGS = auto()
+            # info type: Tuple[str, FilterMatchResult.FailureInfo]
             UNMATCHED_TAG = auto()
         
         invalidityType: InvalidityType
-        info: Union[SyntaxValidationResult.InvalidityInfo, FilterMatchResult.FailureInfo, Set[str], Tuple[str, FilterMatchResult.FailureInfo]] | None
+        info: Union[SyntaxValidationResult.InvalidityInfo, int, FilterMatchResult.FailureInfo, Set[str], Tuple[str, FilterMatchResult.FailureInfo]] | None
         
         def __eq__(self, other: Self) -> bool:
             return self.invalidityType == other.invalidityType and self.info == other.info
@@ -467,6 +488,17 @@ def validateManifest(manifest: ET._Element,
             invalidityType=_ManifestInvalidityTypes.INVALID_SYNTAX,
             invalidityInfo=syntax_check_result.invalidityInfo
         )
+    
+    # check that there are no unfilled values in int / float / bool
+    for tag_name in {TagNames.INT, TagNames.FLOAT, TagNames.BOOL}:
+        elements: Iterable[ET._Element] = manifest.findall(r'.//' + tag_name)
+
+        for element in elements:
+            if element.text.strip() == UNFILLED_VALUE_PLACEHOLDER:
+                return ManifestValidationResult.invalid(
+                    invalidityType=_ManifestInvalidityTypes.UNFILLED_VALUE,
+                    invalidityInfo=element.sourceline
+                )
     
     # check base model filter match
     base_model_match_result = matchFilter(base_model_filter, manifest)

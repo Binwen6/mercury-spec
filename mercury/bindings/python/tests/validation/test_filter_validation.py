@@ -280,6 +280,16 @@ class TestCheckFilterSyntax(unittest.TestCase):
             invalidityPosition=_InvalidityPosition(2)
         ))
     
+    def test_invalid_int_with_non_empty_content_and_none_filter_operation(self):
+        xml_string = '''
+                       <int filter="none">1</int>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
     def test_valid_float_with_equals_filter_operation(self):
         xml_string = '''
                        <float filter="gt">1</float>'''
@@ -312,6 +322,113 @@ class TestCheckFilterSyntax(unittest.TestCase):
         result = checkFilterSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_invalid_float_with_non_empty_content_and_none_filter_operation(self):
+        xml_string = '''
+                       <float filter="none">1.0</float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+        
+    def test_invalid_float_with_excess_child_element(self):
+        xml_string = '''
+                       <float filter="equals">true
+                           <child>child element</child>
+                       </float>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+
+    def test_valid_bool(self):
+        xml_string = '''
+                       <bool filter="equals">true</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">True</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">TRUE</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">1</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">false</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">False</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">FALSE</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_string = '''
+                       <bool filter="equals">0</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_invalid_bool_invalid_literal(self):
+        xml_string = '''
+                       <bool filter="equals">invalid</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.BOOL_INVALID_BOOL_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+        
+        xml_string = '''
+                       <bool filter="equals">unfilled</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.BOOL_INVALID_BOOL_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
+    
+    def test_valid_bool_valid_none(self):
+        xml_string = '''
+                       <bool filter="none"></bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+    def test_invalid_bool_with_non_empty_content_and_none_filter_operation(self):
+        xml_string = '''
+                       <bool filter="none">true</bool>'''
+        element = ET.fromstring(xml_string)
+        result = checkFilterSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
         ))
 
@@ -393,7 +510,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
                        <string filter="none">value1</string>'''
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
-        self.assertTrue(result, SyntaxValidationResult.invalid(
+        self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
         ))
@@ -550,7 +667,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
                        </type-tuple>'''
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
-        self.assertTrue(result, SyntaxValidationResult.invalid(
+        self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.INVALID_FILTER_OPERATION_TYPE,
             invalidityPosition=_InvalidityPosition(2)
         ))
@@ -605,7 +722,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
-        self.assertTrue(result, SyntaxValidationResult.invalid(
+        self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.MISSING_FILTER_OPERATION_TYPE_ATTRIBUTE,
             invalidityPosition=_InvalidityPosition(2)
         ))
@@ -721,7 +838,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
                        <dim filter="gt">not_an_integer</dim>'''
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
-        self.assertTrue(result, SyntaxValidationResult.invalid(
+        self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.TYPE_DECLARATION_DIM_ILLEGAL_INTEGER_LITERAL,
             invalidityPosition=_InvalidityPosition(2)
         ))
@@ -799,7 +916,7 @@ class TestCheckFilterSyntax(unittest.TestCase):
                        </type-named-value-collection>'''
         element = ET.fromstring(xml_string)
         result = checkFilterSyntax(element)
-        self.assertTrue(result, SyntaxValidationResult.invalid(
+        self.assertEqual(result, SyntaxValidationResult.invalid(
             invalidityType=_InvalidityTypes.ILLEGAL_CONTENT_ON_FILTER_OPERATION_TYPE_NONE,
             invalidityPosition=_InvalidityPosition(2)
         ))

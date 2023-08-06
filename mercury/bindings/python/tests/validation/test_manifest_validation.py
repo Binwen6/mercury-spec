@@ -263,10 +263,68 @@ class TestCheckSyntax(unittest.TestCase):
     
     def test_checkSyntax_validBool(self):
         xml_data = """
-                    <bool>value1</bool>"""
+                    <bool>true</bool>"""
         element = ET.fromstring(xml_data)
         result = checkSyntax(element)
         self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>True</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>TRUE</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>1</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>false</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>False</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>FALSE</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>0</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+        
+        xml_data = """
+                    <bool>unfilled</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.valid())
+    
+    def test_checkSyntax_invalidBool_invalidLiteral(self):
+        xml_data = """
+                    <bool>invalid</bool>"""
+        element = ET.fromstring(xml_data)
+        result = checkSyntax(element)
+        self.assertEqual(result, SyntaxValidationResult.invalid(
+            invalidityType=_InvalidityTypes.BOOL_INVALID_BOOL_LITERAL,
+            invalidityPosition=_InvalidityPosition(2)
+        ))
 
     def test_checkSyntax_invalidBool_invalidChild(self):
         xml_data = """
@@ -832,6 +890,73 @@ class TestValidateManifest(unittest.TestCase):
                                  invalidityType=ManifestSyntaxInvalidityType.TAG_COLLECTION_INVALID_CHILD_TAG,
                                  invalidityPosition=SyntaxValidationResult.InvalidityInfo.InvalidityPosition(2)
                              )
+                         ))
+    
+    def test_Invalid_UnfilledValue(self):
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>unfilled</int>
+            </named-field>
+        </dict>
+        """)
+        
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
+                             invalidityInfo=4
+                         ))
+        
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>0</int>
+            </named-field>
+            
+            <named-field name="dict">
+                <dict>
+                    <named-field name="data">
+                        <float>unfilled</float>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+        """)
+        
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
+                             invalidityInfo=10
+                         ))
+        
+        manifest = ET.fromstring("""
+        <dict>
+            <named-field name="data">
+                <int>0</int>
+            </named-field>
+            
+            <named-field name="dict">
+                <dict>
+                    <named-field name="data">
+                        <float>0</float>
+                    </named-field>
+                    
+                    <named-field name="dict">
+                        <dict>
+                            <named-field name="data">
+                                <bool>unfilled</bool>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+        </dict>
+        """)
+        
+        self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
+                         ManifestValidationResult.invalid(
+                             invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
+                             invalidityInfo=16
                          ))
     
     def test_Invalid_BaseModelFilterMismatch(self):

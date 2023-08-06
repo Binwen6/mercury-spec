@@ -14,6 +14,10 @@ from ..specification.interface import (
 )
 from ..specification.load_tags import loadTags
 from ..tag_matching import parseCondensedTags, InvalidCondensedTagsException
+from ..specification.constants import (
+    BOOLEAN_TRUE_VALUES,
+    BOOLEAN_FALSE_VALUES
+)
 
 
 @dataclass
@@ -96,8 +100,6 @@ def _validation_result_from_children_results(children_validation_results: Iterab
     return _get_first_invalid_child_result(children_validation_results)
 
 
-# TODO: add tests for int & float
-# TODO: write tests for int / float support
 def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
     filterOpAttribName: str = AttributeNames.filterOperationTypeAttribute
     
@@ -328,11 +330,17 @@ def checkFilterSyntax(element: ET._Element) -> SyntaxValidationResult:
             
             match element.attrib[filterOpAttribName]:
                 case FilterOperationTypes.EQUALS:
-                    # TODO: check for validity of boolean literal
                     if len(element) > 0:
                         # terminal filters can have no children
                         return SyntaxValidationResult.invalid(
                             invalidityType=_InvalidityTypes.ILLEGAL_CHILD_ON_TERMINAL_ELEMENT,
+                            invalidityPosition=invalidityPosition
+                        )
+                    
+                    if element.text not in set.union(BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES):
+                        # illegal bool literal
+                        return SyntaxValidationResult.invalid(
+                            invalidityType=_InvalidityTypes.BOOL_INVALID_BOOL_LITERAL,
                             invalidityPosition=invalidityPosition
                         )
                     
