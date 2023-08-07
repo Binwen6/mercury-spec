@@ -3,10 +3,10 @@ from pathlib import Path
 
 class Config:
     # TODO: this value is for TESTING ONLY
-    # specRootPath = Path(__file__).resolve().parent.parent.parent.parent.parent.joinpath('spec/src')
+    specRootPath = Path(__file__).resolve().parent.parent.parent.parent.parent.joinpath('spec/src')
     # Set the Mercury specification installation directory below in form of Path('<mercury-specification-installation-path>')
     # use ABSOLUTE path.
-    specRootPath = Path('')
+    # specRootPath = Path('')
     
     validUsageRootPath = specRootPath.joinpath('valid-usage')
     filterSyntaxValidUsageFile = validUsageRootPath.joinpath('filter-syntax.xml')
@@ -23,7 +23,7 @@ class Config:
     pythonBindingRootPath = Path(__file__).resolve().parent
     
     # TODO: this value is for TESTING ONLY
-    # modelCollectionRootPath = pythonBindingRootPath.parent.parent.parent.parent.parent.joinpath('sample-model-collection')
+    modelCollectionRootPath = pythonBindingRootPath.parent.parent.parent.parent.parent.joinpath('sample-model-collection')
     # Set the model collection directory below in form of Path('<model-collection-directory>')
     # use ABSOLUTE path.
-    modelCollectionRootPath = Path('')
+    # modelCollectionRootPath = Path('')

@@ -41,221 +41,192 @@ class TestSpecificationConsistency(unittest.TestCase):
 
 class TestFilterXMLfromArgs(unittest.TestCase):
     
-    def test_modelClass(self):
+    def test_callScheme_none(self):
         expected_string = """
 <dict filter="all">
-    <named-field name="header">
+    <named-field name="specs">
         <dict filter="all">
-            <named-field name="name">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="class">
-                <string filter="equals">chat-completion</string>
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="capabilities">
-        <dict filter="none"/>
-    </named-field>
-    <named-field name="callSpecs">
-        <dict filter="all">
-            <named-field name="callScheme">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="input">
+            <named-field name="header">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="name">
+                        <string filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
-            <named-field name="output">
+            <named-field name="callSpecs">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="input">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
                     </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
+                    <named-field name="output">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection filter="none"/>
+            </named-field>
+            <named-field name="properties">
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
         </dict>
     </named-field>
-    <named-field name="properties">
+    <named-field name="implementations">
         <dict filter="none"/>
     </named-field>
 </dict>
 """
 
-        self.assertEqual(filterXMLfromArgs(modelType='chat-completion'), expected_string)
+        self.assertEqual(filterXMLfromArgs(), expected_string)
 
-    def test_callScheme(self):
+
+    def test_callScheme_one(self):
         expected_string = """
 <dict filter="all">
-    <named-field name="header">
+    <named-field name="specs">
         <dict filter="all">
-            <named-field name="name">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="class">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="capabilities">
-        <dict filter="none"/>
-    </named-field>
-    <named-field name="callSpecs">
-        <dict filter="all">
-            <named-field name="callScheme">
-                <string filter="equals">image-classification</string>
-            </named-field>
-            <named-field name="input">
+            <named-field name="header">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="name">
+                        <string filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
-            <named-field name="output">
+            <named-field name="callSpecs">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="input">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
                     </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
+                    <named-field name="output">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>
+                        call-scheme::{image-classification}
+                    </condensed-tags>
+                </tag-collection>
+            </named-field>
+            <named-field name="properties">
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
         </dict>
     </named-field>
-    <named-field name="properties">
+    <named-field name="implementations">
         <dict filter="none"/>
     </named-field>
 </dict>
 """
 
-        self.assertEqual(filterXMLfromArgs(callScheme='image-classification'), expected_string)
+        self.assertEqual(filterXMLfromArgs(callSchemes=['image-classification']), expected_string)
 
-    def test_capabilities(self):
-        expected_string = f"""
+    def test_callScheme_two(self):
+        expected_string = """
 <dict filter="all">
-    <named-field name="header">
+    <named-field name="specs">
         <dict filter="all">
-            <named-field name="name">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="class">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="capabilities">
-        <dict filter="all"><named-field name="question-answering"><string filter="none"/></named-field><named-field name="math"><string filter="none"/></named-field></dict>
-    </named-field>
-    <named-field name="callSpecs">
-        <dict filter="all">
-            <named-field name="callScheme">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="input">
+            <named-field name="header">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="name">
+                        <string filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
-            <named-field name="output">
+            <named-field name="callSpecs">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="input">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
                     </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
+                    <named-field name="output">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>
+                        call-scheme::{image-classification, chat-completion}
+                    </condensed-tags>
+                </tag-collection>
+            </named-field>
+            <named-field name="properties">
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
         </dict>
     </named-field>
-    <named-field name="properties">
+    <named-field name="implementations">
         <dict filter="none"/>
     </named-field>
 </dict>
 """
-        
-        self.assertEqual(filterXMLfromArgs(capabilities=('question-answering', 'math')), expected_string)
 
-    def test_all_combined(self):
-        expected_string = f"""
-<dict filter="all">
-    <named-field name="header">
-        <dict filter="all">
-            <named-field name="name">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="class">
-                <string filter="equals">chat-completion</string>
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="capabilities">
-        <dict filter="all"><named-field name="question-answering"><string filter="none"/></named-field><named-field name="math"><string filter="none"/></named-field></dict>
-    </named-field>
-    <named-field name="callSpecs">
-        <dict filter="all">
-            <named-field name="callScheme">
-                <string filter="equals">image-classification</string>
-            </named-field>
-            <named-field name="input">
-                <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
-                    </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
-                    </named-field>
-                </dict>
-            </named-field>
-            <named-field name="output">
-                <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
-                    </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
-                    </named-field>
-                </dict>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="properties">
-        <dict filter="none"/>
-    </named-field>
-</dict>
-"""
-        
-        self.assertEqual(filterXMLfromArgs(modelType='chat-completion', callScheme='image-classification', capabilities=('question-answering', 'math')), expected_string)
+        self.assertEqual(filterXMLfromArgs(callSchemes=['image-classification', 'chat-completion']), expected_string)
+
 
 
 class TestManifestUtils(unittest.TestCase):

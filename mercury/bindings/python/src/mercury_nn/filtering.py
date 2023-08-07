@@ -39,20 +39,18 @@ class Filter:
         return Filter(filterElement=xmlElement)
     
     @staticmethod
-    def fromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> Self:
+    def fromArgs(callSchemes: Iterable[str] | None=None) -> Self:
         """Constructs a filter from simple arguments.
 
         Args:
-            modelType (str | None): The type of the model. E.g., chat-completion, image-classification, etc.
-            callScheme (str | None): The call scheme. E.g., chat-completion, image-classification, etc.
-            capabilities (Sequence[str] | None): The required capabilities. E.g., question-answering, math, etc.
+            callSchemes (Iterable[str] | None): The call scheme. E.g., chat-completion, image-classification, etc.
 
         Returns:
             Self: The constructed filter.
         """
 
         return Filter.fromXMLElement(xmlElement=ET.fromstring(filterXMLfromArgs(
-            modelType=modelType, callScheme=callScheme, capabilities=capabilities
+            callSchemes=callSchemes
         )))
 
 

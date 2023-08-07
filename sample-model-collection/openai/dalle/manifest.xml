@@ -7,16 +7,9 @@
                     <named-field name="name">
                         <string>DALL E</string>
                     </named-field>
-                    <named-field name="class">
-                        <string>image-generation</string>
-                    </named-field>
                     <named-field name="description">
                         <string>The Open AI DALL E API</string>
                     </named-field>
-                </dict>
-            </named-field>
-            <named-field name="capabilities">
-                <dict>
                 </dict>
             </named-field>
             <named-field name="callSpecs">
@@ -66,6 +59,10 @@
                     </named-field>
                     <named-field name="supportEncryption">
                         <bool>false</bool>
+                    </named-field>
+
+                    <named-field name="benchmarks">
+                        <dict/>
                     </named-field>
                 </dict>
             </named-field>

@@ -7,21 +7,9 @@
                     <named-field name="name">
                         <string>ChatGPT-cloud</string>
                     </named-field>
-                    <named-field name="class">
-                        <string>chat-completion</string>
-                    </named-field>
                     <named-field name="description">
                         <string>A chat-completion model.</string>
                     </named-field>
-                </dict>
-            </named-field>
-            <named-field name="capabilities">
-                <dict>
-                    <named-field name="question-answering"><string/></named-field>
-                    <named-field name="world-knowledge"><string/></named-field>
-                    <named-field name="question-asking"><string/></named-field>
-                    <named-field name="task-breakdown"><string/></named-field>
-                    <named-field name="instruction-comprehension"><string/></named-field>
                 </dict>
             </named-field>
             <named-field name="callSpecs">
@@ -70,8 +58,14 @@
                     <named-field name="deploymentType">
                         <string>cloud</string>
                     </named-field>
+
                     <named-field name="supportEncryption">
                         <bool>false</bool>
+                    </named-field>
+
+                    <named-field name="benchmarks">
+                        <dict>
+                        </dict>
                     </named-field>
                 </dict>
             </named-field>

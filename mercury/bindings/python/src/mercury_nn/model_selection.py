@@ -16,7 +16,7 @@ class ModelCollection:
     @dataclass
     class ModelEntry:
         path: Path
-        metadata: ET._Element
+        manifest: ET._Element
 
     def __init__(self, entries: List[ModelEntry]):
         self._entries = entries
@@ -35,7 +35,7 @@ class ModelCollection:
         return ModelCollection(list(
             entry for entry in self._entries
             if matchFilter(filterObject=filterObject,
-                           dataElement=ManifestUtils.getModelSpecs(entry.metadata))
+                           dataElement=entry.manifest)
                 .isSuccess))
 
 
@@ -64,11 +64,11 @@ def enumerateAvailableModels() -> ModelCollection:
         if FileNames.manifestFile in set(Path(path.name) for path in directory.iterdir()):
             # we are at a leaf
             return [ModelCollection.ModelEntry(path=directory,
-                                               metadata=ET.parse(
+                                               manifest=ET.parse(
                                                    directory.joinpath(FileNames.manifestFile)).getroot())]
         else:
             return join_lists(enumerateModels(sub_dir) for sub_dir in directory.iterdir() if sub_dir.is_dir())
 
     return ModelCollection(
         [model_entry for model_entry in enumerateModels(Path(Config.modelCollectionRootPath))
-         if ManifestUtils.supportPythonImplementation(model_entry.metadata)])
+         if ManifestUtils.supportPythonImplementation(model_entry.manifest)])

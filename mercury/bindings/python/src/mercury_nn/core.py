@@ -10,18 +10,18 @@ U = TypeVar('U')
 # TODO: write tests
 class Model(ABC, Generic[T, U]):
     
-    def __init__(self, metadata: ET._Element):
-        self._metadata = metadata
+    def __init__(self, manifest: ET._Element):
+        self._manifest = manifest
 
     @property
-    def metadata(self) -> ET._Element:
+    def manifest(self) -> ET._Element:
         """Returns the metadata of this model.
 
         Returns:
             ET._Element: The model's metadata.
         """
         
-        return self._metadata
+        return self._manifest
     
     @abstractmethod
     def call(self, inputs: T) -> U:

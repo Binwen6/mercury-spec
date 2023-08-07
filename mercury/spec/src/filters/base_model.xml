@@ -11,16 +11,10 @@
                     <named-field name="name">
                         <string filter="none"/>
                     </named-field>
-                    <named-field name="class">
-                        <string filter="none"/>
-                    </named-field>
                     <named-field name="description">
                         <string filter="none"/>
                     </named-field>
                 </dict>
-            </named-field>
-            <named-field name="capabilities">
-                <dict filter="none"/>
             </named-field>
             <named-field name="callSpecs">
                 <dict filter="all">
@@ -50,7 +44,11 @@
                 <tag-collection filter="none"/>
             </named-field>
             <named-field name="properties">
-                <dict filter="none"/>
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="none"/>
+                    </named-field>
+                </dict>
             </named-field>
         </dict>
     </named-field>

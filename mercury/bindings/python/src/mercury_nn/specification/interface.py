@@ -1,6 +1,6 @@
 from lxml import etree as ET
 from pathlib import Path
-from typing import Sequence, List, Set
+from typing import Sequence, List, Set, Iterable
 from dataclasses import dataclass
 
 from ..tag_matching import parseCondensedTags
@@ -90,7 +90,7 @@ class ManifestUtils:
     
     # TODO: write tests
     @staticmethod
-    def getModelSpecs(manifest: ET._Element) -> ET._Element:
+    def _getModelSpecs(manifest: ET._Element) -> ET._Element:
         """Returns the model specs element of the model's manifest data.
 
         Args:
@@ -135,12 +135,12 @@ class ManifestUtils:
     @staticmethod
     def getModelName(manifest: ET._Element):
         return dictElementToDict(
-            dictElementToDict(ManifestUtils.getModelSpecs(manifest))
+            dictElementToDict(ManifestUtils._getModelSpecs(manifest))
             [KeyNames.headerKeyName])[KeyNames.modelNameKeyName].text
     
     @staticmethod
     def getCondensedTags(manifest: ET._Element) -> Set[str]:
-        tags_element = dictElementToDict(ManifestUtils.getModelSpecs(manifest))[KeyNames.tagsKeyName]
+        tags_element = dictElementToDict(ManifestUtils._getModelSpecs(manifest))[KeyNames.tagsKeyName]
         
         return {element.text for element in tags_element}
     
@@ -156,13 +156,11 @@ class ManifestUtils:
         return tags
 
 
-def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, capabilities: Sequence[str] | None=None) -> str:
+def filterXMLfromArgs(callSchemes: Iterable[str] | None=None) -> str:
     """Generates XML-format filter description from simple arguments.
 
     Args:
-        modelType (str | None): The type of the model. E.g., chat-completion, image-classification, etc.
-        callScheme (str | None): The call scheme. E.g., chat-completion, image-classification, etc.
-        capabilities (Sequence[str] | None): The required capabilities. E.g., question-answering, math, etc.
+        callSchemes (Iterable[str] | None): The supported call schemes. E.g., {chat-completion, image-classification}, etc.
 
     Returns:
         str: The XML representation of the filter requirements.
@@ -171,50 +169,61 @@ def filterXMLfromArgs(modelType: str | None=None, callScheme: str | None=None, c
     return \
 f"""
 <dict filter="all">
-    <named-field name="header">
+    <named-field name="specs">
         <dict filter="all">
-            <named-field name="name">
-                <string filter="none"/>
-            </named-field>
-            <named-field name="class">
-                {'<string filter="none"/>' if modelType is None else f'<string filter="equals">{modelType}</string>'}
-            </named-field>
-            <named-field name="description">
-                <string filter="none"/>
-            </named-field>
-        </dict>
-    </named-field>
-    <named-field name="capabilities">
-        {'<dict filter="none"/>' if capabilities == None or len(capabilities) == 0 else f'<dict filter="all">' + ''.join(f'<named-field name="{capability}"><string filter="none"/></named-field>' for capability in capabilities) + '</dict>'}
-    </named-field>
-    <named-field name="callSpecs">
-        <dict filter="all">
-            <named-field name="callScheme">
-                {'<string filter="none"/>' if callScheme is None else f'<string filter="equals">{callScheme}</string>'}
-            </named-field>
-            <named-field name="input">
+            <named-field name="header">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="name">
+                        <string filter="none"/>
                     </named-field>
                     <named-field name="description">
                         <string filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
-            <named-field name="output">
+            <named-field name="callSpecs">
                 <dict filter="all">
-                    <named-field name="type">
-                        <type-declaration filter="none"/>
+                    <named-field name="input">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
                     </named-field>
-                    <named-field name="description">
-                        <string filter="none"/>
+                    <named-field name="output">
+                        <dict filter="all">
+                            <named-field name="type">
+                                <type-declaration filter="none"/>
+                            </named-field>
+                            <named-field name="description">
+                                <string filter="none"/>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="tags">
+                {f'''<tag-collection filter="explicit-tag-match">
+                    <condensed-tags>
+                        {f"call-scheme::{{{', '.join(callSchemes)}}}"}
+                    </condensed-tags>
+                </tag-collection>''' if callSchemes is not None and len(callSchemes) > 0
+                
+                else '<tag-collection filter="none"/>'}
+            </named-field>
+            <named-field name="properties">
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="none"/>
                     </named-field>
                 </dict>
             </named-field>
         </dict>
     </named-field>
-    <named-field name="properties">
+    <named-field name="implementations">
         <dict filter="none"/>
     </named-field>
 </dict>
