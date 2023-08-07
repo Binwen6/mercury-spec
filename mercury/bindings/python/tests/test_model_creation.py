@@ -16,16 +16,16 @@ class TestModelCreation(unittest.TestCase):
     
     def test_chatapi_creation(self):
         all_available_models = mc.enumerateAvailableModels()
-        filterObject = mc.Filter.fromArgs(modelType='chat-completion')
+        filterObject = mc.Filter.fromArgs(callSchemes=['chat-completion'])
 
         chat_model = all_available_models.select(filterObject=filterObject)[0]
-        self.assertEqual(mc.ManifestUtils.getModelName(chat_model.metadata), 'ChatGPT-cloud')
+        self.assertEqual(mc.ManifestUtils.getModelName(chat_model.manifest), 'ChatGPT-cloud')
 
         chat_api = mc.instantiateModel(chat_model)
         self.assertEqual(
-            mc.utils.dictElementToDict(
-                mc.utils.dictElementToDict(chat_api.metadata)['header'])['name'].text,
-            'ChatGPT-cloud')
+            mc.ManifestUtils.getModelName(chat_api.manifest),
+            'ChatGPT-cloud'
+        )
 
         response = chat_api.call(inputs=[
             ("What is the product of 121 and 11? Output the NUMBER ONLY and NOTHING ELSE.", True),

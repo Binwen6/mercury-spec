@@ -29,6 +29,11 @@
                     </named-field>
                 </dict>
             </named-field>
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>call-scheme::chat-completion</condensed-tags>
+                </tag-collection>
+            </named-field>
         </dict>
     </named-field>
 </dict>

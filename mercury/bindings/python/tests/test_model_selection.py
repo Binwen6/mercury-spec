@@ -36,7 +36,7 @@ class TestModelCollectionMethods(unittest.TestCase):
         self.assertEqual(model_names, {'DALL E', 'ChatGPT-cloud'})
     
     def test_select_none_match(self):
-        filterElement = mc.Filter.fromArgs(callSchemes=['koala'])
+        filterElement = mc.Filter.fromArgs(callSchemes=['text-continuation'])
         
         model_names = set(ManifestUtils.getModelName(entry.manifest) for entry in self.all_available_models.select(filterElement))
         self.assertEqual(model_names, set())

@@ -1,2 +1,5 @@
 call-scheme::chat-completion: call-scheme_chat-completion.xml
+call-scheme::text-continuation: call-scheme_text-continuation.xml
 call-scheme::image-generation: call-scheme_image-generation.xml
+
+benchmark::basic-math: benchmark_basic-math.xml

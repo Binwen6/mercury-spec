@@ -17,11 +17,7 @@
                         <dict filter="all">
                             <named-field name="type">
                                 <type-declaration filter="type-match">
-                                    <type-tensor filter="all">
-                                        <dim filter="none"/>
-                                        <dim filter="none"/>
-                                        <dim filter="none"/>
-                                    </type-tensor>
+                                    <type-string/>
                                 </type-declaration>
                             </named-field>
                         </dict>
@@ -30,7 +26,7 @@
             </named-field>
             <named-field name="tags">
                 <tag-collection filter="explicit-tag-match">
-                    <condensed-tags>call-scheme::image-generation</condensed-tags>
+                    <condensed-tags>call-scheme::text-continuation</condensed-tags>
                 </tag-collection>
             </named-field>
         </dict>

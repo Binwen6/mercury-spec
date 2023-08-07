@@ -18,7 +18,7 @@ class TestFiltersValidity(unittest.TestCase):
         base_model_element = ET.parse(Config.baseModelFilterPath).getroot()
         self.assertTrue(filter_validation.checkFilterSyntax(base_model_element).isValid)
     
-    def testCallSchemesSyntacticalValidity(self):
+    def testTagsSyntacticalValidity(self):
         """Checks that metadata & tag files are present and that the filter syntax of each tag is valid
         """
         with open(Config.tagsMetadataPath, 'r') as f:

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict filter="all">
+    <named-field name="specs">
+        <dict filter="all">
+            <named-field name="properties">
+                <dict filter="all">
+                    <named-field name="benchmarks">
+                        <dict filter="all">
+                            <named-field name="basic-math">
+                                <dict filter="all">
+                                    <named-field name="correct-rate">
+                                        <logical filter="and">
+                                            <float filter="ge">0</float>
+                                            <float filter="le">1</float>
+                                        </logical>
+                                    </named-field>
+                                </dict>
+                            </named-field>
+                        </dict>
+                    </named-field>
+                </dict>
+            </named-field>
+            <named-field name="tags">
+                <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>benchmark::basic-math</condensed-tags>
+                </tag-collection>
+            </named-field>
+        </dict>
+    </named-field>
+</dict>
