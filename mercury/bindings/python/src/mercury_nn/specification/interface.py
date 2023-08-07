@@ -154,6 +154,28 @@ class ManifestUtils:
             tags.update(tag_set)
         
         return tags
+    
+    # TODO: write tests
+    @staticmethod
+    def getSupportedImplementations(manifest: ET._Element) -> Set[str]:
+        return set(
+            dictElementToDict(dictElementToDict(manifest)[KeyNames.implementations]).keys())
+
+
+class ImplementationNames:
+    PYTHON = 'Python'
+
+    # TODO: all implementations below are not yet supported
+    RUST = 'Rust'
+    JAVA = 'Java'
+    JAVASCRIPT = 'JavaScript'
+    DART = 'Dart'
+    PHP = 'PHP'
+    MATLAB = 'MATLAB'
+    C = 'C'
+    CPP = 'C++'
+    C_SHARP = 'C#'
+    GO = 'Go'
 
 
 def filterXMLfromArgs(callSchemes: Iterable[str] | None=None) -> str:

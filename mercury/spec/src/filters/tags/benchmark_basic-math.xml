@@ -22,6 +22,7 @@
             </named-field>
             <named-field name="tags">
                 <tag-collection filter="explicit-tag-match">
+                    <condensed-tags>call-scheme::chat-completion</condensed-tags>
                     <condensed-tags>benchmark::basic-math</condensed-tags>
                 </tag-collection>
             </named-field>
