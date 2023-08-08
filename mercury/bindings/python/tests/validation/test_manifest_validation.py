@@ -895,6 +895,10 @@ class TestValidateManifest(unittest.TestCase):
     def test_Invalid_UnfilledValue(self):
         manifest = ET.fromstring("""
         <dict>
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+
             <named-field name="data">
                 <int>unfilled</int>
             </named-field>
@@ -904,11 +908,15 @@ class TestValidateManifest(unittest.TestCase):
         self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
                          ManifestValidationResult.invalid(
                              invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
-                             invalidityInfo=4
+                             invalidityInfo=8
                          ))
         
         manifest = ET.fromstring("""
         <dict>
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+
             <named-field name="data">
                 <int>0</int>
             </named-field>
@@ -926,11 +934,15 @@ class TestValidateManifest(unittest.TestCase):
         self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
                          ManifestValidationResult.invalid(
                              invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
-                             invalidityInfo=10
+                             invalidityInfo=14
                          ))
         
         manifest = ET.fromstring("""
         <dict>
+            <named-field name="tags">
+                <tag-collection/>
+            </named-field>
+
             <named-field name="data">
                 <int>0</int>
             </named-field>
@@ -956,7 +968,7 @@ class TestValidateManifest(unittest.TestCase):
         self.assertEqual(validateManifest(manifest, self.base_model_filter, self.tag_collection),
                          ManifestValidationResult.invalid(
                              invalidityType=ManifestValidationResult.InvalidityInfo.InvalidityType.UNFILLED_VALUE,
-                             invalidityInfo=16
+                             invalidityInfo=20
                          ))
     
     def test_Invalid_BaseModelFilterMismatch(self):

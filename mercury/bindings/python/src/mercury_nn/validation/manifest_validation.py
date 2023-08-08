@@ -489,6 +489,15 @@ def validateManifest(manifest: ET._Element,
             invalidityInfo=syntax_check_result.invalidityInfo
         )
     
+    # check base model filter match
+    base_model_match_result = matchFilter(base_model_filter, manifest)
+    
+    if not base_model_match_result.isSuccess:
+        return ManifestValidationResult.invalid(
+            invalidityType=_ManifestInvalidityTypes.FAILED_BASE_MODEL_FILTER_MATCH,
+            invalidityInfo=base_model_match_result.failureInfo
+        )
+
     # check that there are no unfilled values in int / float / bool
     for tag_name in {TagNames.INT, TagNames.FLOAT, TagNames.BOOL}:
         elements: Iterable[ET._Element] = manifest.findall(r'.//' + tag_name)
@@ -499,15 +508,6 @@ def validateManifest(manifest: ET._Element,
                     invalidityType=_ManifestInvalidityTypes.UNFILLED_VALUE,
                     invalidityInfo=element.sourceline
                 )
-    
-    # check base model filter match
-    base_model_match_result = matchFilter(base_model_filter, manifest)
-    
-    if not base_model_match_result.isSuccess:
-        return ManifestValidationResult.invalid(
-            invalidityType=_ManifestInvalidityTypes.FAILED_BASE_MODEL_FILTER_MATCH,
-            invalidityInfo=base_model_match_result.failureInfo
-        )
         
     tags = ManifestUtils.getTags(manifest)
 

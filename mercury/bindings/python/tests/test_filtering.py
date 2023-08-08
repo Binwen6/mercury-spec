@@ -410,6 +410,71 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         dataElement = """
+        <float>unfilled</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <float filter="gt">1.0</float>
+        """
+
+        dataElement = """
+        <float>unfilled</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <float filter="ge">1.0</float>
+        """
+
+        dataElement = """
+        <float>unfilled</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <float filter="lt">1.0</float>
+        """
+
+        dataElement = """
+        <float>unfilled</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <float filter="le">1.0</float>
+        """
+
+        dataElement = """
+        <float>unfilled</float>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <float filter="equals">1.0</float>
+        """
+
+        dataElement = """
         <float>1.0</float>
         """
 
@@ -536,6 +601,71 @@ class TestFilterMatch(unittest.TestCase):
         """
 
         dataElement = """
+        <int>unfilled</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <int filter="gt">1</int>
+        """
+
+        dataElement = """
+        <int>unfilled</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <int filter="ge">1</int>
+        """
+
+        dataElement = """
+        <int>unfilled</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <int filter="lt">1</int>
+        """
+
+        dataElement = """
+        <int>unfilled</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <int filter="le">1</int>
+        """
+
+        dataElement = """
+        <int>unfilled</int>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection), FilterMatchResult.failure(
+            failureType=_FailureTypes.NUMERIC_FAILED_COMPARISON,
+            failurePosition=_FailurePosition(2, 2, tagStack=[])
+        ))
+        
+        filterElement = """
+        <int filter="equals">1</int>
+        """
+
+        dataElement = """
         <int>1</int>
         """
 
@@ -657,6 +787,20 @@ class TestFilterMatch(unittest.TestCase):
         ))
     
     def test_bool_comparisons(self):
+        filterElement = """
+        <bool filter="equals">true</bool>
+        """
+
+        dataElement = """
+        <bool>unfilled</bool>
+        """
+
+        self.assertEqual(matchFilter(Filter.fromXMLElement(ET.fromstring(filterElement)), ET.fromstring(dataElement), self.tag_collection),
+                         FilterMatchResult.failure(
+                             failureType=_FailureTypes.BOOL_VALUE_NOT_EQUAL,
+                             failurePosition=_FailurePosition(2, 2, tagStack=[])
+                         ))
+        
         filterElement = """
         <bool filter="equals">true</bool>
         """
