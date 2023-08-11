@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 from ..tag_matching import parseCondensedTags
 
+from .constants import BENCHMARK_TAG_PREFIX
+
 
 # TODO: avoid duplication with definition in utils.py
 def dictElementToDict(dictElement: ET._Element):
@@ -20,6 +22,8 @@ class FileNames:
 class KeyNames:
     pythonImplementationIdentifier = 'Python'
     specs = 'specs'
+    properties = 'properties'
+    benchmarks = 'benchmarks'
     implementations = 'implementations'
     implementationEntryFile = 'entryFile'
     implementationEntryClass = 'entryClass'
@@ -27,6 +31,9 @@ class KeyNames:
     modelNameKeyName = 'name'
     callSpecsKeyName = 'callSpecs'
     tagsKeyName = 'tags'
+    inputSpecificationKeyName = 'input'
+    outputSpecificationKeyName = 'output'
+    typeKeyName = 'type'
 
 
 class TagNames:
@@ -121,7 +128,15 @@ class ManifestUtils:
     
     # TODO: write tests
     @staticmethod
-    def getImplementationInfo(manifest: ET._Element):
+    def getImplementationInfo(manifest: ET._Element) -> ImplementationInfo:
+        """Returns the Python implementation info specifying the entry file & class of the model.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ImplementationInfo: The implementation info.
+        """
         implementationDict = dictElementToDict(
             dictElementToDict(dictElementToDict(manifest)[KeyNames.implementations])
             [KeyNames.pythonImplementationIdentifier])
@@ -133,19 +148,46 @@ class ManifestUtils:
     
     # TODO: write tests
     @staticmethod
-    def getModelName(manifest: ET._Element):
+    def getModelName(manifest: ET._Element) -> str:
+        """Returns the model's name.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            str: The model's name.
+        """
+        
         return dictElementToDict(
             dictElementToDict(ManifestUtils._getModelSpecs(manifest))
             [KeyNames.headerKeyName])[KeyNames.modelNameKeyName].text
     
     @staticmethod
     def getCondensedTags(manifest: ET._Element) -> Set[str]:
+        """Returns the condensed tags of the model, as present in the tag section of the manifest.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            Set[str]: A set where each element is a condensed tags representation.
+        """
+        
         tags_element = dictElementToDict(ManifestUtils._getModelSpecs(manifest))[KeyNames.tagsKeyName]
         
         return {element.text for element in tags_element}
     
     @staticmethod
     def getTags(manifest: ET._Element) -> Set[str]:
+        """Returns the set of tags the model has.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            Set[str]: The set of tags that the model has.
+        """
+        
         condensed_tags = ManifestUtils.getCondensedTags(manifest)
         tag_sets = [parseCondensedTags(item) for item in condensed_tags]
 
@@ -158,8 +200,128 @@ class ManifestUtils:
     # TODO: write tests
     @staticmethod
     def getSupportedImplementations(manifest: ET._Element) -> Set[str]:
+        """Returns the set of names of the supported implementations, as defined in the implementation section of the manifest.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            Set[str]: The set of names of the supported implementations. E.g., Python, Java, C++, etc.
+        """
         return set(
             dictElementToDict(dictElementToDict(manifest)[KeyNames.implementations]).keys())
+    
+    # TODO: write tests
+    @staticmethod
+    def getBenchmarkPropertiesRoot(manifest: ET._Element) -> ET._Element:
+        """Returns a handle to the benchmarks properties root element.
+
+        Args:
+            manifest (ET._Element): The manifest element.
+
+        Returns:
+            ET._Element: The benchmarks properties root element.
+        """
+        
+        return dictElementToDict(
+            dictElementToDict(ManifestUtils._getModelSpecs(manifest))[KeyNames.properties])[KeyNames.benchmarks]
+    
+    # TODO: tests
+    @staticmethod
+    def getBenchmarks(manifest: ET._Element) -> Set[str]:
+        """Returns the set of benchmarks applicable to the model, as defined in the tags section.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            Set[str]: The set of benchmarks applicable to the model.
+        """
+        
+        return [tag[len(BENCHMARK_TAG_PREFIX):] for tag in ManifestUtils.getTags(manifest) if tag.startswith(BENCHMARK_TAG_PREFIX)]
+    
+    # TODO: tests
+    @staticmethod
+    def _getCallSpecs(manifest: ET._Element) -> ET._Element:
+        """Returns the call specs element of the model's manifest data.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ET._Element: The call specs element.
+        """
+        
+        return dictElementToDict(ManifestUtils._getModelSpecs(manifest))[KeyNames.callSpecsKeyName]
+    
+    # TODO: tests
+    @staticmethod
+    def getInputSpecification(manifest: ET._Element) -> ET._Element:
+        """Returns the input specification element of the model's manifest data.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ET._Element: The input specification element.
+        """
+        
+        return dictElementToDict(ManifestUtils._getCallSpecs(manifest))[KeyNames.inputSpecificationKeyName]
+    
+    # TODO: tests
+    def getInputTypeDeclaration(manifest: ET._Element) -> ET._Element:
+        """Returns the input type declaration root element (not the element with tag "type-declaration").
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ET._Element: The input type declaration root element.
+        """
+        
+        return dictElementToDict(ManifestUtils.getInputSpecification(manifest))[KeyNames.typeKeyName][0]
+    
+    # TODO: tests
+    @staticmethod
+    def getOutputSpecification(manifest: ET._Element) -> ET._Element:
+        """Returns the output specification element of the model's manifest data.
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ET._Element: The output specification element.
+        """
+        
+        return dictElementToDict(ManifestUtils._getCallSpecs(manifest))[KeyNames.outputSpecificationKeyName]
+    
+    def getOutputTypeDeclaration(manifest: ET._Element) -> ET._Element:
+        """Returns the output type declaration root element (not the element with tag "type-declaration").
+
+        Args:
+            manifest (ET._Element): The manifest root element.
+
+        Returns:
+            ET._Element: The output type declaration root element.
+        """
+        
+        return dictElementToDict(ManifestUtils.getOutputSpecification(manifest))[KeyNames.typeKeyName][0]
+
+
+class ExtensionUtils:
+    
+    @staticmethod
+    def getManifestPath(modelExtensionDir: Path) -> Path:
+        """Returns the path to the manifest file.
+
+        Args:
+            modelExtensionDir (Path): The model extension directory root.
+
+        Returns:
+            Path: The path to the manifest file.
+        """
+        
+        return modelExtensionDir / FileNames.manifestFile
 
 
 class ImplementationNames:

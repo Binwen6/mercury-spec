@@ -10,3 +10,5 @@ UNFILLED_VALUE_PLACEHOLDER = 'unfilled'
 
 BOOLEAN_TRUE_VALUES = {'true', '1', 'True', 'TRUE'}
 BOOLEAN_FALSE_VALUES = {'false', '0', 'False', 'FALSE'}
+
+BENCHMARK_TAG_PREFIX = 'benchmark::'
