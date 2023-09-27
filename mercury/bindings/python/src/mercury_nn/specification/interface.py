@@ -25,7 +25,7 @@ class KeyNames:
     properties = 'properties'
     benchmarks = 'benchmarks'
     implementations = 'implementations'
-    implementationEntryFile = 'entryFile'
+    implementationModulePath = 'modulePath'
     implementationEntryClass = 'entryClass'
     headerKeyName = 'header'
     modelNameKeyName = 'name'
@@ -89,7 +89,7 @@ class TypeDeclarationFilterOperationTypes:
 
 @dataclass
 class ImplementationInfo:
-    sourceFile: Path
+    modulePath: Path
     modelClassName: str
 
 
@@ -142,7 +142,7 @@ class ManifestUtils:
             [KeyNames.pythonImplementationIdentifier])
         
         return ImplementationInfo(
-            sourceFile=Path(implementationDict[KeyNames.implementationEntryFile].text),
+            modulePath=Path(implementationDict[KeyNames.implementationModulePath].text),
             modelClassName=implementationDict[KeyNames.implementationEntryClass].text
         )
     

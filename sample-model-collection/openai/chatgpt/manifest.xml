@@ -75,8 +75,8 @@
         <dict>
             <named-field name="Python">
                 <dict>
-                    <named-field name="entryFile">
-                        <string>model.py</string>
+                    <named-field name="modulePath">
+                        <string>model</string>
                     </named-field>
                     <named-field name="entryClass">
                         <string>Model</string>
